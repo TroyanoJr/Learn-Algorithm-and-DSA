@@ -1,0 +1,142 @@
+[
+  {
+    "id": "introduction_ds",
+    "title": "Introduction",
+    "category": "DATA_STRUCTURES",
+    "level": "FOUNDATION",
+    "order": 1
+  },
+  {
+    "id": "arrays",
+    "title": "Arrays",
+    "category": "DATA_STRUCTURES",
+    "level": "FOUNDATION",
+    "order": 2
+  },
+  {
+    "id": "structures",
+    "title": "Structures",
+    "category": "DATA_STRUCTURES",
+    "level": "FOUNDATION",
+    "order": 3
+  },
+  {
+    "id": "linked_list",
+    "title": "Linked List",
+    "category": "DATA_STRUCTURES",
+    "level": "FOUNDATION",
+    "order": 4
+  },
+  {
+    "id": "stack",
+    "title": "Stack",
+    "category": "DATA_STRUCTURES",
+    "level": "FOUNDATION",
+    "order": 5
+  },
+  {
+    "id": "queues",
+    "title": "Queues",
+    "category": "DATA_STRUCTURES",
+    "level": "FOUNDATION",
+    "order": 6
+  },
+  {
+    "id": "hash_tables",
+    "title": "Hash Tables",
+    "category": "DATA_STRUCTURES",
+    "level": "INTERMEDIATE",
+    "order": 7
+  },
+  {
+    "id": "trees",
+    "title": "Trees",
+    "category": "DATA_STRUCTURES",
+    "level": "INTERMEDIATE",
+    "order": 8
+  },
+  {
+    "id": "heap",
+    "title": "Heap",
+    "category": "DATA_STRUCTURES",
+    "level": "INTERMEDIATE",
+    "order": 9
+  },
+  {
+    "id": "graphs",
+    "title": "Graphs",
+    "category": "DATA_STRUCTURES",
+    "level": "ADVANCED",
+    "order": 10
+  },
+  {
+    "id": "introduction_algo",
+    "title": "Introduction",
+    "category": "ALGORITHMS",
+    "level": "FOUNDATION",
+    "order": 1
+  },
+  {
+    "id": "linear_search",
+    "title": "Searching",
+    "category": "ALGORITHMS",
+    "level": "FOUNDATION",
+    "order": 2
+  },
+  {
+    "id": "sorting",
+    "title": "Sorting",
+    "category": "ALGORITHMS",
+    "level": "FOUNDATION",
+    "order": 3
+  },
+  {
+    "id": "brute_force",
+    "title": "Brute Force",
+    "category": "ALGORITHMS",
+    "level": "FOUNDATION",
+    "order": 4
+  },
+  {
+    "id": "iteration_recursion",
+    "title": "Iteration & Recursion",
+    "category": "ALGORITHMS",
+    "level": "INTERMEDIATE",
+    "order": 5
+  },
+  {
+    "id": "divide_conquer",
+    "title": "Divide and Conquer",
+    "category": "ALGORITHMS",
+    "level": "INTERMEDIATE",
+    "order": 6
+  },
+  {
+    "id": "greedy",
+    "title": "Greedy",
+    "category": "ALGORITHMS",
+    "level": "INTERMEDIATE",
+    "order": 7
+  },
+  {
+    "id": "backtracking",
+    "title": "Backtracking",
+    "category": "ALGORITHMS",
+    "level": "ADVANCED",
+    "order": 8
+  },
+  {
+    "id": "dynamic_programming",
+    "title": "Dynamic Programming",
+    "category": "ALGORITHMS",
+    "level": "ADVANCED",
+    "order": 9
+  },
+  {
+    "id": "branch_bound",
+    "title": "Branch and Bound",
+    "category": "ALGORITHMS",
+    "level": "ADVANCED",
+    "order": 10
+  }
+]

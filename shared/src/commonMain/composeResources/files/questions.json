@@ -1,0 +1,86 @@
+[
+  {
+    "id": "q_arrays_1",
+    "topicId": "arrays",
+    "statement": "What is the time complexity of accessing an element in an array by its index?",
+    "options": [
+      "O(1)",
+      "O(n)",
+      "O(log n)",
+      "O(n^2)"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "Arrays store elements in contiguous memory, allowing direct index calculation in constant O(1) time.",
+    "difficulty": "EASY"
+  },
+  {
+    "id": "q_arrays_2",
+    "topicId": "arrays",
+    "statement": "What is the worst-case time complexity of inserting an element at the beginning of a fixed-size array?",
+    "options": [
+      "O(1)",
+      "O(n)",
+      "O(log n)",
+      "O(n log n)"
+    ],
+    "correctOptionIndex": 1,
+    "explanation": "Inserting at the beginning requires shifting all existing n elements one position to the right, taking O(n) time.",
+    "difficulty": "EASY"
+  },
+  {
+    "id": "q_arrays_3",
+    "topicId": "arrays",
+    "statement": "Which memory layout property allows fast element access in an array?",
+    "options": [
+      "Non-linear pointers",
+      "Contiguous memory allocation",
+      "Hash bucket indexing",
+      "Dynamic tree nodes"
+    ],
+    "correctOptionIndex": 1,
+    "explanation": "Contiguous memory allocation enables calculating memory addresses directly using base_address + index * element_size.",
+    "difficulty": "MEDIUM"
+  },
+  {
+    "id": "q_linear_search_1",
+    "topicId": "linear_search",
+    "statement": "What is the worst-case time complexity of Linear Search on an unsorted array of size n?",
+    "options": [
+      "O(1)",
+      "O(log n)",
+      "O(n)",
+      "O(n^2)"
+    ],
+    "correctOptionIndex": 2,
+    "explanation": "In the worst case, the target element is at the last index or not present at all, requiring n comparisons.",
+    "difficulty": "EASY"
+  },
+  {
+    "id": "q_linear_search_2",
+    "topicId": "linear_search",
+    "statement": "Does Linear Search require the target array to be sorted before searching?",
+    "options": [
+      "Yes, always",
+      "No, it works on unsorted arrays",
+      "Only if array size > 100",
+      "Yes, but only in descending order"
+    ],
+    "correctOptionIndex": 1,
+    "explanation": "Linear search checks elements sequentially one by one, so array order or sorting is not required.",
+    "difficulty": "EASY"
+  },
+  {
+    "id": "q_linear_search_3",
+    "topicId": "linear_search",
+    "statement": "What is the best-case time complexity of Linear Search?",
+    "options": [
+      "O(1)",
+      "O(log n)",
+      "O(n)",
+      "O(n log n)"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "The best case occurs when the target element is at the very first index (index 0), taking O(1) time.",
+    "difficulty": "MEDIUM"
+  }
+]

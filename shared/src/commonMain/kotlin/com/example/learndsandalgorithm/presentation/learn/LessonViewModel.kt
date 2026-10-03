@@ -1,0 +1,52 @@
+package com.example.learndsandalgorithm.presentation.learn
+
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.example.learndsandalgorithm.domain.model.Lesson
+import com.example.learndsandalgorithm.domain.repository.ContentRepository
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.launch
+
+sealed interface LessonUiState {
+    data object Loading : LessonUiState
+    data class Success(
+        val lesson: Lesson,
+        val markdownContent: String,
+        val nextLessonId: String? = null
+    ) : LessonUiState
+    data class Error(val message: String) : LessonUiState
+}
+
+class LessonViewModel(
+    private val contentRepository: ContentRepository
+) : ViewModel() {
+
+    private val _uiState = MutableStateFlow<LessonUiState>(LessonUiState.Loading)
+    val uiState: StateFlow<LessonUiState> = _uiState.asStateFlow()
+
+    fun loadLesson(lessonId: String) {
+        _uiState.value = LessonUiState.Loading
+        viewModelScope.launch {
+            try {
+                val lesson = contentRepository.getLessonById(lessonId)
+                if (lesson == null) {
+                    _uiState.value = LessonUiState.Error("Lesson not found: $lessonId")
+                    return@launch
+                }
+                val markdownContent = contentRepository.getLessonContent(lesson)
+                val topicLessons = contentRepository.getLessonsByTopic(lesson.topicId)
+                val nextLesson = topicLessons.firstOrNull { it.order > lesson.order }
+
+                _uiState.value = LessonUiState.Success(
+                    lesson = lesson,
+                    markdownContent = markdownContent,
+                    nextLessonId = nextLesson?.id
+                )
+            } catch (e: Exception) {
+                _uiState.value = LessonUiState.Error(e.message ?: "Failed to load lesson")
+            }
+        }
+    }
+}

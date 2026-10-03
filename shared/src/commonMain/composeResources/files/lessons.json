@@ -1,0 +1,114 @@
+[
+  {
+    "id": "lesson_arrays_1",
+    "topicId": "arrays",
+    "title": "Introduction to Arrays",
+    "order": 1,
+    "xp": 50,
+    "contentPath": "files/lessons/lesson_arrays_1.md"
+  },
+  {
+    "id": "lesson_arrays_2",
+    "topicId": "arrays",
+    "title": "Array Operations & Memory",
+    "order": 2,
+    "xp": 50,
+    "contentPath": "files/lessons/lesson_arrays_2.md"
+  },
+  {
+    "id": "lesson_arrays_3",
+    "topicId": "arrays",
+    "title": "Traversing an Array",
+    "order": 3,
+    "xp": 20,
+    "contentPath": "files/lessons/lesson_arrays_3.md"
+  },
+  {
+    "id": "lesson_arrays_4",
+    "topicId": "arrays",
+    "title": "Insert and Delete",
+    "order": 4,
+    "xp": 30,
+    "contentPath": "files/lessons/lesson_arrays_4.md"
+  },
+  {
+    "id": "lesson_arrays_5",
+    "topicId": "arrays",
+    "title": "Arrays and Complexity",
+    "order": 5,
+    "xp": 15,
+    "contentPath": "files/lessons/lesson_arrays_5.md"
+  },
+  {
+    "id": "searching_1",
+    "topicId": "linear_search",
+    "title": "What Is Searching?",
+    "order": 1,
+    "xp": 15,
+    "contentPath": "files/lessons/searching_1.md"
+  },
+  {
+    "id": "searching_2",
+    "topicId": "linear_search",
+    "title": "Linear Search",
+    "order": 2,
+    "xp": 25,
+    "contentPath": "files/lessons/searching_2.md"
+  },
+  {
+    "id": "searching_3",
+    "topicId": "linear_search",
+    "title": "Binary Search",
+    "order": 3,
+    "xp": 30,
+    "contentPath": "files/lessons/searching_3.md"
+  },
+  {
+    "id": "searching_4",
+    "topicId": "linear_search",
+    "title": "Linear vs. Binary Search",
+    "order": 4,
+    "xp": 25,
+    "contentPath": "files/lessons/searching_4.md"
+  },
+  {
+    "id": "sorting_1",
+    "topicId": "sorting",
+    "title": "What Is Sorting?",
+    "order": 1,
+    "xp": 15,
+    "contentPath": "files/lessons/sorting_1.md"
+  },
+  {
+    "id": "sorting_2",
+    "topicId": "sorting",
+    "title": "Bubble Sort",
+    "order": 2,
+    "xp": 25,
+    "contentPath": "files/lessons/sorting_2.md"
+  },
+  {
+    "id": "sorting_3",
+    "topicId": "sorting",
+    "title": "Selection Sort",
+    "order": 3,
+    "xp": 25,
+    "contentPath": "files/lessons/sorting_3.md"
+  },
+  {
+    "id": "sorting_4",
+    "topicId": "sorting",
+    "title": "Insertion Sort",
+    "order": 4,
+    "xp": 30,
+    "contentPath": "files/lessons/sorting_4.md"
+  },
+  {
+    "id": "sorting_5",
+    "topicId": "sorting",
+    "title": "Comparing Sorting Algorithms",
+    "order": 5,
+    "xp": 25,
+    "contentPath": "files/lessons/sorting_5.md"
+  }
+]
