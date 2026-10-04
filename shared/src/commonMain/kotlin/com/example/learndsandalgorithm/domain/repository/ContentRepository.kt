@@ -10,4 +10,5 @@ interface ContentRepository {
     suspend fun getLessonById(id: String): Lesson?
     suspend fun getLessonContent(lesson: Lesson): String
     suspend fun getQuestionsByTopic(topicId: String): List<Question>
+    suspend fun getQuestionsByLessonId(lessonId: String): List<Question>
 }

@@ -64,7 +64,13 @@ class ContentRepositoryImpl(
     override suspend fun getQuestionsByTopic(topicId: String): List<Question> {
         if (topicId.isBlank()) return emptyList()
         val allQuestions = getAllQuestions()
-        return allQuestions.filter { it.topicId == topicId }
+        return allQuestions.filter { it.topicId == topicId && it.lessonId == null }
+    }
+
+    override suspend fun getQuestionsByLessonId(lessonId: String): List<Question> {
+        if (lessonId.isBlank()) return emptyList()
+        val allQuestions = getAllQuestions()
+        return allQuestions.filter { it.lessonId == lessonId }
     }
 
     private suspend fun getAllLessons(): List<Lesson> {

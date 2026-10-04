@@ -82,5 +82,215 @@
     "correctOptionIndex": 0,
     "explanation": "The best case occurs when the target element is at the very first index (index 0), taking O(1) time.",
     "difficulty": "MEDIUM"
+  },
+  {
+    "id": "q_lesson_arrays_1",
+    "topicId": "arrays",
+    "lessonId": "lesson_arrays_1",
+    "statement": "What is the index of the first element in a typical array?",
+    "options": [
+      "0",
+      "1",
+      "-1",
+      "2"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "Arrays use zero-based indexing, so the first element is always stored at index 0.",
+    "difficulty": "EASY"
+  },
+  {
+    "id": "q_lesson_arrays_2",
+    "topicId": "arrays",
+    "lessonId": "lesson_arrays_2",
+    "statement": "What is the index of the first element in a typical array?",
+    "options": [
+      "0",
+      "1",
+      "-1",
+      "2"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "Arrays use zero-based indexing, so the first element is always stored at index 0.",
+    "difficulty": "EASY"
+  },
+  {
+    "id": "q_lesson_arrays_3",
+    "topicId": "arrays",
+    "lessonId": "lesson_arrays_3",
+    "statement": "What is the purpose of the index while traversing an array?",
+    "options": [
+      "It identifies the current element",
+      "It changes the array size",
+      "It sorts the array",
+      "It deletes the current element"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "The index identifies the position of the element currently being visited during traversal.",
+    "difficulty": "EASY"
+  },
+  {
+    "id": "q_lesson_arrays_4",
+    "topicId": "arrays",
+    "lessonId": "lesson_arrays_4",
+    "statement": "Why does inserting an element in the middle of an array take O(n) time?",
+    "options": [
+      "Elements after the insertion index must shift right",
+      "The entire array must be sorted",
+      "Memory addresses are randomized",
+      "Array index lookup is O(n)"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "Inserting in the middle requires shifting all subsequent elements right by one position to create room.",
+    "difficulty": "EASY"
+  },
+  {
+    "id": "q_lesson_arrays_5",
+    "topicId": "arrays",
+    "lessonId": "lesson_arrays_5",
+    "statement": "Which array operation has O(1) constant time complexity?",
+    "options": [
+      "Accessing an element by index",
+      "Searching for an item in an unsorted array",
+      "Inserting an element in the middle",
+      "Deleting an element from the middle"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "Arrays use contiguous memory offsets, allowing instant O(1) element access directly by index.",
+    "difficulty": "EASY"
+  },
+  {
+    "id": "q_searching_1",
+    "topicId": "linear_search",
+    "lessonId": "searching_1",
+    "statement": "In algorithm analysis, what does the term 'target' refer to?",
+    "options": [
+      "The specific element you are searching for",
+      "The size of the array",
+      "The total execution time",
+      "The last element in memory"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "The target is the specific value or element the search algorithm is looking to locate.",
+    "difficulty": "EASY"
+  },
+  {
+    "id": "q_searching_2",
+    "topicId": "linear_search",
+    "lessonId": "searching_2",
+    "statement": "What is the worst-case time complexity of Linear Search on an array of n items?",
+    "options": [
+      "O(n)",
+      "O(1)",
+      "O(log n)",
+      "O(n²)"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "In the worst case, Linear Search must check all n elements if the target is at the end or missing.",
+    "difficulty": "EASY"
+  },
+  {
+    "id": "q_searching_3",
+    "topicId": "linear_search",
+    "lessonId": "searching_3",
+    "statement": "What is the essential prerequisite for applying Binary Search to an array?",
+    "options": [
+      "The array must be sorted",
+      "The array size must be even",
+      "All elements must be positive",
+      "The array must contain unique values"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "Binary Search relies on sorted order to eliminate half the search space at each comparison.",
+    "difficulty": "EASY"
+  },
+  {
+    "id": "q_searching_4",
+    "topicId": "linear_search",
+    "lessonId": "searching_4",
+    "statement": "When searching for target 44 in an 11-element sorted array, how many steps does Binary Search take compared to Linear Search?",
+    "options": [
+      "3 steps for Binary Search vs 10 steps for Linear Search",
+      "11 steps for Binary Search vs 1 step for Linear Search",
+      "5 steps for Binary Search vs 5 steps for Linear Search",
+      "1 step for Binary Search vs 11 steps for Linear Search"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "Binary Search eliminates half the remaining items at each comparison, finding 44 in 3 steps versus 10 steps for Linear Search.",
+    "difficulty": "EASY"
+  },
+  {
+    "id": "q_sorting_1",
+    "topicId": "sorting",
+    "lessonId": "sorting_1",
+    "statement": "What is the primary benefit of organizing data into a sorted order?",
+    "options": [
+      "It enables faster search and lookup operations like Binary Search",
+      "It reduces the memory size of the array",
+      "It converts integers to strings automatically",
+      "It prevents duplicate elements from being added"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "Sorted order is required by algorithms like Binary Search, reducing search time from O(n) to O(log n).",
+    "difficulty": "EASY"
+  },
+  {
+    "id": "q_sorting_2",
+    "topicId": "sorting",
+    "lessonId": "sorting_2",
+    "statement": "What is the best-case time complexity of Bubble Sort when an early-exit optimization is used on pre-sorted data?",
+    "options": [
+      "O(n)",
+      "O(1)",
+      "O(n²)",
+      "O(log n)"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "With an early-exit flag, Bubble Sort makes a single O(n) pass over pre-sorted data, detecting zero swaps and finishing early.",
+    "difficulty": "EASY"
+  },
+  {
+    "id": "q_sorting_3",
+    "topicId": "sorting",
+    "lessonId": "sorting_3",
+    "statement": "Why does Selection Sort always have a time complexity of O(n²), even on already sorted data?",
+    "options": [
+      "It must scan the entire unsorted region to find the minimum in every pass",
+      "It performs n² swaps in every pass",
+      "It doubles the array size at each step",
+      "It uses recursion to find the minimum"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "Selection Sort does not check if the array is already sorted; it unconditionally scans the remaining unsorted items to find the minimum in every pass.",
+    "difficulty": "EASY"
+  },
+  {
+    "id": "q_sorting_4",
+    "topicId": "sorting",
+    "lessonId": "sorting_4",
+    "statement": "How does Insertion Sort perform when given an array that is already almost completely sorted?",
+    "options": [
+      "It runs efficiently in near O(n) time with very few element shifts",
+      "It takes O(n²) time regardless of initial order",
+      "It throws an index out of bounds error",
+      "It requires O(n log n) additional memory"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "Insertion Sort is adaptive: if elements are already in order, it makes only 1 comparison per element and 0 shifts, taking O(n) time.",
+    "difficulty": "EASY"
+  },
+  {
+    "id": "q_sorting_5",
+    "topicId": "sorting",
+    "lessonId": "sorting_5",
+    "statement": "Which elementary sorting algorithm minimizes the total number of element swaps to at most O(n)?",
+    "options": [
+      "Selection Sort",
+      "Bubble Sort",
+      "Insertion Sort",
+      "Merge Sort"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "Selection Sort performs at most 1 swap per pass (n - 1 total swaps max), minimizing memory write operations.",
+    "difficulty": "EASY"
   }
 ]
