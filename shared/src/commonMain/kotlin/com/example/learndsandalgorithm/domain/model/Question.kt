@@ -7,5 +7,6 @@ data class Question(
     val options: List<String>,
     val correctOptionIndex: Int,
     val explanation: String,
-    val difficulty: QuestionDifficulty
+    val difficulty: QuestionDifficulty,
+    val lessonId: String? = null
 )

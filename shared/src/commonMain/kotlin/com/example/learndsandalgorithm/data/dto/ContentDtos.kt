@@ -52,7 +52,8 @@ internal data class QuestionDto(
     val options: List<String>,
     val correctOptionIndex: Int,
     val explanation: String,
-    val difficulty: String
+    val difficulty: String,
+    val lessonId: String? = null
 ) {
     fun toDomain(): Question = Question(
         id = id,
@@ -61,6 +62,7 @@ internal data class QuestionDto(
         options = options,
         correctOptionIndex = correctOptionIndex,
         explanation = explanation,
-        difficulty = runCatching { QuestionDifficulty.valueOf(difficulty) }.getOrDefault(QuestionDifficulty.EASY)
+        difficulty = runCatching { QuestionDifficulty.valueOf(difficulty) }.getOrDefault(QuestionDifficulty.EASY),
+        lessonId = lessonId
     )
 }
