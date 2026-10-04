@@ -3,6 +3,7 @@ package com.example.learndsandalgorithm.presentation.learn
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.learndsandalgorithm.domain.model.Lesson
+import com.example.learndsandalgorithm.domain.model.Question
 import com.example.learndsandalgorithm.domain.repository.ContentRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -14,7 +15,8 @@ sealed interface LessonUiState {
     data class Success(
         val lesson: Lesson,
         val markdownContent: String,
-        val nextLessonId: String? = null
+        val nextLessonId: String? = null,
+        val questions: List<Question> = emptyList()
     ) : LessonUiState
     data class Error(val message: String) : LessonUiState
 }
@@ -38,11 +40,13 @@ class LessonViewModel(
                 val markdownContent = contentRepository.getLessonContent(lesson)
                 val topicLessons = contentRepository.getLessonsByTopic(lesson.topicId)
                 val nextLesson = topicLessons.firstOrNull { it.order > lesson.order }
+                val questions = contentRepository.getQuestionsByLessonId(lesson.id)
 
                 _uiState.value = LessonUiState.Success(
                     lesson = lesson,
                     markdownContent = markdownContent,
-                    nextLessonId = nextLesson?.id
+                    nextLessonId = nextLesson?.id,
+                    questions = questions
                 )
             } catch (e: Exception) {
                 _uiState.value = LessonUiState.Error(e.message ?: "Failed to load lesson")
