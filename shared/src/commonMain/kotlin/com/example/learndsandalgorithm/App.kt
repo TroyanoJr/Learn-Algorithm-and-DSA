@@ -15,9 +15,8 @@ fun App() {
         val container = remember { AppContainer() }
         val homeViewModel = remember {
             HomeViewModel(
-                getTopics = container.getTopics,
-                getProgress = container.getProgress,
-                getUserStats = container.getUserStats
+                contentRepository = container.contentRepository,
+                progressRepository = container.progressRepository
             )
         }
         
