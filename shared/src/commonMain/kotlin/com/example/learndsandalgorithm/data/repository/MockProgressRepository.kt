@@ -5,6 +5,8 @@ import com.example.learndsandalgorithm.domain.model.Progress
 
 class MockProgressRepository : ProgressRepository {
     private var currentProgress = mockProgress
+    private val completedLessonIds = mutableSetOf<String>()
+    private var totalXp = 0
 
     override fun getProgress(): Progress {
         return currentProgress
@@ -15,5 +17,20 @@ class MockProgressRepository : ProgressRepository {
         currentProgress = currentProgress.copy(
             overallProgress = currentProgress.overallProgress + 1
         )
+    }
+
+    override fun getCompletedLessonIds(): Set<String> {
+        return completedLessonIds.toSet()
+    }
+
+    override fun getTotalXp(): Int {
+        return totalXp
+    }
+
+    override fun markLessonCompleted(lessonId: String, xp: Int) {
+        if (lessonId.isBlank()) return
+        if (completedLessonIds.add(lessonId)) {
+            totalXp += xp
+        }
     }
 }
