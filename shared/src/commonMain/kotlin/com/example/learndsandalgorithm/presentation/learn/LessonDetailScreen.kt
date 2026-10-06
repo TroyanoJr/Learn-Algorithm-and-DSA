@@ -77,7 +77,13 @@ fun LessonDetailScreen(
     LaunchedEffect(lessonId) {
         viewModel.loadLesson(lessonId)
         selectedQuestionOption = null
-        isLessonCompleted = false
+    }
+
+    LaunchedEffect(uiState) {
+        val state = uiState
+        if (state is LessonUiState.Success) {
+            isLessonCompleted = state.isCompleted
+        }
     }
 
     Column(
@@ -264,7 +270,10 @@ fun LessonDetailScreen(
                     FinishLessonSection(
                         isCompleted = isLessonCompleted,
                         nextLessonId = state.nextLessonId,
-                        onComplete = { isLessonCompleted = true },
+                        onComplete = {
+                            viewModel.markLessonCompleted()
+                            isLessonCompleted = true
+                        },
                         onNavigateToNextLesson = onNavigateToLesson,
                         onBackToTopic = onBack
                     )

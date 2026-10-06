@@ -24,6 +24,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.learndsandalgorithm.data.repository.ProgressRepository
 import com.example.learndsandalgorithm.domain.repository.ContentRepository
 import com.example.learndsandalgorithm.presentation.home.HomeScreen
 import com.example.learndsandalgorithm.presentation.home.HomeViewModel
@@ -43,7 +44,8 @@ private val SubtleBorderColor = Color(0xFF262632)
 @Composable
 fun AppNavigation(
     homeViewModel: HomeViewModel,
-    contentRepository: ContentRepository
+    contentRepository: ContentRepository,
+    progressRepository: ProgressRepository
 ) {
     var currentDestination by remember { mutableStateOf(AppDestination.HOME) }
     var selectedTopicId by remember { mutableStateOf<String?>(null) }
@@ -76,7 +78,7 @@ fun AppNavigation(
             when {
                 activeLessonId != null -> {
                     val lessonViewModel = remember(activeLessonId) {
-                        LessonViewModel(contentRepository)
+                        LessonViewModel(contentRepository, progressRepository)
                     }
                     LessonDetailScreen(
                         lessonId = activeLessonId,

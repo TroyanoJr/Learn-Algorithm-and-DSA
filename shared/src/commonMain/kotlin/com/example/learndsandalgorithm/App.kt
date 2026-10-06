@@ -23,7 +23,8 @@ fun App() {
         
         AppNavigation(
             homeViewModel = homeViewModel,
-            contentRepository = container.contentRepository
+            contentRepository = container.contentRepository,
+            progressRepository = container.progressRepository
         )
     }
 }

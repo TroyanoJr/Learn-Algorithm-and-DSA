@@ -2,9 +2,10 @@ package com.example.learndsandalgorithm.core
 
 import com.example.learndsandalgorithm.data.repository.ContentRepositoryImpl
 import com.example.learndsandalgorithm.data.repository.MockLessonRepository
-import com.example.learndsandalgorithm.data.repository.MockProgressRepository
 import com.example.learndsandalgorithm.data.repository.MockTopicRepository
 import com.example.learndsandalgorithm.data.repository.MockUserRepository
+import com.example.learndsandalgorithm.data.repository.ProgressRepository
+import com.example.learndsandalgorithm.data.repository.SettingsProgressRepository
 import com.example.learndsandalgorithm.domain.repository.ContentRepository
 import com.example.learndsandalgorithm.domain.usecase.GetLesson
 import com.example.learndsandalgorithm.domain.usecase.GetLessons
@@ -18,7 +19,7 @@ class AppContainer {
     // Repositories
     val topicRepository by lazy { MockTopicRepository() }
     val lessonRepository by lazy { MockLessonRepository() }
-    val progressRepository by lazy { MockProgressRepository() }
+    val progressRepository: ProgressRepository by lazy { SettingsProgressRepository() }
     val userRepository by lazy { MockUserRepository() }
     val contentRepository: ContentRepository by lazy { ContentRepositoryImpl() }
 

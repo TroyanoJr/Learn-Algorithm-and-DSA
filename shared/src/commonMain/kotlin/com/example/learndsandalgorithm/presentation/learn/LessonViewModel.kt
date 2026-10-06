@@ -2,6 +2,7 @@ package com.example.learndsandalgorithm.presentation.learn
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.learndsandalgorithm.data.repository.ProgressRepository
 import com.example.learndsandalgorithm.domain.model.Lesson
 import com.example.learndsandalgorithm.domain.model.Question
 import com.example.learndsandalgorithm.domain.repository.ContentRepository
@@ -16,13 +17,15 @@ sealed interface LessonUiState {
         val lesson: Lesson,
         val markdownContent: String,
         val nextLessonId: String? = null,
-        val questions: List<Question> = emptyList()
+        val questions: List<Question> = emptyList(),
+        val isCompleted: Boolean = false
     ) : LessonUiState
     data class Error(val message: String) : LessonUiState
 }
 
 class LessonViewModel(
-    private val contentRepository: ContentRepository
+    private val contentRepository: ContentRepository,
+    private val progressRepository: ProgressRepository
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow<LessonUiState>(LessonUiState.Loading)
@@ -41,16 +44,26 @@ class LessonViewModel(
                 val topicLessons = contentRepository.getLessonsByTopic(lesson.topicId)
                 val nextLesson = topicLessons.firstOrNull { it.order > lesson.order }
                 val questions = contentRepository.getQuestionsByLessonId(lesson.id)
+                val isCompleted = lesson.id in progressRepository.getCompletedLessonIds()
 
                 _uiState.value = LessonUiState.Success(
                     lesson = lesson,
                     markdownContent = markdownContent,
                     nextLessonId = nextLesson?.id,
-                    questions = questions
+                    questions = questions,
+                    isCompleted = isCompleted
                 )
             } catch (e: Exception) {
                 _uiState.value = LessonUiState.Error(e.message ?: "Failed to load lesson")
             }
+        }
+    }
+
+    fun markLessonCompleted() {
+        val state = _uiState.value
+        if (state is LessonUiState.Success) {
+            progressRepository.markLessonCompleted(state.lesson.id, state.lesson.xp)
+            _uiState.value = state.copy(isCompleted = true)
         }
     }
 }
