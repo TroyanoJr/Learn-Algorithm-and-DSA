@@ -9,6 +9,7 @@ import com.example.learndsandalgorithm.data.repository.ContentRepositoryImpl
 import com.example.learndsandalgorithm.data.repository.MockProgressRepository
 import com.example.learndsandalgorithm.data.repository.ProgressRepository
 import com.example.learndsandalgorithm.domain.model.Progress
+import com.example.learndsandalgorithm.domain.model.TopicCategory
 import com.example.learndsandalgorithm.domain.model.UserStats
 import com.example.learndsandalgorithm.domain.repository.ContentRepository
 import com.example.learndsandalgorithm.domain.usecase.GetProgress
@@ -64,6 +65,73 @@ class HomeViewModel(
                     0
                 }
 
+                // Data Structures vs Algorithms category calculations
+                val dsTopics = availableTopics.filter { it.category == TopicCategory.DATA_STRUCTURES }
+                val dsLessons = dsTopics.flatMap { contentRepository.getLessonsByTopic(it.id) }
+                val dsCompletedCount = dsLessons.count { it.id in completedIds }
+                val dsTotalCount = dsLessons.size
+                val dsPercent = if (dsTotalCount > 0) ((dsCompletedCount.toFloat() / dsTotalCount) * 100).toInt().coerceIn(0, 100) else 0
+
+                val algoTopics = availableTopics.filter { it.category == TopicCategory.ALGORITHMS }
+                val algoLessons = algoTopics.flatMap { contentRepository.getLessonsByTopic(it.id) }
+                val algoCompletedCount = algoLessons.count { it.id in completedIds }
+                val algoTotalCount = algoLessons.size
+                val algoPercent = if (algoTotalCount > 0) ((algoCompletedCount.toFloat() / algoTotalCount) * 100).toInt().coerceIn(0, 100) else 0
+
+                // Continue Learning active lesson selection
+                var activeContinueInfo: ContinueLearningInfo? = null
+                for (topic in availableTopics) {
+                    val topicLessons = contentRepository.getLessonsByTopic(topic.id)
+                    val nextIncomplete = topicLessons.firstOrNull { it.id !in completedIds }
+                    if (nextIncomplete != null) {
+                        val topicCompletedCount = topicLessons.count { it.id in completedIds }
+                        val progressFloat = if (topicLessons.isNotEmpty()) topicCompletedCount.toFloat() / topicLessons.size else 0f
+                        val catName = if (topic.category == TopicCategory.DATA_STRUCTURES) "Data Structures" else "Algorithms"
+                        activeContinueInfo = ContinueLearningInfo(
+                            topicId = topic.id,
+                            topicTitle = topic.title,
+                            lessonId = nextIncomplete.id,
+                            lessonTitle = nextIncomplete.title,
+                            lessonOrder = nextIncomplete.order,
+                            totalTopicLessons = topicLessons.size,
+                            categoryName = catName,
+                            topicProgressFloat = progressFloat,
+                            isAllComplete = false
+                        )
+                        break
+                    }
+                }
+
+                if (activeContinueInfo == null && availableTopics.isNotEmpty()) {
+                    val firstTopic = availableTopics.first()
+                    val topicLessons = contentRepository.getLessonsByTopic(firstTopic.id)
+                    val lastLesson = topicLessons.lastOrNull()
+                    if (lastLesson != null) {
+                        activeContinueInfo = ContinueLearningInfo(
+                            topicId = firstTopic.id,
+                            topicTitle = "Curriculum Complete! 🎉",
+                            lessonId = lastLesson.id,
+                            lessonTitle = "All Available Lessons Complete",
+                            lessonOrder = topicLessons.size,
+                            totalTopicLessons = topicLessons.size,
+                            categoryName = "Curriculum",
+                            topicProgressFloat = 1.0f,
+                            isAllComplete = true
+                        )
+                    }
+                }
+
+                // Recent Topics Progress (topics with at least 1 completed lesson)
+                val recentTopicsMap = mutableMapOf<String, Int>()
+                for (topic in availableTopics) {
+                    val topicLessons = contentRepository.getLessonsByTopic(topic.id)
+                    val completedInTopic = topicLessons.count { it.id in completedIds }
+                    if (completedInTopic > 0) {
+                        val percent = ((completedInTopic.toFloat() / topicLessons.size) * 100).toInt()
+                        recentTopicsMap[topic.title] = percent
+                    }
+                }
+
                 val stats = UserStats(
                     streakDays = mockUserStats.streakDays,
                     totalXp = totalXp,
@@ -72,9 +140,9 @@ class HomeViewModel(
 
                 val progress = Progress(
                     overallProgress = overallPercent,
-                    dataStructuresProgress = overallPercent,
-                    algorithmsProgress = overallPercent,
-                    quizScore = 32
+                    dataStructuresProgress = dsPercent,
+                    algorithmsProgress = algoPercent,
+                    quizScore = 0
                 )
 
                 _uiState.update {
@@ -82,6 +150,14 @@ class HomeViewModel(
                         userStats = stats,
                         progress = progress,
                         topics = availableTopics,
+                        continueLearning = activeContinueInfo,
+                        dsCompletedLessons = dsCompletedCount,
+                        dsTotalLessons = dsTotalCount,
+                        dsProgressPercent = dsPercent,
+                        algoCompletedLessons = algoCompletedCount,
+                        algoTotalLessons = algoTotalCount,
+                        algoProgressPercent = algoPercent,
+                        recentTopicsProgress = recentTopicsMap,
                         activities = mockActivities,
                         recommendedChallenge = mockRecommendedPractice,
                         isLoading = false

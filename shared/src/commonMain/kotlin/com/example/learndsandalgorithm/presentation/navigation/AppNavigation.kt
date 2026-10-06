@@ -104,7 +104,12 @@ fun AppNavigation(
                 }
                 else -> {
                     when (currentDestination) {
-                        AppDestination.HOME -> HomeScreen(viewModel = homeViewModel)
+                        AppDestination.HOME -> HomeScreen(
+                            viewModel = homeViewModel,
+                            onLessonClick = { lessonId ->
+                                selectedLessonId = lessonId
+                            }
+                        )
                         AppDestination.LEARN -> LearnScreen(
                             onTopicClick = { topicId, topicTitle ->
                                 selectedTopicId = topicId
