@@ -94,6 +94,8 @@ fun AppNavigation(
                         topicId = activeTopicId,
                         topicTitle = selectedTopicTitle,
                         contentRepository = contentRepository,
+                        progressRepository = progressRepository,
+                        selectedLessonId = selectedLessonId,
                         onLessonClick = { lesson ->
                             selectedLessonId = lesson.id
                         },
