@@ -3,7 +3,6 @@ package com.example.learndsandalgorithm.presentation.home
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.learndsandalgorithm.data.mock.mockActivities
-import com.example.learndsandalgorithm.data.mock.mockRecommendedPractice
 import com.example.learndsandalgorithm.data.mock.mockUserStats
 import com.example.learndsandalgorithm.data.repository.ContentRepositoryImpl
 import com.example.learndsandalgorithm.data.repository.MockProgressRepository
@@ -121,6 +120,23 @@ class HomeViewModel(
                     }
                 }
 
+                // Recommended Practice Selection
+                val targetTopic = availableTopics.firstOrNull { topic ->
+                    val topicLessons = contentRepository.getLessonsByTopic(topic.id)
+                    topicLessons.any { it.id !in completedIds }
+                } ?: availableTopics.firstOrNull()
+
+                val activeRecommendedInfo = if (targetTopic != null) {
+                    val quizQuestions = contentRepository.getQuestionsByTopic(targetTopic.id)
+                    val qCount = quizQuestions.size
+                    RecommendedPracticeInfo(
+                        topicId = targetTopic.id,
+                        topicTitle = "${targetTopic.title} Quiz",
+                        questionCount = qCount,
+                        description = "$qCount questions to reinforce your ${targetTopic.title.lowercase()} skills."
+                    )
+                } else null
+
                 // Recent Topics Progress (topics with at least 1 completed lesson)
                 val recentTopicsMap = mutableMapOf<String, Int>()
                 for (topic in availableTopics) {
@@ -159,7 +175,7 @@ class HomeViewModel(
                         algoProgressPercent = algoPercent,
                         recentTopicsProgress = recentTopicsMap,
                         activities = mockActivities,
-                        recommendedChallenge = mockRecommendedPractice,
+                        recommendedPractice = activeRecommendedInfo,
                         isLoading = false
                     )
                 }

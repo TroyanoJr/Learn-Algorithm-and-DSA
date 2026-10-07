@@ -1,7 +1,6 @@
 package com.example.learndsandalgorithm.presentation.home
 
 import com.example.learndsandalgorithm.domain.model.Activity
-import com.example.learndsandalgorithm.domain.model.Challenge
 import com.example.learndsandalgorithm.domain.model.Progress
 import com.example.learndsandalgorithm.domain.model.Topic
 import com.example.learndsandalgorithm.domain.model.UserStats
@@ -18,6 +17,13 @@ data class ContinueLearningInfo(
     val isAllComplete: Boolean = false
 )
 
+data class RecommendedPracticeInfo(
+    val topicId: String,
+    val topicTitle: String,
+    val questionCount: Int,
+    val description: String
+)
+
 data class HomeUiState(
     val userStats: UserStats = UserStats(),
     val progress: Progress = Progress(),
@@ -31,6 +37,6 @@ data class HomeUiState(
     val algoProgressPercent: Int = 0,
     val recentTopicsProgress: Map<String, Int> = emptyMap(),
     val activities: List<Activity> = emptyList(),
-    val recommendedChallenge: Challenge? = null,
+    val recommendedPractice: RecommendedPracticeInfo? = null,
     val isLoading: Boolean = false
 )

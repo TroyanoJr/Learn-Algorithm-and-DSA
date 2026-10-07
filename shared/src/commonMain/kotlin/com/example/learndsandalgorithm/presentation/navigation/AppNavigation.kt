@@ -108,6 +108,9 @@ fun AppNavigation(
                             viewModel = homeViewModel,
                             onLessonClick = { lessonId ->
                                 selectedLessonId = lessonId
+                            },
+                            onOpenTopicQuiz = {
+                                isTopicQuizActive = true
                             }
                         )
                         AppDestination.LEARN -> LearnScreen(

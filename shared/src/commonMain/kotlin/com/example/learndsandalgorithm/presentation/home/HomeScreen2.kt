@@ -21,7 +21,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.learndsandalgorithm.domain.model.Challenge
 import com.example.learndsandalgorithm.domain.model.Topic
 import com.example.learndsandalgorithm.domain.model.TopicCategory
 import com.example.learndsandalgorithm.domain.model.UserStats
@@ -38,7 +37,8 @@ private val TextSecondary = Color(0xFF9CA3AF)
 @Composable
 fun HomeScreen(
     viewModel: HomeViewModel,
-    onLessonClick: (lessonId: String) -> Unit = {}
+    onLessonClick: (lessonId: String) -> Unit = {},
+    onOpenTopicQuiz: () -> Unit = {}
 ) {
     val uiState by viewModel.uiState.collectAsState()
 
@@ -57,6 +57,7 @@ fun HomeScreen(
         HomeScreenContent(
             uiState = uiState,
             onLessonClick = onLessonClick,
+            onOpenTopicQuiz = onOpenTopicQuiz,
             innerPadding = PaddingValues(0.dp)
         )
     }
@@ -66,6 +67,7 @@ fun HomeScreen(
 fun HomeScreenContent(
     uiState: HomeUiState,
     onLessonClick: (lessonId: String) -> Unit,
+    onOpenTopicQuiz: () -> Unit,
     innerPadding: PaddingValues
 ) {
     Column(
@@ -88,7 +90,12 @@ fun HomeScreenContent(
         if (uiState.recentTopicsProgress.isNotEmpty()) {
             RecentTopicsSection(uiState)
         }
-        RecommendedPracticeSection(uiState.recommendedChallenge)
+        if (uiState.recommendedPractice != null) {
+            RecommendedPracticeSection(
+                info = uiState.recommendedPractice,
+                onOpenTopicQuiz = onOpenTopicQuiz
+            )
+        }
     }
 }
 
@@ -425,14 +432,15 @@ fun TopicCardItem(topic: Topic, progressPercent: Int) {
 }
 
 @Composable
-fun RecommendedPracticeSection(challenge: Challenge?) {
-    val title = challenge?.title ?: "Arrays & complexity"
-    val desc = challenge?.description ?: "5 questions to reinforce your latest lesson."
-
+fun RecommendedPracticeSection(
+    info: RecommendedPracticeInfo,
+    onOpenTopicQuiz: () -> Unit
+) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .border(BorderStroke(1.dp, HighlightedCardBorderColor), RoundedCornerShape(20.dp)),
+            .border(BorderStroke(1.dp, HighlightedCardBorderColor), RoundedCornerShape(20.dp))
+            .clickable { onOpenTopicQuiz() },
         colors = CardDefaults.cardColors(containerColor = DarkCardBgColor),
         shape = RoundedCornerShape(20.dp)
     ) {
@@ -453,14 +461,14 @@ fun RecommendedPracticeSection(challenge: Challenge?) {
                 )
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
-                    text = title,
+                    text = info.topicTitle,
                     color = TextPrimary,
                     fontSize = 18.sp,
                     fontWeight = FontWeight.Bold
                 )
                 Spacer(modifier = Modifier.height(6.dp))
                 Text(
-                    text = desc,
+                    text = info.description,
                     color = TextSecondary,
                     fontSize = 13.sp
                 )
