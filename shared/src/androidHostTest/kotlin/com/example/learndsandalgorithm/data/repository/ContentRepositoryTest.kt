@@ -206,10 +206,10 @@ class ContentRepositoryTest {
         assertEquals("q_lesson_arrays_2", q2.id)
         assertEquals("arrays", q2.topicId)
         assertEquals("lesson_arrays_2", q2.lessonId)
-        assertEquals("What is the index of the first element in a typical array?", q2.statement)
-        assertEquals(listOf("0", "1", "-1", "2"), q2.options)
+        assertEquals("Why does inserting or deleting an element at an arbitrary index in an array have an O(n) worst-case time complexity?", q2.statement)
+        assertEquals(listOf("Remaining elements must be shifted in memory to maintain contiguous order", "The entire array must be converted to a linked list first", "Arrays automatically double their size on every insertion", "Memory pointers must be re-sorted after every deletion"), q2.options)
         assertEquals(0, q2.correctOptionIndex)
-        assertEquals("Arrays use zero-based indexing, so the first element is always stored at index 0.", q2.explanation)
+        assertEquals("Inserting or deleting an element requires shifting the surrounding elements in memory to maintain contiguous allocation, taking O(n) time in the worst case.", q2.explanation)
 
         val q3 = repository.getQuestionsByLessonId("lesson_arrays_3").first()
         assertEquals("q_lesson_arrays_3", q3.id)
