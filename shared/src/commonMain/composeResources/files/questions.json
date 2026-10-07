@@ -42,6 +42,76 @@
     "difficulty": "MEDIUM"
   },
   {
+    "id": "q_arrays_4",
+    "topicId": "arrays",
+    "statement": "What is the maximum number of elements an array of fixed size N can hold?",
+    "options": [
+      "N - 1",
+      "N",
+      "N + 1",
+      "Unlimited"
+    ],
+    "correctOptionIndex": 1,
+    "explanation": "A fixed-size array of length N is allocated with exactly N memory slots.",
+    "difficulty": "EASY"
+  },
+  {
+    "id": "q_arrays_5",
+    "topicId": "arrays",
+    "statement": "In zero-based indexing, what is the index of the last element in an array of size N?",
+    "options": [
+      "N",
+      "N + 1",
+      "N - 1",
+      "0"
+    ],
+    "correctOptionIndex": 2,
+    "explanation": "Since indexing starts at 0, the Nth element is located at index N - 1.",
+    "difficulty": "EASY"
+  },
+  {
+    "id": "q_arrays_6",
+    "topicId": "arrays",
+    "statement": "Why does deleting an element from the middle of an array take O(n) time in the worst case?",
+    "options": [
+      "All elements after the deleted position must shift left",
+      "The array memory address is re-allocated",
+      "The array must be sorted after deletion",
+      "It requires converting elements to pointers"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "Deleting an element leaves a gap; all subsequent elements must shift left by one position to maintain contiguous storage.",
+    "difficulty": "MEDIUM"
+  },
+  {
+    "id": "q_arrays_7",
+    "topicId": "arrays",
+    "statement": "What is the worst-case time complexity of traversing every element in a 1D array of size N?",
+    "options": [
+      "O(1)",
+      "O(log N)",
+      "O(N²)",
+      "O(N)"
+    ],
+    "correctOptionIndex": 3,
+    "explanation": "Traversing requires visiting each of the N elements exactly once, taking linear O(N) time.",
+    "difficulty": "EASY"
+  },
+  {
+    "id": "q_arrays_8",
+    "topicId": "arrays",
+    "statement": "Which array operation has O(1) time complexity when operating at the end of a dynamic array with available capacity?",
+    "options": [
+      "Prepending an element at index 0",
+      "Appending an element at the last position",
+      "Inserting an element at index N / 2",
+      "Searching for an unindexed value"
+    ],
+    "correctOptionIndex": 1,
+    "explanation": "Appending at the end does not require shifting any existing elements, taking constant O(1) time when capacity is available.",
+    "difficulty": "HARD"
+  },
+  {
     "id": "q_linear_search_1",
     "topicId": "linear_search",
     "statement": "What is the worst-case time complexity of Linear Search on an unsorted array of size n?",
@@ -82,6 +152,188 @@
     "correctOptionIndex": 0,
     "explanation": "The best case occurs when the target element is at the very first index (index 0), taking O(1) time.",
     "difficulty": "MEDIUM"
+  },
+  {
+    "id": "q_linear_search_4",
+    "topicId": "linear_search",
+    "statement": "How many comparisons will Linear Search make if the target element is NOT present in an array of N items?",
+    "options": [
+      "0 comparisons",
+      "N comparisons",
+      "N / 2 comparisons",
+      "log2(N) comparisons"
+    ],
+    "correctOptionIndex": 1,
+    "explanation": "If the target is missing, Linear Search must check every single one of the N items before concluding it is absent.",
+    "difficulty": "EASY"
+  },
+  {
+    "id": "q_linear_search_5",
+    "topicId": "linear_search",
+    "statement": "What is the average-case time complexity of Linear Search on an unsorted array?",
+    "options": [
+      "O(1)",
+      "O(log N)",
+      "O(N)",
+      "O(N²)"
+    ],
+    "correctOptionIndex": 2,
+    "explanation": "On average, Linear Search inspects roughly N / 2 elements, which simplifies to O(N) linear time in asymptotic analysis.",
+    "difficulty": "MEDIUM"
+  },
+  {
+    "id": "q_linear_search_6",
+    "topicId": "linear_search",
+    "statement": "Which scenario represents the BEST-case for Linear Search?",
+    "options": [
+      "The target item is located at index 0",
+      "The target item is located at index N - 1",
+      "The array is pre-sorted in ascending order",
+      "The target item is not in the array"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "When the target is at index 0, Linear Search finds it on the very first comparison in O(1) time.",
+    "difficulty": "EASY"
+  },
+  {
+    "id": "q_linear_search_7",
+    "topicId": "linear_search",
+    "statement": "What does Linear Search do when inspecting elements in an array?",
+    "options": [
+      "It checks each element sequentially from index 0 until a match is found or the end is reached",
+      "It jumps directly to the midpoint of the array",
+      "It compares elements using a binary decision tree",
+      "It sorts the array in place before comparing values"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "Linear Search inspects elements one by one in sequential order, starting from index 0 until the target is located or the array ends.",
+    "difficulty": "EASY"
+  },
+  {
+    "id": "q_linear_search_8",
+    "topicId": "linear_search",
+    "statement": "If the target item is located at index 4 of an array, how many comparisons will a standard Linear Search make to find it?",
+    "options": [
+      "1 comparison",
+      "4 comparisons",
+      "5 comparisons",
+      "10 comparisons"
+    ],
+    "correctOptionIndex": 2,
+    "explanation": "Linear Search inspects indices 0, 1, 2, 3, and 4 in order, making a total of 5 comparisons to locate the target.",
+    "difficulty": "MEDIUM"
+  },
+  {
+    "id": "q_sorting_quiz_1",
+    "topicId": "sorting",
+    "statement": "What is the primary objective of a sorting algorithm?",
+    "options": [
+      "To arrange elements in a specific order such as ascending or descending",
+      "To compress the memory footprint of an array",
+      "To remove all duplicate values from a dataset",
+      "To convert numerical values into text strings"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "Sorting reorganizes data into a defined order (ascending or descending), making lookup operations like Binary Search possible.",
+    "difficulty": "EASY"
+  },
+  {
+    "id": "q_sorting_quiz_2",
+    "topicId": "sorting",
+    "statement": "Which elementary sorting algorithm repeatedly compares and swaps adjacent elements if they are in the wrong order?",
+    "options": [
+      "Selection Sort",
+      "Bubble Sort",
+      "Quick Sort",
+      "Heap Sort"
+    ],
+    "correctOptionIndex": 1,
+    "explanation": "Bubble Sort compares adjacent pairs (index i and i + 1) and swaps them if out of order, causing larger items to bubble to the end.",
+    "difficulty": "EASY"
+  },
+  {
+    "id": "q_sorting_quiz_3",
+    "topicId": "sorting",
+    "statement": "What is the time complexity of Selection Sort in the best, average, and worst cases?",
+    "options": [
+      "O(N) best, O(N²) worst",
+      "O(N log N) in all cases",
+      "O(N²) in all cases",
+      "O(1) best, O(N) worst"
+    ],
+    "correctOptionIndex": 2,
+    "explanation": "Selection Sort always scans the remaining unsorted subarray to find the minimum element in every pass, requiring O(N²) comparisons regardless of initial order.",
+    "difficulty": "MEDIUM"
+  },
+  {
+    "id": "q_sorting_quiz_4",
+    "topicId": "sorting",
+    "statement": "How does Insertion Sort build the sorted array?",
+    "options": [
+      "By finding the overall minimum and swapping it to index 0",
+      "By taking one element at a time and inserting it into its correct position in the sorted region",
+      "By dividing the array into two halves recursively",
+      "By selecting random pivot elements"
+    ],
+    "correctOptionIndex": 1,
+    "explanation": "Insertion Sort maintains a sorted subarray on the left, shifting larger elements right to insert the current key into its proper position.",
+    "difficulty": "EASY"
+  },
+  {
+    "id": "q_sorting_quiz_5",
+    "topicId": "sorting",
+    "statement": "After the first complete pass of Bubble Sort on an unsorted array, where is the largest element guaranteed to be located?",
+    "options": [
+      "At index 0",
+      "At the last index of the array",
+      "At the exact midpoint of the array",
+      "It remains in its original starting position"
+    ],
+    "correctOptionIndex": 1,
+    "explanation": "In each pass of Bubble Sort, adjacent swaps cause the largest unsorted element to 'bubble up' to its final position at the end of the array.",
+    "difficulty": "EASY"
+  },
+  {
+    "id": "q_sorting_quiz_6",
+    "topicId": "sorting",
+    "statement": "What is the worst-case time complexity of Bubble Sort on an array of N elements in reverse order?",
+    "options": [
+      "O(1)",
+      "O(N)",
+      "O(N²)",
+      "O(N log N)"
+    ],
+    "correctOptionIndex": 2,
+    "explanation": "When the array is in reverse order, Bubble Sort must make N - 1 passes with maximum swaps, resulting in O(N²) quadratic time complexity.",
+    "difficulty": "MEDIUM"
+  },
+  {
+    "id": "q_sorting_quiz_7",
+    "topicId": "sorting",
+    "statement": "What does it mean for a sorting algorithm to be 'adaptive'?",
+    "options": [
+      "It changes its memory size dynamically at runtime",
+      "Its running time improves when given an input array that is already partially sorted",
+      "It converts between ascending and descending order automatically",
+      "It uses secondary storage when RAM is full"
+    ],
+    "correctOptionIndex": 1,
+    "explanation": "An adaptive algorithm like Insertion Sort takes advantage of existing order in the input, reducing comparisons/shifts to run near O(N) time.",
+    "difficulty": "HARD"
+  },
+  {
+    "id": "q_sorting_quiz_8",
+    "topicId": "sorting",
+    "statement": "What is an 'in-place' sorting algorithm?",
+    "options": [
+      "An algorithm that requires O(N²) auxiliary array space",
+      "An algorithm that sorts the elements within the original array requiring O(1) extra space",
+      "An algorithm that only works on pre-allocated linked lists",
+      "An algorithm that preserves duplicate key index positions"
+    ],
+    "correctOptionIndex": 1,
+    "explanation": "In-place sorting algorithms modify the input array directly without requiring significant additional memory allocations.",
+    "difficulty": "HARD"
   },
   {
     "id": "q_lesson_arrays_1",

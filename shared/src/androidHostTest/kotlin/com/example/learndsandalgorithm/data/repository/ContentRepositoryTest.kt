@@ -61,8 +61,9 @@ class ContentRepositoryTest {
     fun testLoadAllQuestions() = runBlocking {
         val arraysQuizQuestions = repository.getQuestionsByTopic("arrays")
         val searchQuizQuestions = repository.getQuestionsByTopic("linear_search")
-        val quizTotal = arraysQuizQuestions.size + searchQuizQuestions.size
-        assertEquals(6, quizTotal, "Topic quiz should return exactly 6 questions with lessonId == null")
+        val sortingQuizQuestions = repository.getQuestionsByTopic("sorting")
+        val quizTotal = arraysQuizQuestions.size + searchQuizQuestions.size + sortingQuizQuestions.size
+        assertEquals(24, quizTotal, "Topic quiz should return exactly 24 questions with lessonId == null")
 
         var lessonQuestionsTotal = 0
         allLessonIds.forEach { lessonId ->
@@ -70,7 +71,7 @@ class ContentRepositoryTest {
             lessonQuestionsTotal += lessonQs.size
         }
         assertEquals(14, lessonQuestionsTotal, "Should load 14 lesson-specific questions")
-        assertEquals(20, quizTotal + lessonQuestionsTotal, "Total questions across quizzes and lessons must be 20")
+        assertEquals(38, quizTotal + lessonQuestionsTotal, "Total questions across quizzes and lessons must be 38")
     }
 
     @Test
@@ -79,9 +80,9 @@ class ContentRepositoryTest {
         val lessonQuestions = allLessonIds.flatMap { repository.getQuestionsByLessonId(it) }
         val allQuestions = quizQuestions + lessonQuestions
 
-        assertEquals(20, allQuestions.size, "Total collected questions must be 20")
+        assertEquals(38, allQuestions.size, "Total collected questions must be 38")
         val uniqueIds = allQuestions.map { it.id }.toSet()
-        assertEquals(20, uniqueIds.size, "All 20 question IDs must be unique")
+        assertEquals(38, uniqueIds.size, "All 38 question IDs must be unique")
     }
 
     @Test
@@ -115,12 +116,12 @@ class ContentRepositoryTest {
         val searchQuiz = repository.getQuestionsByTopic("linear_search")
         val sortingQuiz = repository.getQuestionsByTopic("sorting")
 
-        assertEquals(3, arraysQuiz.size, "Arrays topic quiz must have 3 questions")
-        assertEquals(3, searchQuiz.size, "Searching topic quiz must have 3 questions")
-        assertEquals(0, sortingQuiz.size, "Sorting topic quiz must have 0 questions")
+        assertEquals(8, arraysQuiz.size, "Arrays topic quiz must have 8 questions")
+        assertEquals(8, searchQuiz.size, "Searching topic quiz must have 8 questions")
+        assertEquals(8, sortingQuiz.size, "Sorting topic quiz must have 8 questions")
 
         val allQuizQuestions = arraysQuiz + searchQuiz + sortingQuiz
-        assertEquals(6, allQuizQuestions.size, "Total topic quiz questions must be 6")
+        assertEquals(24, allQuizQuestions.size, "Total topic quiz questions must be 24")
         assertTrue(allQuizQuestions.all { it.lessonId == null }, "All topic quiz questions must have lessonId == null")
     }
 
@@ -302,7 +303,7 @@ class ContentRepositoryTest {
 
         val q13 = repository.getQuestionsByLessonId("sorting_4").first()
         assertEquals("q_sorting_4", q13.id)
-        assertEquals("sorting", q10.topicId)
+        assertEquals("sorting", q13.topicId)
         assertEquals("sorting_4", q13.lessonId)
         assertEquals("How does Insertion Sort perform when given an array that is already almost completely sorted?", q13.statement)
         assertEquals(listOf("It runs efficiently in near O(n) time with very few element shifts", "It takes O(n²) time regardless of initial order", "It throws an index out of bounds error", "It requires O(n log n) additional memory"), q13.options)
