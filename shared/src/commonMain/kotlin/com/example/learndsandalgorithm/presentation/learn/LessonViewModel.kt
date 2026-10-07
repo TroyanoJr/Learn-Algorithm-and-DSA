@@ -43,14 +43,26 @@ class LessonViewModel(
                 val markdownContent = contentRepository.getLessonContent(lesson)
                 val topicLessons = contentRepository.getLessonsByTopic(lesson.topicId)
                 val nextLesson = topicLessons.firstOrNull { it.order > lesson.order }
-                val questions = contentRepository.getQuestionsByLessonId(lesson.id)
+                val rawQuestions = contentRepository.getQuestionsByLessonId(lesson.id)
                 val isCompleted = lesson.id in progressRepository.getCompletedLessonIds()
+
+                // Shuffle options once in memory and remap correctOptionIndex
+                val shuffledQuestions = rawQuestions.map { q ->
+                    val indexedOptions = q.options.mapIndexed { index, text -> index to text }
+                    val shuffled = indexedOptions.shuffled()
+                    val newCorrectIndex = shuffled.indexOfFirst { it.first == q.correctOptionIndex }
+
+                    q.copy(
+                        options = shuffled.map { it.second },
+                        correctOptionIndex = if (newCorrectIndex != -1) newCorrectIndex else q.correctOptionIndex
+                    )
+                }
 
                 _uiState.value = LessonUiState.Success(
                     lesson = lesson,
                     markdownContent = markdownContent,
                     nextLessonId = nextLesson?.id,
-                    questions = questions,
+                    questions = shuffledQuestions,
                     isCompleted = isCompleted
                 )
             } catch (e: Exception) {
