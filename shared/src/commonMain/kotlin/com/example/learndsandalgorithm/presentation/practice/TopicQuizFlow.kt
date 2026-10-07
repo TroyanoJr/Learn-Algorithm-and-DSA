@@ -110,6 +110,7 @@ private fun getTopicVisuals(topicId: String): TopicVisuals = when (topicId) {
 @Composable
 fun TopicQuizFlow(
     contentRepository: ContentRepository,
+    initialTopicId: String? = null,
     onBackToPractice: () -> Unit
 ) {
     var topics by remember { mutableStateOf<List<QuizTopicState>>(emptyList()) }
@@ -124,7 +125,7 @@ fun TopicQuizFlow(
     var correctCount by remember { mutableStateOf(0) }
     var incorrectCount by remember { mutableStateOf(0) }
 
-    LaunchedEffect(Unit) {
+    LaunchedEffect(initialTopicId) {
         isLoading = true
         val allTopics = contentRepository.getTopics()
         val loadedTopics = mutableListOf<QuizTopicState>()
@@ -155,7 +156,21 @@ fun TopicQuizFlow(
 
         topics = loadedTopics
         if (loadedTopics.isNotEmpty()) {
-            selectedTopicId = loadedTopics.first().id
+            val initialTarget = if (initialTopicId != null) {
+                loadedTopics.find { it.id == initialTopicId } ?: loadedTopics.first()
+            } else {
+                loadedTopics.first()
+            }
+            selectedTopicId = initialTarget.id
+
+            if (initialTopicId != null) {
+                activeTopic = initialTarget
+                currentQuestionIndex = 0
+                selectedOptionIndex = null
+                correctCount = 0
+                incorrectCount = 0
+                flowState = QuizFlowState.QUESTION
+            }
         }
         isLoading = false
     }

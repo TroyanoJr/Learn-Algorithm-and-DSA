@@ -51,6 +51,7 @@ fun AppNavigation(
     var selectedTopicId by remember { mutableStateOf<String?>(null) }
     var selectedTopicTitle by remember { mutableStateOf<String>("") }
     var selectedLessonId by remember { mutableStateOf<String?>(null) }
+    var selectedQuizTopicId by remember { mutableStateOf<String?>(null) }
     var isTopicQuizActive by remember { mutableStateOf(false) }
 
     Scaffold(
@@ -102,6 +103,16 @@ fun AppNavigation(
                         onBack = { selectedTopicId = null }
                     )
                 }
+                isTopicQuizActive -> {
+                    TopicQuizFlow(
+                        contentRepository = contentRepository,
+                        initialTopicId = selectedQuizTopicId,
+                        onBackToPractice = {
+                            isTopicQuizActive = false
+                            selectedQuizTopicId = null
+                        }
+                    )
+                }
                 else -> {
                     when (currentDestination) {
                         AppDestination.HOME -> HomeScreen(
@@ -109,7 +120,8 @@ fun AppNavigation(
                             onLessonClick = { lessonId ->
                                 selectedLessonId = lessonId
                             },
-                            onOpenTopicQuiz = {
+                            onOpenTopicQuiz = { topicId ->
+                                selectedQuizTopicId = topicId
                                 isTopicQuizActive = true
                             }
                         )
@@ -122,18 +134,9 @@ fun AppNavigation(
                                 selectedTopicTitle = topicTitle
                             }
                         )
-                        AppDestination.PRACTICE -> {
-                            if (isTopicQuizActive) {
-                                TopicQuizFlow(
-                                    contentRepository = contentRepository,
-                                    onBackToPractice = { isTopicQuizActive = false }
-                                )
-                            } else {
-                                PracticeScreen(
-                                    onOpenTopicQuiz = { isTopicQuizActive = true }
-                                )
-                            }
-                        }
+                        AppDestination.PRACTICE -> PracticeScreen(
+                            onOpenTopicQuiz = { isTopicQuizActive = true }
+                        )
                     }
                 }
             }

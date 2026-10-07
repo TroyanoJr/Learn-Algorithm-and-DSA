@@ -38,7 +38,7 @@ private val TextSecondary = Color(0xFF9CA3AF)
 fun HomeScreen(
     viewModel: HomeViewModel,
     onLessonClick: (lessonId: String) -> Unit = {},
-    onOpenTopicQuiz: () -> Unit = {}
+    onOpenTopicQuiz: (topicId: String) -> Unit = {}
 ) {
     val uiState by viewModel.uiState.collectAsState()
 
@@ -67,7 +67,7 @@ fun HomeScreen(
 fun HomeScreenContent(
     uiState: HomeUiState,
     onLessonClick: (lessonId: String) -> Unit,
-    onOpenTopicQuiz: () -> Unit,
+    onOpenTopicQuiz: (topicId: String) -> Unit,
     innerPadding: PaddingValues
 ) {
     Column(
@@ -434,13 +434,13 @@ fun TopicCardItem(topic: Topic, progressPercent: Int) {
 @Composable
 fun RecommendedPracticeSection(
     info: RecommendedPracticeInfo,
-    onOpenTopicQuiz: () -> Unit
+    onOpenTopicQuiz: (topicId: String) -> Unit
 ) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
             .border(BorderStroke(1.dp, HighlightedCardBorderColor), RoundedCornerShape(20.dp))
-            .clickable { onOpenTopicQuiz() },
+            .clickable { onOpenTopicQuiz(info.topicId) },
         colors = CardDefaults.cardColors(containerColor = DarkCardBgColor),
         shape = RoundedCornerShape(20.dp)
     ) {
