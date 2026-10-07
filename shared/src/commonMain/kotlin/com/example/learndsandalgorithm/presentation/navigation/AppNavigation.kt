@@ -111,6 +111,9 @@ fun AppNavigation(
                             }
                         )
                         AppDestination.LEARN -> LearnScreen(
+                            contentRepository = contentRepository,
+                            progressRepository = progressRepository,
+                            selectedTopicId = selectedTopicId,
                             onTopicClick = { topicId, topicTitle ->
                                 selectedTopicId = topicId
                                 selectedTopicTitle = topicTitle

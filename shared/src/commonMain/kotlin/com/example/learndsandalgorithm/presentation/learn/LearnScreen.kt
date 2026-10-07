@@ -19,9 +19,11 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -34,6 +36,12 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.learndsandalgorithm.data.repository.ProgressRepository
+import com.example.learndsandalgorithm.domain.model.Lesson
+import com.example.learndsandalgorithm.domain.model.Topic
+import com.example.learndsandalgorithm.domain.model.TopicCategory
+import com.example.learndsandalgorithm.domain.model.TopicLevel
+import com.example.learndsandalgorithm.domain.repository.ContentRepository
 
 private val DarkBgColor = Color(0xFF111115)
 private val DarkCardBgColor = Color(0xFF181820)
@@ -47,10 +55,6 @@ private val TextSecondary = Color(0xFF9CA3AF)
 
 private enum class TopicStatus {
     COMPLETED, IN_PROGRESS, NOT_STARTED
-}
-
-private enum class TopicLevel {
-    FOUNDATION, INTERMEDIATE, ADVANCED
 }
 
 private data class LearnTopicItem(
@@ -74,199 +78,127 @@ private data class CourseCategory(
     val topics: List<LearnTopicItem>
 )
 
+private data class LearnOverviewData(
+    val totalCompletedTopics: Int,
+    val totalAvailableTopics: Int,
+    val totalAvailableLessons: Int,
+    val totalCompletedLessons: Int,
+    val overallPercent: Int
+)
+
 @Composable
 fun LearnScreen(
+    contentRepository: ContentRepository,
+    progressRepository: ProgressRepository,
+    selectedTopicId: String? = null,
     onTopicClick: (topicId: String, topicTitle: String) -> Unit = { _, _ -> }
 ) {
     var expandedCategoryId by remember { mutableStateOf<String?>("data_structures") }
+    var categories by remember { mutableStateOf<List<CourseCategory>>(emptyList()) }
+    var overviewData by remember { mutableStateOf(LearnOverviewData(0, 0, 0, 0, 0)) }
+    var isLoading by remember { mutableStateOf(true) }
 
-    val categories = remember {
-        listOf(
-            CourseCategory(
-                id = "data_structures",
-                title = "DATA STRUCTURES",
-                topicsCountText = "10 topics",
-                percentageProgressText = "20%",
-                progressFloat = 0.20f,
-                completedText = "1 in progress",
-                inProgressText = "9 not started",
-                progressColor = OrangeAccent,
-                topics = listOf(
-                    LearnTopicItem(
-                        topicId = "introduction_ds",
-                        title = "Introduction",
-                        level = TopicLevel.FOUNDATION,
-                        lessonProgressText = "3 lessons",
-                        status = TopicStatus.NOT_STARTED,
-                        isLocked = true
-                    ),
-                    LearnTopicItem(
-                        topicId = "arrays",
-                        title = "Arrays",
-                        level = TopicLevel.FOUNDATION,
-                        lessonProgressText = "5 lessons complete",
-                        status = TopicStatus.IN_PROGRESS,
-                        isLocked = false
-                    ),
-                    LearnTopicItem(
-                        topicId = "structures",
-                        title = "Structures",
-                        level = TopicLevel.FOUNDATION,
-                        lessonProgressText = "4 lessons",
-                        status = TopicStatus.NOT_STARTED,
-                        isLocked = true
-                    ),
-                    LearnTopicItem(
-                        topicId = "linked_list",
-                        title = "Linked List",
-                        level = TopicLevel.FOUNDATION,
-                        lessonProgressText = "7 lessons",
-                        status = TopicStatus.NOT_STARTED,
-                        isLocked = true
-                    ),
-                    LearnTopicItem(
-                        topicId = "stack",
-                        title = "Stack",
-                        level = TopicLevel.FOUNDATION,
-                        lessonProgressText = "5 lessons",
-                        status = TopicStatus.NOT_STARTED,
-                        isLocked = true
-                    ),
-                    LearnTopicItem(
-                        topicId = "queues",
-                        title = "Queues",
-                        level = TopicLevel.FOUNDATION,
-                        lessonProgressText = "5 lessons",
-                        status = TopicStatus.NOT_STARTED,
-                        isLocked = true
-                    ),
-                    LearnTopicItem(
-                        topicId = "hash_tables",
-                        title = "Hash Tables",
-                        level = TopicLevel.INTERMEDIATE,
-                        lessonProgressText = "6 lessons",
-                        status = TopicStatus.NOT_STARTED,
-                        isLocked = true
-                    ),
-                    LearnTopicItem(
-                        topicId = "trees",
-                        title = "Trees",
-                        level = TopicLevel.INTERMEDIATE,
-                        lessonProgressText = "8 lessons",
-                        status = TopicStatus.NOT_STARTED,
-                        isLocked = true
-                    ),
-                    LearnTopicItem(
-                        topicId = "heap",
-                        title = "Heap",
-                        level = TopicLevel.INTERMEDIATE,
-                        lessonProgressText = "5 lessons",
-                        status = TopicStatus.NOT_STARTED,
-                        isLocked = true
-                    ),
-                    LearnTopicItem(
-                        topicId = "graphs",
-                        title = "Graphs",
-                        level = TopicLevel.ADVANCED,
-                        lessonProgressText = "8 lessons",
-                        status = TopicStatus.NOT_STARTED,
-                        isLocked = true
-                    )
-                )
-            ),
-            CourseCategory(
-                id = "algorithms",
-                title = "ALGORITHMS",
-                topicsCountText = "10 topics",
-                percentageProgressText = "10%",
-                progressFloat = 0.10f,
-                completedText = "1 completed",
-                inProgressText = "9 not started",
-                progressColor = PurpleAccent,
-                topics = listOf(
-                    LearnTopicItem(
-                        topicId = "introduction_algo",
-                        title = "Introduction",
-                        level = TopicLevel.FOUNDATION,
-                        lessonProgressText = "3 lessons",
-                        status = TopicStatus.NOT_STARTED,
-                        isLocked = true
-                    ),
-                    LearnTopicItem(
-                        topicId = "linear_search",
-                        title = "Searching",
-                        level = TopicLevel.FOUNDATION,
-                        lessonProgressText = "3 lessons",
-                        status = TopicStatus.COMPLETED,
-                        isLocked = false
-                    ),
-                    LearnTopicItem(
-                        topicId = "sorting",
-                        title = "Sorting",
-                        level = TopicLevel.FOUNDATION,
-                        lessonProgressText = "3 lessons",
-                        status = TopicStatus.IN_PROGRESS,
-                        isLocked = false
-                    ),
-                    LearnTopicItem(
-                        topicId = "brute_force",
-                        title = "Brute Force",
-                        level = TopicLevel.FOUNDATION,
-                        lessonProgressText = "4 lessons",
-                        status = TopicStatus.NOT_STARTED,
-                        isLocked = true
-                    ),
-                    LearnTopicItem(
-                        topicId = "iteration_recursion",
-                        title = "Iteration & Recursion",
-                        level = TopicLevel.INTERMEDIATE,
-                        lessonProgressText = "5 lessons",
-                        status = TopicStatus.NOT_STARTED,
-                        isLocked = true
-                    ),
-                    LearnTopicItem(
-                        topicId = "divide_conquer",
-                        title = "Divide and Conquer",
-                        level = TopicLevel.INTERMEDIATE,
-                        lessonProgressText = "6 lessons",
-                        status = TopicStatus.NOT_STARTED,
-                        isLocked = true
-                    ),
-                    LearnTopicItem(
-                        topicId = "greedy",
-                        title = "Greedy",
-                        level = TopicLevel.INTERMEDIATE,
-                        lessonProgressText = "5 lessons",
-                        status = TopicStatus.NOT_STARTED,
-                        isLocked = true
-                    ),
-                    LearnTopicItem(
-                        topicId = "backtracking",
-                        title = "Backtracking",
-                        level = TopicLevel.ADVANCED,
-                        lessonProgressText = "6 lessons",
-                        status = TopicStatus.NOT_STARTED,
-                        isLocked = true
-                    ),
-                    LearnTopicItem(
-                        topicId = "dynamic_programming",
-                        title = "Dynamic Programming",
-                        level = TopicLevel.ADVANCED,
-                        lessonProgressText = "8 lessons",
-                        status = TopicStatus.NOT_STARTED,
-                        isLocked = true
-                    ),
-                    LearnTopicItem(
-                        topicId = "branch_bound",
-                        title = "Branch and Bound",
-                        level = TopicLevel.ADVANCED,
-                        lessonProgressText = "5 lessons",
-                        status = TopicStatus.NOT_STARTED,
-                        isLocked = true
-                    )
-                )
+    LaunchedEffect(selectedTopicId) {
+        isLoading = true
+        val completedIds = progressRepository.getCompletedLessonIds()
+        val allTopics = contentRepository.getTopics()
+
+        val topicLessonsMap = mutableMapOf<String, List<Lesson>>()
+        allTopics.forEach { topic ->
+            topicLessonsMap[topic.id] = contentRepository.getLessonsByTopic(topic.id)
+        }
+
+        fun mapToTopicItem(topic: Topic): LearnTopicItem {
+            val lessons = topicLessonsMap[topic.id] ?: emptyList()
+            val isLocked = lessons.isEmpty()
+            val total = lessons.size
+            val completed = lessons.count { it.id in completedIds }
+
+            val status = when {
+                isLocked || total == 0 -> TopicStatus.NOT_STARTED
+                completed == total -> TopicStatus.COMPLETED
+                completed > 0 -> TopicStatus.IN_PROGRESS
+                else -> TopicStatus.NOT_STARTED
+            }
+
+            val progressText = when {
+                isLocked -> getEstimatedLessonsText(topic.id)
+                completed == total -> "All $total lessons complete"
+                completed > 0 -> "$completed of $total lessons complete"
+                else -> "$total lessons"
+            }
+
+            return LearnTopicItem(
+                topicId = topic.id,
+                title = topic.title,
+                level = topic.level,
+                lessonProgressText = progressText,
+                status = status,
+                isLocked = isLocked
             )
+        }
+
+        fun buildCategory(
+            categoryId: String,
+            title: String,
+            categoryEnum: TopicCategory,
+            progressColor: Color
+        ): CourseCategory {
+            val categoryTopics = allTopics.filter { it.category == categoryEnum }
+            val topicItems = categoryTopics.map { mapToTopicItem(it) }
+
+            val implementedTopics = categoryTopics.filter { (topicLessonsMap[it.id]?.size ?: 0) > 0 }
+            val categoryAvailableLessons = implementedTopics.flatMap { topicLessonsMap[it.id] ?: emptyList() }
+            val categoryTotalLessons = categoryAvailableLessons.size
+            val categoryCompletedLessons = categoryAvailableLessons.count { it.id in completedIds }
+
+            val progressFloat = if (categoryTotalLessons > 0) categoryCompletedLessons.toFloat() / categoryTotalLessons else 0f
+            val percentInt = (progressFloat * 100).toInt().coerceIn(0, 100)
+
+            val completedTopicsCount = implementedTopics.count { topic ->
+                val lessons = topicLessonsMap[topic.id] ?: emptyList()
+                lessons.isNotEmpty() && lessons.all { it.id in completedIds }
+            }
+            val inProgressTopicsCount = implementedTopics.count { topic ->
+                val lessons = topicLessonsMap[topic.id] ?: emptyList()
+                lessons.any { it.id in completedIds } && !lessons.all { it.id in completedIds }
+            }
+
+            return CourseCategory(
+                id = categoryId,
+                title = title,
+                topicsCountText = "${categoryTopics.size} topics",
+                percentageProgressText = "$percentInt%",
+                progressFloat = progressFloat.coerceIn(0f, 1f),
+                completedText = "$completedTopicsCount completed",
+                inProgressText = "$inProgressTopicsCount in progress",
+                progressColor = progressColor,
+                topics = topicItems
+            )
+        }
+
+        val dsCategory = buildCategory("data_structures", "DATA STRUCTURES", TopicCategory.DATA_STRUCTURES, OrangeAccent)
+        val algoCategory = buildCategory("algorithms", "ALGORITHMS", TopicCategory.ALGORITHMS, PurpleAccent)
+
+        val allImplementedTopics = allTopics.filter { (topicLessonsMap[it.id]?.size ?: 0) > 0 }
+        val allAvailableLessons = allImplementedTopics.flatMap { topicLessonsMap[it.id] ?: emptyList() }
+        val totalAvailableLessons = allAvailableLessons.size
+        val totalCompletedLessons = allAvailableLessons.count { it.id in completedIds }
+        val totalCompletedTopics = allImplementedTopics.count { topic ->
+            val lessons = topicLessonsMap[topic.id] ?: emptyList()
+            lessons.isNotEmpty() && lessons.all { it.id in completedIds }
+        }
+        val overallPercent = if (totalAvailableLessons > 0) (totalCompletedLessons * 100 / totalAvailableLessons).coerceIn(0, 100) else 0
+
+        overviewData = LearnOverviewData(
+            totalCompletedTopics = totalCompletedTopics,
+            totalAvailableTopics = allImplementedTopics.size,
+            totalAvailableLessons = totalAvailableLessons,
+            totalCompletedLessons = totalCompletedLessons,
+            overallPercent = overallPercent
         )
+        categories = listOf(dsCategory, algoCategory)
+        isLoading = false
     }
 
     Column(
@@ -278,20 +210,32 @@ fun LearnScreen(
         verticalArrangement = Arrangement.spacedBy(20.dp)
     ) {
         LearnHeader()
-        CourseProgressOverview()
-        
-        Spacer(modifier = Modifier.height(4.dp))
 
-        categories.forEach { category ->
-            val isExpanded = category.id == expandedCategoryId
-            CourseCategoryCard(
-                category = category,
-                isExpanded = isExpanded,
-                onToggleExpand = {
-                    expandedCategoryId = if (isExpanded) null else category.id
-                },
-                onTopicClick = onTopicClick
-            )
+        if (isLoading) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(100.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                CircularProgressIndicator(color = OrangeAccent)
+            }
+        } else {
+            CourseProgressOverview(overviewData)
+
+            Spacer(modifier = Modifier.height(4.dp))
+
+            categories.forEach { category ->
+                val isExpanded = category.id == expandedCategoryId
+                CourseCategoryCard(
+                    category = category,
+                    isExpanded = isExpanded,
+                    onToggleExpand = {
+                        expandedCategoryId = if (isExpanded) null else category.id
+                    },
+                    onTopicClick = onTopicClick
+                )
+            }
         }
     }
 }
@@ -337,9 +281,9 @@ private fun LearnHeader() {
             contentAlignment = Alignment.Center
         ) {
             Text(
-                text = "AL",
-                color = TextPrimary,
-                fontSize = 14.sp,
+                text = "DSA",
+                color = OrangeAccent,
+                fontSize = 13.sp,
                 fontWeight = FontWeight.Bold
             )
         }
@@ -347,7 +291,7 @@ private fun LearnHeader() {
 }
 
 @Composable
-private fun CourseProgressOverview() {
+private fun CourseProgressOverview(overviewData: LearnOverviewData) {
     Column(
         modifier = Modifier.fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(10.dp)
@@ -358,12 +302,12 @@ private fun CourseProgressOverview() {
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                text = "2 of 20 topics complete",
+                text = "${overviewData.totalCompletedTopics} of ${overviewData.totalAvailableTopics} topics complete",
                 color = TextSecondary,
                 fontSize = 14.sp
             )
             Text(
-                text = "10%",
+                text = "${overviewData.overallPercent}%",
                 color = OrangeAccent,
                 fontSize = 15.sp,
                 fontWeight = FontWeight.Bold
@@ -380,7 +324,7 @@ private fun CourseProgressOverview() {
         ) {
             Box(
                 modifier = Modifier
-                    .fillMaxWidth(0.10f)
+                    .fillMaxWidth((overviewData.overallPercent / 100f).coerceIn(0f, 1f))
                     .height(4.dp)
                     .background(OrangeAccent, RoundedCornerShape(2.dp))
             )
@@ -740,4 +684,14 @@ private fun TopicLevelBadge(level: TopicLevel) {
             letterSpacing = 0.5.sp
         )
     }
+}
+
+private fun getEstimatedLessonsText(topicId: String): String = when (topicId) {
+    "introduction_ds", "introduction_algo" -> "3 lessons"
+    "structures", "brute_force" -> "4 lessons"
+    "stack", "queues", "heap", "iteration_recursion", "greedy", "branch_bound" -> "5 lessons"
+    "hash_tables", "divide_conquer", "backtracking" -> "6 lessons"
+    "linked_list" -> "7 lessons"
+    "trees", "graphs", "dynamic_programming" -> "8 lessons"
+    else -> "5 lessons"
 }
