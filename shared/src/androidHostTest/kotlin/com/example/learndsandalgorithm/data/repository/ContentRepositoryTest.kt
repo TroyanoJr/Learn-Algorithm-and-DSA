@@ -25,6 +25,7 @@ class ContentRepositoryTest {
     )
 
     private val allLessonIds = listOf(
+        "lesson_introduction_ds_1", "lesson_introduction_algo_1",
         "lesson_arrays_1", "lesson_arrays_2", "lesson_arrays_3", "lesson_arrays_4", "lesson_arrays_5",
         "searching_1", "searching_2", "searching_3", "searching_4",
         "sorting_1", "sorting_2", "sorting_3", "sorting_4", "sorting_5"
@@ -38,11 +39,15 @@ class ContentRepositoryTest {
 
     @Test
     fun testLoadAllLessons() = runBlocking {
+        val dsIntroLessons = repository.getLessonsByTopic("introduction_ds")
+        val algoIntroLessons = repository.getLessonsByTopic("introduction_algo")
         val arraysLessons = repository.getLessonsByTopic("arrays")
         val searchLessons = repository.getLessonsByTopic("linear_search")
         val sortingLessons = repository.getLessonsByTopic("sorting")
-        val totalLessons = arraysLessons.size + searchLessons.size + sortingLessons.size
-        assertEquals(14, totalLessons, "Should load exactly 14 lessons total")
+        val totalLessons = dsIntroLessons.size + algoIntroLessons.size + arraysLessons.size + searchLessons.size + sortingLessons.size
+        assertEquals(16, totalLessons, "Should load exactly 16 lessons total")
+        assertEquals(1, dsIntroLessons.size, "DS Intro should have 1 lesson")
+        assertEquals(1, algoIntroLessons.size, "Algo Intro should have 1 lesson")
         assertEquals(5, arraysLessons.size, "Arrays should have 5 lessons")
         assertEquals(4, searchLessons.size, "Searching should have 4 lessons")
         assertEquals(5, sortingLessons.size, "Sorting should have 5 lessons")
@@ -70,8 +75,8 @@ class ContentRepositoryTest {
             val lessonQs = repository.getQuestionsByLessonId(lessonId)
             lessonQuestionsTotal += lessonQs.size
         }
-        assertEquals(14, lessonQuestionsTotal, "Should load 14 lesson-specific questions")
-        assertEquals(38, quizTotal + lessonQuestionsTotal, "Total questions across quizzes and lessons must be 38")
+        assertEquals(16, lessonQuestionsTotal, "Should load 16 lesson-specific questions")
+        assertEquals(40, quizTotal + lessonQuestionsTotal, "Total questions across quizzes and lessons must be 40")
     }
 
     @Test
@@ -80,9 +85,9 @@ class ContentRepositoryTest {
         val lessonQuestions = allLessonIds.flatMap { repository.getQuestionsByLessonId(it) }
         val allQuestions = quizQuestions + lessonQuestions
 
-        assertEquals(38, allQuestions.size, "Total collected questions must be 38")
+        assertEquals(40, allQuestions.size, "Total collected questions must be 40")
         val uniqueIds = allQuestions.map { it.id }.toSet()
-        assertEquals(38, uniqueIds.size, "All 38 question IDs must be unique")
+        assertEquals(40, uniqueIds.size, "All 40 question IDs must be unique")
     }
 
     @Test

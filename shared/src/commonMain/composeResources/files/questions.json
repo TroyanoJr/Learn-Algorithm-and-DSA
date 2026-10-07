@@ -544,5 +544,35 @@
     "correctOptionIndex": 0,
     "explanation": "Selection Sort performs at most 1 swap per pass (n - 1 total swaps max), minimizing memory write operations.",
     "difficulty": "EASY"
+  },
+  {
+    "id": "q_lesson_introduction_ds_1",
+    "topicId": "introduction_ds",
+    "lessonId": "lesson_introduction_ds_1",
+    "statement": "What is the primary purpose of a data structure?",
+    "options": [
+      "To compress digital image files",
+      "To organize and store data efficiently for fast access and operations",
+      "To convert source code into machine language",
+      "To secure network connections against unauthorized access"
+    ],
+    "correctOptionIndex": 1,
+    "explanation": "Data structures provide organized formats for storing and managing data so that operations can be performed efficiently.",
+    "difficulty": "EASY"
+  },
+  {
+    "id": "q_lesson_introduction_algo_1",
+    "topicId": "introduction_algo",
+    "lessonId": "lesson_introduction_algo_1",
+    "statement": "What is an algorithm?",
+    "options": [
+      "A physical hardware component inside a CPU",
+      "A step-by-step procedure or set of rules for solving a problem",
+      "A database table containing user records",
+      "An operating system user interface layout"
+    ],
+    "correctOptionIndex": 1,
+    "explanation": "An algorithm is a step-by-step set of instructions or rules designed to accomplish a specific task or solve a problem.",
+    "difficulty": "EASY"
   }
 ]
