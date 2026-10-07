@@ -50,7 +50,7 @@ private data class PracticeMode(
     val title: String,
     val description: String,
     val metaText: String,
-    val isHighlightedMeta: Boolean,
+    val isAvailable: Boolean,
     val iconStr: String,
     val iconBgColor: Color,
     val iconBorderColor: Color,
@@ -69,85 +69,85 @@ private data class PracticeMode(
 fun PracticeScreen(
     onOpenTopicQuiz: () -> Unit = {}
 ) {
-    var selectedModeId by remember { mutableStateOf("quick_quiz") }
+    var selectedModeId by remember { mutableStateOf("topic_quiz") }
 
     val practiceModes = remember {
         listOf(
             PracticeMode(
-                id = "quick_quiz",
-                title = "Quick Quiz",
-                description = "Test your knowledge in 5 minutes",
-                metaText = "5 questions · 5 min",
-                isHighlightedMeta = true,
-                iconStr = "⚡",
-                iconBgColor = Color(0xFF2A1A10),
-                iconBorderColor = OrangeAccent,
-                iconTextColor = OrangeAccent,
-                featuredHeader = "QUICK QUIZ",
-                featuredBadge = "84% last score",
-                featuredTitle = "Warm up with a focused set",
-                stat1Main = "5 questions",
-                stat1Sub = "questions",
-                stat2Main = "5 min",
-                stat2Sub = "estimated",
-                buttonText = "Start Quick Quiz ➔"
-            ),
-            PracticeMode(
                 id = "topic_quiz",
                 title = "Topic Quiz",
                 description = "Focus on a specific concept",
-                metaText = "10 questions · 10 min",
-                isHighlightedMeta = false,
+                metaText = "8 questions per topic · 10 min",
+                isAvailable = true,
                 iconStr = "🧠",
                 iconBgColor = Color(0xFF1E162A),
                 iconBorderColor = PurpleAccent,
                 iconTextColor = PurpleAccent,
                 featuredHeader = "TOPIC QUIZ",
-                featuredBadge = "10 questions",
+                featuredBadge = "Available ✓",
                 featuredTitle = "Focus on a specific concept",
-                stat1Main = "10 questions",
-                stat1Sub = "questions",
+                stat1Main = "8 questions",
+                stat1Sub = "per topic",
                 stat2Main = "10 min",
                 stat2Sub = "estimated",
                 buttonText = "Start Topic Quiz ➔"
             ),
             PracticeMode(
+                id = "quick_quiz",
+                title = "Quick Quiz",
+                description = "Test your knowledge in 5 minutes",
+                metaText = "Coming Soon",
+                isAvailable = false,
+                iconStr = "⚡",
+                iconBgColor = Color(0xFF2A1A10),
+                iconBorderColor = OrangeAccent.copy(alpha = 0.4f),
+                iconTextColor = OrangeAccent,
+                featuredHeader = "QUICK QUIZ",
+                featuredBadge = "Coming Soon",
+                featuredTitle = "Warm up with a focused set",
+                stat1Main = "5 questions",
+                stat1Sub = "questions",
+                stat2Main = "5 min",
+                stat2Sub = "estimated",
+                buttonText = "Coming Soon"
+            ),
+            PracticeMode(
                 id = "exams",
                 title = "Exams",
                 description = "Put your skills to the test",
-                metaText = "30 questions · 35 min",
-                isHighlightedMeta = false,
+                metaText = "Coming Soon",
+                isAvailable = false,
                 iconStr = "🏅",
                 iconBgColor = Color(0xFF122038),
-                iconBorderColor = BlueAccent,
+                iconBorderColor = BlueAccent.copy(alpha = 0.4f),
                 iconTextColor = BlueAccent,
                 featuredHeader = "EXAMS",
-                featuredBadge = "30 questions",
+                featuredBadge = "Coming Soon",
                 featuredTitle = "Put your skills to the test",
                 stat1Main = "30 questions",
                 stat1Sub = "questions",
                 stat2Main = "35 min",
                 stat2Sub = "estimated",
-                buttonText = "Start Exam ➔"
+                buttonText = "Coming Soon"
             ),
             PracticeMode(
                 id = "challenges",
                 title = "Challenges",
                 description = "Solve real coding problems",
-                metaText = "1 problem · 20 min",
-                isHighlightedMeta = false,
+                metaText = "Coming Soon",
+                isAvailable = false,
                 iconStr = "</>",
                 iconBgColor = Color(0xFF0E281E),
-                iconBorderColor = GreenAccent,
+                iconBorderColor = GreenAccent.copy(alpha = 0.4f),
                 iconTextColor = GreenAccent,
                 featuredHeader = "CHALLENGES",
-                featuredBadge = "3 completed",
+                featuredBadge = "Coming Soon",
                 featuredTitle = "Solve a problem from scratch",
                 stat1Main = "1 problem",
                 stat1Sub = "questions",
                 stat2Main = "20 min",
                 stat2Sub = "estimated",
-                buttonText = "Start Challenges ➔"
+                buttonText = "Coming Soon"
             )
         )
     }
@@ -163,7 +163,7 @@ fun PracticeScreen(
         verticalArrangement = Arrangement.spacedBy(20.dp)
     ) {
         PracticeHeader()
-        RecommendedCard()
+        RecommendedCard(onOpenTopicQuiz = onOpenTopicQuiz)
         PracticeModesSection(
             modes = practiceModes,
             selectedModeId = selectedModeId,
@@ -174,15 +174,14 @@ fun PracticeScreen(
                 }
             }
         )
-        QuickQuizFeaturedCard(
+        PracticeFeaturedCard(
             mode = selectedMode,
             onStart = {
-                if (selectedMode.id == "topic_quiz") {
+                if (selectedMode.isAvailable) {
                     onOpenTopicQuiz()
                 }
             }
         )
-        MomentumStreakCard()
     }
 }
 
@@ -225,9 +224,9 @@ private fun PracticeHeader() {
             contentAlignment = Alignment.Center
         ) {
             Text(
-                text = "AL",
-                color = TextPrimary,
-                fontSize = 14.sp,
+                text = "DSA",
+                color = OrangeAccent,
+                fontSize = 13.sp,
                 fontWeight = FontWeight.Bold
             )
         }
@@ -235,12 +234,14 @@ private fun PracticeHeader() {
 }
 
 @Composable
-private fun RecommendedCard() {
+private fun RecommendedCard(onOpenTopicQuiz: () -> Unit) {
     Surface(
         color = DarkCardBgColor,
         shape = RoundedCornerShape(16.dp),
         border = BorderStroke(1.dp, HighlightedBorderColor),
-        modifier = Modifier.fillMaxWidth()
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { onOpenTopicQuiz() }
     ) {
         Row(
             modifier = Modifier
@@ -280,13 +281,13 @@ private fun RecommendedCard() {
                         letterSpacing = 1.sp
                     )
                     Text(
-                        text = "Arrays & complexity",
+                        text = "Topic Quiz",
                         color = TextPrimary,
                         fontSize = 17.sp,
                         fontWeight = FontWeight.Bold
                     )
                     Text(
-                        text = "10 questions · Medium · 72% last score",
+                        text = "8 questions per topic · Arrays, Searching & Sorting",
                         color = TextSecondary,
                         fontSize = 12.sp
                     )
@@ -348,7 +349,7 @@ private fun PracticeModesSection(
             }
 
             Text(
-                text = "4 ways to grow",
+                text = "1 available mode",
                 color = TextSecondary,
                 fontSize = 12.sp
             )
@@ -362,7 +363,9 @@ private fun PracticeModesSection(
                 onClickMode = { onSelectMode(mode.id) },
                 onClickArrow = {
                     onSelectMode(mode.id)
-                    onStartMode(mode.id)
+                    if (mode.isAvailable) {
+                        onStartMode(mode.id)
+                    }
                 }
             )
         }
@@ -419,12 +422,33 @@ private fun PracticeModeCard(
                 Column(
                     verticalArrangement = Arrangement.spacedBy(3.dp)
                 ) {
-                    Text(
-                        text = mode.title,
-                        color = TextPrimary,
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.Bold
-                    )
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Text(
+                            text = mode.title,
+                            color = if (mode.isAvailable) TextPrimary else TextSecondary,
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                        if (!mode.isAvailable) {
+                            Box(
+                                modifier = Modifier
+                                    .clip(RoundedCornerShape(4.dp))
+                                    .background(Color(0xFF262634))
+                                    .padding(horizontal = 6.dp, vertical = 2.dp)
+                            ) {
+                                Text(
+                                    text = "Coming Soon",
+                                    color = TextSecondary,
+                                    fontSize = 9.sp,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
+                        }
+                    }
+
                     Text(
                         text = mode.description,
                         color = TextSecondary,
@@ -432,9 +456,9 @@ private fun PracticeModeCard(
                     )
                     Text(
                         text = mode.metaText,
-                        color = if (mode.isHighlightedMeta) OrangeAccent else TextSecondary,
+                        color = if (mode.isAvailable) OrangeAccent else TextSecondary,
                         fontSize = 12.sp,
-                        fontWeight = if (mode.isHighlightedMeta) FontWeight.Bold else FontWeight.Normal
+                        fontWeight = if (mode.isAvailable) FontWeight.Bold else FontWeight.Normal
                     )
                 }
             }
@@ -442,21 +466,28 @@ private fun PracticeModeCard(
             Box(
                 modifier = Modifier
                     .padding(start = 8.dp)
-                    .clickable { onClickArrow() }
+                    .clickable(enabled = mode.isAvailable) { onClickArrow() }
             ) {
-                Text(
-                    text = "›",
-                    color = if (isSelected) OrangeAccent else TextSecondary,
-                    fontSize = 22.sp,
-                    fontWeight = FontWeight.Bold
-                )
+                if (mode.isAvailable) {
+                    Text(
+                        text = "›",
+                        color = OrangeAccent,
+                        fontSize = 22.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                } else {
+                    Text(
+                        text = "🔒",
+                        fontSize = 14.sp
+                    )
+                }
             }
         }
     }
 }
 
 @Composable
-private fun QuickQuizFeaturedCard(
+private fun PracticeFeaturedCard(
     mode: PracticeMode,
     onStart: () -> Unit
 ) {
@@ -485,16 +516,16 @@ private fun QuickQuizFeaturedCard(
                     letterSpacing = 1.2.sp
                 )
 
-                // Score Badge Pill
+                // Score / Availability Badge Pill
                 Box(
                     modifier = Modifier
                         .clip(RoundedCornerShape(6.dp))
-                        .background(Color(0xFF3A1A0E))
+                        .background(if (mode.isAvailable) Color(0xFF092317) else Color(0xFF22222E))
                         .padding(horizontal = 10.dp, vertical = 4.dp)
                 ) {
                     Text(
                         text = mode.featuredBadge,
-                        color = OrangeAccent,
+                        color = if (mode.isAvailable) GreenAccent else TextSecondary,
                         fontSize = 12.sp,
                         fontWeight = FontWeight.Bold
                     )
@@ -525,13 +556,14 @@ private fun QuickQuizFeaturedCard(
                 )
             }
 
-            // Start Button
+            // Start / Coming Soon Button
             Surface(
-                color = OrangeAccent,
+                color = if (mode.isAvailable) OrangeAccent else Color(0xFF22222E),
                 shape = RoundedCornerShape(12.dp),
+                border = BorderStroke(1.dp, if (mode.isAvailable) Color.Transparent else CardBorderColor),
                 modifier = Modifier
                     .fillMaxWidth()
-                    .clickable { onStart() }
+                    .clickable(enabled = mode.isAvailable) { onStart() }
             ) {
                 Box(
                     modifier = Modifier
@@ -539,17 +571,12 @@ private fun QuickQuizFeaturedCard(
                         .padding(vertical = 14.dp),
                     contentAlignment = Alignment.Center
                 ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        Text(
-                            text = mode.buttonText,
-                            color = Color(0xFF111115),
-                            fontSize = 15.sp,
-                            fontWeight = FontWeight.Bold
-                        )
-                    }
+                    Text(
+                        text = mode.buttonText,
+                        color = if (mode.isAvailable) Color(0xFF111115) else TextSecondary,
+                        fontSize = 15.sp,
+                        fontWeight = FontWeight.Bold
+                    )
                 }
             }
         }
@@ -582,78 +609,6 @@ private fun StatTile(
                 color = TextSecondary,
                 fontSize = 11.sp
             )
-        }
-    }
-}
-
-@Composable
-private fun MomentumStreakCard() {
-    Surface(
-        color = DarkCardBgColor,
-        shape = RoundedCornerShape(16.dp),
-        border = BorderStroke(1.dp, CardBorderColor),
-        modifier = Modifier.fillMaxWidth()
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(18.dp),
-            verticalArrangement = Arrangement.spacedBy(14.dp)
-        ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.Top
-            ) {
-                Column {
-                    Text(
-                        text = "YOUR MOMENTUM",
-                        color = OrangeAccent,
-                        fontSize = 10.sp,
-                        fontWeight = FontWeight.Bold,
-                        letterSpacing = 1.2.sp
-                    )
-                    Spacer(modifier = Modifier.height(4.dp))
-                    Text(
-                        text = "Keep the streak alive",
-                        color = TextPrimary,
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.Bold
-                    )
-                }
-
-                Column(
-                    horizontalAlignment = Alignment.End
-                ) {
-                    Text(
-                        text = "7",
-                        color = OrangeAccent,
-                        fontSize = 28.sp,
-                        fontWeight = FontWeight.Bold
-                    )
-                    Text(
-                        text = "day streak",
-                        color = TextSecondary,
-                        fontSize = 12.sp
-                    )
-                }
-            }
-
-            // Streak Progress Track
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(4.dp)
-                    .clip(RoundedCornerShape(2.dp))
-                    .background(Color(0xFF262634))
-            ) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth(0.70f)
-                        .height(4.dp)
-                        .background(OrangeAccent, RoundedCornerShape(2.dp))
-                )
-            }
         }
     }
 }
