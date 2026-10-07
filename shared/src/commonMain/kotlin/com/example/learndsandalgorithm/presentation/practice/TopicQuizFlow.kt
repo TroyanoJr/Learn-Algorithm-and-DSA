@@ -19,9 +19,11 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -34,6 +36,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.learndsandalgorithm.domain.model.Question
+import com.example.learndsandalgorithm.domain.model.TopicCategory
+import com.example.learndsandalgorithm.domain.repository.ContentRepository
 
 private val DarkBgColor = Color(0xFF111115)
 private val DarkCardBgColor = Color(0xFF181820)
@@ -45,14 +50,14 @@ private val RedAccent = Color(0xFFEF4444)
 private val TextPrimary = Color(0xFFFFFFFF)
 private val TextSecondary = Color(0xFF9CA3AF)
 
-private data class SampleQuestion(
+private data class QuizQuestionState(
     val statement: String,
     val options: List<String>,
-    val correctIndex: Int,
+    val correctOptionIndex: Int,
     val explanation: String
 )
 
-private data class SampleTopicInfo(
+private data class QuizTopicState(
     val id: String,
     val title: String,
     val category: String,
@@ -62,125 +67,15 @@ private data class SampleTopicInfo(
     val iconBorderColor: Color,
     val iconTextColor: Color,
     val description: String,
-    val questions: List<SampleQuestion>
+    val questions: List<QuizQuestionState>
 )
 
-private val sampleArraysTopic = SampleTopicInfo(
-    id = "arrays",
-    title = "Arrays",
-    category = "Data Structures",
-    questionCount = 5,
-    iconStr = "🥞",
-    iconBgColor = Color(0xFF2A1A10),
-    iconBorderColor = OrangeAccent,
-    iconTextColor = OrangeAccent,
-    description = "Contiguous memory elements with instant index-based lookup.",
-    questions = listOf(
-        SampleQuestion(
-            statement = "What is an array?",
-            options = listOf(
-                "A collection of elements stored in sequence",
-                "A type of database",
-                "A sorting algorithm",
-                "A network protocol"
-            ),
-            correctIndex = 0,
-            explanation = "Arrays store elements in contiguous memory locations, making indexed access fast and predictable."
-        ),
-        SampleQuestion(
-            statement = "What is the index of the first element in most arrays?",
-            options = listOf("-1", "0", "1", "It changes each time"),
-            correctIndex = 1,
-            explanation = "Most programming languages use zero-based indexing, so the first element is stored at index 0."
-        ),
-        SampleQuestion(
-            statement = "What is the typical time complexity of reading an array element by index?",
-            options = listOf("O(n²)", "O(n)", "O(log n)", "O(1)"),
-            correctIndex = 3,
-            explanation = "An index maps directly to a memory address, so array access takes constant time."
-        ),
-        SampleQuestion(
-            statement = "What happens when you insert an element at the beginning of an array?",
-            options = listOf(
-                "All existing elements must be shifted right",
-                "No elements need to move",
-                "The array size doubles automatically",
-                "The last element is deleted instantly"
-            ),
-            correctIndex = 0,
-            explanation = "To make room at index 0, every existing element must shift right by one index, taking O(n) time."
-        ),
-        SampleQuestion(
-            statement = "Which property allows direct memory calculation for array indices?",
-            options = listOf(
-                "Random pointer allocation",
-                "Contiguous memory placement",
-                "Binary tree branching",
-                "Dynamic hash chaining"
-            ),
-            correctIndex = 1,
-            explanation = "Contiguous memory allows index offsets to be calculated via base_address + (index * element_size)."
-        )
-    )
-)
-
-private val sampleLinearSearchTopic = SampleTopicInfo(
-    id = "linear_search",
-    title = "Linear Search",
-    category = "Algorithms",
-    questionCount = 5,
-    iconStr = "🔍",
-    iconBgColor = Color(0xFF1E162A),
-    iconBorderColor = PurpleAccent,
-    iconTextColor = PurpleAccent,
-    description = "Sequential element inspection from start to end.",
-    questions = listOf(
-        SampleQuestion(
-            statement = "What is Linear Search?",
-            options = listOf(
-                "Searching sequentially through elements one by one",
-                "Dividing an array in half repeatedly",
-                "Sorting an array before looking for an item",
-                "Hashing items into bucket tables"
-            ),
-            correctIndex = 0,
-            explanation = "Linear search checks each element from start to end sequentially."
-        ),
-        SampleQuestion(
-            statement = "Does Linear Search require an array to be sorted?",
-            options = listOf(
-                "Yes, always",
-                "No, it works on unsorted arrays",
-                "Only for numeric values",
-                "Only when array size > 10"
-            ),
-            correctIndex = 1,
-            explanation = "Since linear search checks items one by one, sorting is not required."
-        ),
-        SampleQuestion(
-            statement = "What is the worst-case time complexity of Linear Search on n items?",
-            options = listOf("O(1)", "O(log n)", "O(n)", "O(n²)"),
-            correctIndex = 2,
-            explanation = "In the worst case, the item is at the last index or missing, requiring n comparisons."
-        ),
-        SampleQuestion(
-            statement = "What is the best-case time complexity of Linear Search?",
-            options = listOf("O(1)", "O(log n)", "O(n)", "O(n²)"),
-            correctIndex = 0,
-            explanation = "Best case occurs when the target is at index 0, taking 1 comparison."
-        ),
-        SampleQuestion(
-            statement = "When is Linear Search preferred over Binary Search?",
-            options = listOf(
-                "When dataset is large and sorted",
-                "When dataset is small or unsorted",
-                "When random index access is forbidden",
-                "When dataset size is a power of 2"
-            ),
-            correctIndex = 1,
-            explanation = "Linear search avoids the cost of sorting when searching small or unsorted data."
-        )
-    )
+private data class TopicVisuals(
+    val iconStr: String,
+    val iconBgColor: Color,
+    val iconBorderColor: Color,
+    val iconTextColor: Color,
+    val description: String
 )
 
 private enum class QuizFlowState {
@@ -190,13 +85,38 @@ private enum class QuizFlowState {
     QUIZ_RESULT
 }
 
+private fun prepareQuizQuestions(rawQuestions: List<Question>): List<QuizQuestionState> {
+    return rawQuestions.map { q ->
+        val indexedOptions = q.options.mapIndexed { index, text -> index to text }
+        val shuffled = indexedOptions.shuffled()
+        val newCorrectIndex = shuffled.indexOfFirst { it.first == q.correctOptionIndex }
+
+        QuizQuestionState(
+            statement = q.statement,
+            options = shuffled.map { it.second },
+            correctOptionIndex = if (newCorrectIndex != -1) newCorrectIndex else q.correctOptionIndex,
+            explanation = q.explanation
+        )
+    }
+}
+
+private fun getTopicVisuals(topicId: String): TopicVisuals = when (topicId) {
+    "arrays" -> TopicVisuals("🥞", Color(0xFF2A1A10), OrangeAccent, OrangeAccent, "Contiguous memory elements with instant index-based lookup.")
+    "linear_search" -> TopicVisuals("🔍", Color(0xFF1E162A), PurpleAccent, PurpleAccent, "Sequential element inspection from start to end.")
+    "sorting" -> TopicVisuals("📊", Color(0xFF0E281E), GreenAccent, GreenAccent, "Arranging elements in a defined ascending or descending order.")
+    else -> TopicVisuals("🧠", Color(0xFF1E1E28), OrangeAccent, OrangeAccent, "Practice core computer science concepts.")
+}
+
 @Composable
 fun TopicQuizFlow(
+    contentRepository: ContentRepository,
     onBackToPractice: () -> Unit
 ) {
-    val topics = remember { listOf(sampleArraysTopic, sampleLinearSearchTopic) }
+    var topics by remember { mutableStateOf<List<QuizTopicState>>(emptyList()) }
+    var isLoading by remember { mutableStateOf(true) }
+
     var selectedTopicId by remember { mutableStateOf("arrays") }
-    var activeTopic by remember { mutableStateOf<SampleTopicInfo?>(null) }
+    var activeTopic by remember { mutableStateOf<QuizTopicState?>(null) }
 
     var flowState by remember { mutableStateOf(QuizFlowState.TOPIC_SELECTION) }
     var currentQuestionIndex by remember { mutableStateOf(0) }
@@ -204,96 +124,181 @@ fun TopicQuizFlow(
     var correctCount by remember { mutableStateOf(0) }
     var incorrectCount by remember { mutableStateOf(0) }
 
-    when (flowState) {
-        QuizFlowState.TOPIC_SELECTION -> {
-            TopicQuizSelectionScreen(
-                topics = topics,
-                selectedTopicId = selectedTopicId,
-                onSelectTopic = { selectedTopicId = it },
-                onStartQuizForTopic = { topic ->
-                    activeTopic = topic
-                    currentQuestionIndex = 0
-                    selectedOptionIndex = null
-                    correctCount = 0
-                    incorrectCount = 0
-                    flowState = QuizFlowState.QUESTION
-                },
-                onBack = onBackToPractice
-            )
+    LaunchedEffect(Unit) {
+        isLoading = true
+        val allTopics = contentRepository.getTopics()
+        val loadedTopics = mutableListOf<QuizTopicState>()
+
+        allTopics.forEach { topic ->
+            val rawQuestions = contentRepository.getQuestionsByTopic(topic.id)
+            if (rawQuestions.isNotEmpty()) {
+                val preparedQuestions = prepareQuizQuestions(rawQuestions)
+                val visuals = getTopicVisuals(topic.id)
+                val categoryName = if (topic.category == TopicCategory.DATA_STRUCTURES) "Data Structures" else "Algorithms"
+
+                loadedTopics.add(
+                    QuizTopicState(
+                        id = topic.id,
+                        title = topic.title,
+                        category = categoryName,
+                        questionCount = preparedQuestions.size,
+                        iconStr = visuals.iconStr,
+                        iconBgColor = visuals.iconBgColor,
+                        iconBorderColor = visuals.iconBorderColor,
+                        iconTextColor = visuals.iconTextColor,
+                        description = visuals.description,
+                        questions = preparedQuestions
+                    )
+                )
+            }
         }
 
-        QuizFlowState.QUESTION -> {
-            val topic = activeTopic ?: sampleArraysTopic
-            val question = topic.questions.getOrNull(currentQuestionIndex) ?: topic.questions.first()
+        topics = loadedTopics
+        if (loadedTopics.isNotEmpty()) {
+            selectedTopicId = loadedTopics.first().id
+        }
+        isLoading = false
+    }
 
-            QuizQuestionScreen(
-                topicTitle = topic.title,
-                questionIndex = currentQuestionIndex,
-                totalQuestions = topic.questions.size,
-                question = question,
-                selectedOptionIndex = selectedOptionIndex,
-                onSelectOption = { index ->
-                    if (selectedOptionIndex == null) {
-                        selectedOptionIndex = index
-                        if (index == question.correctIndex) {
-                            correctCount++
-                        } else {
-                            incorrectCount++
-                        }
-                    }
-                },
-                onNextQuestion = {
-                    if (currentQuestionIndex + 1 < topic.questions.size) {
-                        currentQuestionIndex++
+    if (isLoading) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(DarkBgColor),
+            contentAlignment = Alignment.Center
+        ) {
+            CircularProgressIndicator(color = OrangeAccent)
+        }
+    } else if (topics.isEmpty()) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(DarkBgColor)
+                .padding(20.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                Text(
+                    text = "No Quiz Topics Available",
+                    color = OrangeAccent,
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.Bold
+                )
+                Text(
+                    text = "No quiz questions found in repository.",
+                    color = TextSecondary,
+                    fontSize = 14.sp
+                )
+                Surface(
+                    color = OrangeAccent,
+                    shape = RoundedCornerShape(8.dp),
+                    modifier = Modifier.clickable { onBackToPractice() }
+                ) {
+                    Text(
+                        text = "Back to Practice",
+                        color = DarkBgColor,
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+                    )
+                }
+            }
+        }
+    } else {
+        when (flowState) {
+            QuizFlowState.TOPIC_SELECTION -> {
+                TopicQuizSelectionScreen(
+                    topics = topics,
+                    selectedTopicId = selectedTopicId,
+                    onSelectTopic = { selectedTopicId = it },
+                    onStartQuizForTopic = { topic ->
+                        activeTopic = topic
+                        currentQuestionIndex = 0
                         selectedOptionIndex = null
-                    } else {
-                        flowState = QuizFlowState.QUIZ_COMPLETE
-                    }
-                },
-                onBack = { flowState = QuizFlowState.TOPIC_SELECTION }
-            )
-        }
+                        correctCount = 0
+                        incorrectCount = 0
+                        flowState = QuizFlowState.QUESTION
+                    },
+                    onBack = onBackToPractice
+                )
+            }
 
-        QuizFlowState.QUIZ_COMPLETE -> {
-            val topic = activeTopic ?: sampleArraysTopic
-            QuizCompleteScreen(
-                topicTitle = topic.title,
-                totalQuestions = topic.questions.size,
-                onViewResult = { flowState = QuizFlowState.QUIZ_RESULT },
-                onBack = { flowState = QuizFlowState.TOPIC_SELECTION }
-            )
-        }
+            QuizFlowState.QUESTION -> {
+                val topic = activeTopic ?: topics.first()
+                val question = topic.questions.getOrNull(currentQuestionIndex) ?: topic.questions.first()
 
-        QuizFlowState.QUIZ_RESULT -> {
-            val topic = activeTopic ?: sampleArraysTopic
-            val total = topic.questions.size
-            val percentage = if (total > 0) (correctCount * 100) / total else 0
+                QuizQuestionScreen(
+                    topicTitle = topic.title,
+                    questionIndex = currentQuestionIndex,
+                    totalQuestions = topic.questions.size,
+                    question = question,
+                    selectedOptionIndex = selectedOptionIndex,
+                    onSelectOption = { index ->
+                        if (selectedOptionIndex == null) {
+                            selectedOptionIndex = index
+                            if (index == question.correctOptionIndex) {
+                                correctCount++
+                            } else {
+                                incorrectCount++
+                            }
+                        }
+                    },
+                    onNextQuestion = {
+                        if (currentQuestionIndex + 1 < topic.questions.size) {
+                            currentQuestionIndex++
+                            selectedOptionIndex = null
+                        } else {
+                            flowState = QuizFlowState.QUIZ_COMPLETE
+                        }
+                    },
+                    onBack = { flowState = QuizFlowState.TOPIC_SELECTION }
+                )
+            }
 
-            QuizResultScreen(
-                topicTitle = topic.title,
-                correctCount = correctCount,
-                incorrectCount = incorrectCount,
-                totalQuestions = total,
-                percentage = percentage,
-                onTryAgain = {
-                    currentQuestionIndex = 0
-                    selectedOptionIndex = null
-                    correctCount = 0
-                    incorrectCount = 0
-                    flowState = QuizFlowState.QUESTION
-                },
-                onBackToPractice = onBackToPractice
-            )
+            QuizFlowState.QUIZ_COMPLETE -> {
+                val topic = activeTopic ?: topics.first()
+                QuizCompleteScreen(
+                    topicTitle = topic.title,
+                    totalQuestions = topic.questions.size,
+                    onViewResult = { flowState = QuizFlowState.QUIZ_RESULT },
+                    onBack = { flowState = QuizFlowState.TOPIC_SELECTION }
+                )
+            }
+
+            QuizFlowState.QUIZ_RESULT -> {
+                val topic = activeTopic ?: topics.first()
+                val total = topic.questions.size
+                val percentage = if (total > 0) (correctCount * 100) / total else 0
+
+                QuizResultScreen(
+                    topicTitle = topic.title,
+                    correctCount = correctCount,
+                    incorrectCount = incorrectCount,
+                    totalQuestions = total,
+                    percentage = percentage,
+                    onTryAgain = {
+                        currentQuestionIndex = 0
+                        selectedOptionIndex = null
+                        correctCount = 0
+                        incorrectCount = 0
+                        flowState = QuizFlowState.QUESTION
+                    },
+                    onBackToPractice = onBackToPractice
+                )
+            }
         }
     }
 }
 
 @Composable
 private fun TopicQuizSelectionScreen(
-    topics: List<SampleTopicInfo>,
+    topics: List<QuizTopicState>,
     selectedTopicId: String,
     onSelectTopic: (String) -> Unit,
-    onStartQuizForTopic: (SampleTopicInfo) -> Unit,
+    onStartQuizForTopic: (QuizTopicState) -> Unit,
     onBack: () -> Unit
 ) {
     Column(
@@ -367,7 +372,7 @@ private fun TopicQuizSelectionScreen(
                     .border(1.dp, CardBorderColor, CircleShape),
                 contentAlignment = Alignment.Center
             ) {
-                Text(text = "AL", color = TextPrimary, fontSize = 14.sp, fontWeight = FontWeight.Bold)
+                Text(text = "DSA", color = OrangeAccent, fontSize = 13.sp, fontWeight = FontWeight.Bold)
             }
         }
 
@@ -497,7 +502,7 @@ private fun QuizQuestionScreen(
     topicTitle: String,
     questionIndex: Int,
     totalQuestions: Int,
-    question: SampleQuestion,
+    question: QuizQuestionState,
     selectedOptionIndex: Int?,
     onSelectOption: (Int) -> Unit,
     onNextQuestion: () -> Unit,
@@ -599,7 +604,7 @@ private fun QuizQuestionScreen(
         // Answer Option Cards
         question.options.forEachIndexed { index, optionText ->
             val isSelected = selectedOptionIndex == index
-            val isCorrectIndex = index == question.correctIndex
+            val isCorrectIndex = index == question.correctOptionIndex
             val isAnswered = selectedOptionIndex != null
 
             val (borderColor, bgColor, letterBgColor, letterTextColor, iconStr, iconColor) = when {
@@ -702,7 +707,7 @@ private fun QuizQuestionScreen(
 
         // Feedback Section
         if (selectedOptionIndex != null) {
-            val isCorrect = selectedOptionIndex == question.correctIndex
+            val isCorrect = selectedOptionIndex == question.correctOptionIndex
             val feedbackBgColor = if (isCorrect) Color(0xFF092317) else Color(0xFF210C0D)
             val feedbackBorderColor = if (isCorrect) GreenAccent else RedAccent
 

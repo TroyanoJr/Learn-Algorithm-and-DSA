@@ -122,6 +122,7 @@ fun AppNavigation(
                         AppDestination.PRACTICE -> {
                             if (isTopicQuizActive) {
                                 TopicQuizFlow(
+                                    contentRepository = contentRepository,
                                     onBackToPractice = { isTopicQuizActive = false }
                                 )
                             } else {
