@@ -236,6 +236,7 @@ fun LessonDetailScreen(
                     // Lesson Specific Visualizations
                     when (state.lesson.id) {
                         "lesson_arrays_1" -> ArrayVisualizationCard()
+                        "lesson_arrays_2" -> ArrayInsertDeleteVisualizationCard()
                         "lesson_arrays_3" -> ArrayTraversalVisualizationCard()
                         "lesson_arrays_4" -> ArrayInsertDeleteVisualizationCard()
                         "lesson_arrays_5" -> ArrayComplexityComparisonCard()
