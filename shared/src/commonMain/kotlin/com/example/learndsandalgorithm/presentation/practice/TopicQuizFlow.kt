@@ -301,6 +301,9 @@ fun TopicQuizFlow(
                         incorrectCount = 0
                         flowState = QuizFlowState.QUESTION
                     },
+                    onBackToTopicSelection = {
+                        flowState = QuizFlowState.TOPIC_SELECTION
+                    },
                     onBackToPractice = onBackToPractice
                 )
             }
@@ -902,6 +905,7 @@ private fun QuizResultScreen(
     totalQuestions: Int,
     percentage: Int,
     onTryAgain: () -> Unit,
+    onBackToTopicSelection: () -> Unit,
     onBackToPractice: () -> Unit
 ) {
     Column(
@@ -920,7 +924,7 @@ private fun QuizResultScreen(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .clickable { onBackToPractice() },
+                    .clickable { onBackToTopicSelection() },
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(6.dp)
             ) {
