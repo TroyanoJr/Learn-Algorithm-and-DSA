@@ -391,7 +391,7 @@ private fun SortingBarVisualizationCard(
             // Status Text and Next Step Control
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
@@ -399,7 +399,7 @@ private fun SortingBarVisualizationCard(
                     color = if (isFinished) GreenAccent else TextSecondary,
                     fontSize = 12.sp,
                     fontWeight = if (isFinished) FontWeight.Bold else FontWeight.Normal,
-                    modifier = Modifier.weight(1f),
+                    modifier = Modifier.weight(1f, fill = false),
                     maxLines = 2,
                     overflow = TextOverflow.Ellipsis
                 )
@@ -737,7 +737,7 @@ private fun ArrayTraversalVisualizationCard() {
                                 fontSize = 18.sp,
                                 fontWeight = FontWeight.Bold
                             )
-                        }
+                         }
                     }
                 }
             }
@@ -745,7 +745,7 @@ private fun ArrayTraversalVisualizationCard() {
             // Status Information
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
@@ -757,7 +757,7 @@ private fun ArrayTraversalVisualizationCard() {
                     color = if (isComplete) GreenAccent else TextSecondary,
                     fontSize = 12.sp,
                     fontWeight = if (isComplete) FontWeight.Bold else FontWeight.Normal,
-                    modifier = Modifier.weight(1f),
+                    modifier = Modifier.weight(1f, fill = false),
                     maxLines = 2,
                     overflow = TextOverflow.Ellipsis
                 )
@@ -925,7 +925,7 @@ private fun ArrayInsertDeleteVisualizationCard() {
             // Status and Step Action
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
@@ -933,7 +933,7 @@ private fun ArrayInsertDeleteVisualizationCard() {
                     color = if (stepIndex == 2) GreenAccent else TextSecondary,
                     fontSize = 12.sp,
                     fontWeight = if (stepIndex == 2) FontWeight.Bold else FontWeight.Normal,
-                    modifier = Modifier.weight(1f),
+                    modifier = Modifier.weight(1f, fill = false),
                     maxLines = 2,
                     overflow = TextOverflow.Ellipsis
                 )
@@ -1143,7 +1143,7 @@ private fun LinearSearchVisualizationCard() {
             // Status and Control
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
@@ -1155,7 +1155,7 @@ private fun LinearSearchVisualizationCard() {
                     color = if (isFound) GreenAccent else TextSecondary,
                     fontSize = 12.sp,
                     fontWeight = if (isFound) FontWeight.Bold else FontWeight.Normal,
-                    modifier = Modifier.weight(1f),
+                    modifier = Modifier.weight(1f, fill = false),
                     maxLines = 2,
                     overflow = TextOverflow.Ellipsis
                 )
@@ -1310,7 +1310,7 @@ private fun BinarySearchVisualizationCard() {
             // Status and Control
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
@@ -1322,7 +1322,7 @@ private fun BinarySearchVisualizationCard() {
                     color = if (isFound) GreenAccent else TextSecondary,
                     fontSize = 12.sp,
                     fontWeight = if (isFound) FontWeight.Bold else FontWeight.Normal,
-                    modifier = Modifier.weight(1f),
+                    modifier = Modifier.weight(1f, fill = false),
                     maxLines = 2,
                     overflow = TextOverflow.Ellipsis
                 )

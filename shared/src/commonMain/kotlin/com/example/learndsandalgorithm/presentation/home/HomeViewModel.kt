@@ -121,10 +121,14 @@ class HomeViewModel(
                 }
 
                 // Recommended Practice Selection
-                val targetTopic = availableTopics.firstOrNull { topic ->
+                val quizTopics = availableTopics.filter { topic ->
+                    contentRepository.getQuestionsByTopic(topic.id).isNotEmpty()
+                }
+
+                val targetTopic = quizTopics.firstOrNull { topic ->
                     val topicLessons = contentRepository.getLessonsByTopic(topic.id)
                     topicLessons.any { it.id !in completedIds }
-                } ?: availableTopics.firstOrNull()
+                } ?: quizTopics.firstOrNull()
 
                 val activeRecommendedInfo = if (targetTopic != null) {
                     val quizQuestions = contentRepository.getQuestionsByTopic(targetTopic.id)
