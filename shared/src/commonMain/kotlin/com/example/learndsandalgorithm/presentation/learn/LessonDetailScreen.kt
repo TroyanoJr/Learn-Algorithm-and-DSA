@@ -223,10 +223,15 @@ fun LessonDetailScreen(
             }
 
             is LessonUiState.Success -> {
+                val scrollState = rememberScrollState()
+                LaunchedEffect(lessonId) {
+                    scrollState.scrollTo(0)
+                }
+
                 Column(
                     modifier = Modifier
                         .fillMaxSize()
-                        .verticalScroll(rememberScrollState())
+                        .verticalScroll(scrollState)
                         .padding(horizontal = 20.dp, vertical = 12.dp),
                     verticalArrangement = Arrangement.spacedBy(20.dp)
                 ) {
