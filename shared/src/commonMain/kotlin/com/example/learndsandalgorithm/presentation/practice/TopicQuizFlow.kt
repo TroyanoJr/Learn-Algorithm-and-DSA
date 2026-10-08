@@ -1061,11 +1061,6 @@ private fun QuizResultScreen(
                             color = TextSecondary,
                             fontSize = 12.sp
                         )
-                        Text(
-                            text = "1:15",
-                            color = TextSecondary,
-                            fontSize = 12.sp
-                        )
                     }
                 }
             }
