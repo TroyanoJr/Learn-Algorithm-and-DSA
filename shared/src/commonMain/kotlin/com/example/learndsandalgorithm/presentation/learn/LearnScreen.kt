@@ -91,9 +91,10 @@ fun LearnScreen(
     contentRepository: ContentRepository,
     progressRepository: ProgressRepository,
     selectedTopicId: String? = null,
+    expandedCategoryId: String? = null,
+    onCategoryExpandChange: (String?) -> Unit = {},
     onTopicClick: (topicId: String, topicTitle: String) -> Unit = { _, _ -> }
 ) {
-    var expandedCategoryId by remember { mutableStateOf<String?>("data_structures") }
     var categories by remember { mutableStateOf<List<CourseCategory>>(emptyList()) }
     var overviewData by remember { mutableStateOf(LearnOverviewData(0, 0, 0, 0, 0)) }
     var isLoading by remember { mutableStateOf(true) }
@@ -231,9 +232,12 @@ fun LearnScreen(
                     category = category,
                     isExpanded = isExpanded,
                     onToggleExpand = {
-                        expandedCategoryId = if (isExpanded) null else category.id
+                        onCategoryExpandChange(if (isExpanded) null else category.id)
                     },
-                    onTopicClick = onTopicClick
+                    onTopicClick = { topicId, topicTitle ->
+                        onCategoryExpandChange(category.id)
+                        onTopicClick(topicId, topicTitle)
+                    }
                 )
             }
         }

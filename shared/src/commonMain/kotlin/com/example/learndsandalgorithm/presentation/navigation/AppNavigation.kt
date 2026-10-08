@@ -53,6 +53,7 @@ fun AppNavigation(
     var selectedLessonId by remember { mutableStateOf<String?>(null) }
     var selectedQuizTopicId by remember { mutableStateOf<String?>(null) }
     var isTopicQuizActive by remember { mutableStateOf(false) }
+    var learnExpandedCategoryId by remember { mutableStateOf<String?>(null) }
 
     Scaffold(
         bottomBar = {
@@ -129,6 +130,10 @@ fun AppNavigation(
                             contentRepository = contentRepository,
                             progressRepository = progressRepository,
                             selectedTopicId = selectedTopicId,
+                            expandedCategoryId = learnExpandedCategoryId,
+                            onCategoryExpandChange = { categoryId ->
+                                learnExpandedCategoryId = categoryId
+                            },
                             onTopicClick = { topicId, topicTitle ->
                                 selectedTopicId = topicId
                                 selectedTopicTitle = topicTitle
