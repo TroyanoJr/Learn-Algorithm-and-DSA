@@ -75,8 +75,8 @@ fun HomeScreenContent(
             .fillMaxSize()
             .padding(innerPadding)
             .verticalScroll(rememberScrollState())
-            .padding(horizontal = 20.dp, vertical = 24.dp),
-        verticalArrangement = Arrangement.spacedBy(24.dp)
+            .padding(horizontal = 20.dp, vertical = 16.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         HomeHeader()
         HomeStatistics(uiState.userStats)
@@ -270,7 +270,7 @@ fun ContinueLearningSection(
                             fontSize = 12.sp
                         )
                         Spacer(modifier = Modifier.height(10.dp))
-                        Box(modifier = Modifier.width(160.dp)) {
+                        Box(modifier = Modifier.fillMaxWidth()) {
                             LinearProgressIndicator(
                                 progress = { info.topicProgressFloat.coerceIn(0f, 1f) },
                                 modifier = Modifier
@@ -371,6 +371,12 @@ fun OverallProgressSection(uiState: HomeUiState) {
 
 @Composable
 fun RecentTopicsSection(uiState: HomeUiState) {
+    val recentTopicsList = uiState.topics
+        .filter { topic ->
+            (uiState.recentTopicsProgress[topic.id] ?: 0) > 0
+        }
+        .take(3)
+
     Column(modifier = Modifier.fillMaxWidth()) {
         Text(
             text = "RECENT TOPICS",
@@ -381,11 +387,9 @@ fun RecentTopicsSection(uiState: HomeUiState) {
         )
         Spacer(modifier = Modifier.height(10.dp))
         Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-            uiState.topics.forEach { topic ->
-                val progress = uiState.recentTopicsProgress[topic.title]
-                if (progress != null && progress > 0) {
-                    TopicCardItem(topic = topic, progressPercent = progress)
-                }
+            recentTopicsList.forEach { topic ->
+                val progress = uiState.recentTopicsProgress[topic.id] ?: 0
+                TopicCardItem(topic = topic, progressPercent = progress)
             }
         }
     }

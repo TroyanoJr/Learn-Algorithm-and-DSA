@@ -144,7 +144,7 @@ class HomeViewModel(
                     val completedInTopic = topicLessons.count { it.id in completedIds }
                     if (completedInTopic > 0) {
                         val percent = ((completedInTopic.toFloat() / topicLessons.size) * 100).toInt()
-                        recentTopicsMap[topic.title] = percent
+                        recentTopicsMap[topic.id] = percent
                     }
                 }
 

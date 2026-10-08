@@ -33,6 +33,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.learndsandalgorithm.presentation.components.MarkdownContent
@@ -233,7 +234,7 @@ fun LessonDetailScreen(
                         .fillMaxSize()
                         .verticalScroll(scrollState)
                         .padding(horizontal = 20.dp, vertical = 12.dp),
-                    verticalArrangement = Arrangement.spacedBy(20.dp)
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
                     // Theory & Key Concepts Markdown Content
                     MarkdownContent(content = state.markdownContent)
@@ -398,7 +399,9 @@ private fun SortingBarVisualizationCard(
                     color = if (isFinished) GreenAccent else TextSecondary,
                     fontSize = 12.sp,
                     fontWeight = if (isFinished) FontWeight.Bold else FontWeight.Normal,
-                    modifier = Modifier.weight(1f)
+                    modifier = Modifier.weight(1f),
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis
                 )
 
                 Surface(
@@ -753,7 +756,10 @@ private fun ArrayTraversalVisualizationCard() {
                     },
                     color = if (isComplete) GreenAccent else TextSecondary,
                     fontSize = 12.sp,
-                    fontWeight = if (isComplete) FontWeight.Bold else FontWeight.Normal
+                    fontWeight = if (isComplete) FontWeight.Bold else FontWeight.Normal,
+                    modifier = Modifier.weight(1f),
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis
                 )
 
                 // Next Step Button
@@ -927,7 +933,9 @@ private fun ArrayInsertDeleteVisualizationCard() {
                     color = if (stepIndex == 2) GreenAccent else TextSecondary,
                     fontSize = 12.sp,
                     fontWeight = if (stepIndex == 2) FontWeight.Bold else FontWeight.Normal,
-                    modifier = Modifier.weight(1f)
+                    modifier = Modifier.weight(1f),
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis
                 )
 
                 Surface(
@@ -1147,7 +1155,9 @@ private fun LinearSearchVisualizationCard() {
                     color = if (isFound) GreenAccent else TextSecondary,
                     fontSize = 12.sp,
                     fontWeight = if (isFound) FontWeight.Bold else FontWeight.Normal,
-                    modifier = Modifier.weight(1f)
+                    modifier = Modifier.weight(1f),
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis
                 )
 
                 Surface(
@@ -1312,7 +1322,9 @@ private fun BinarySearchVisualizationCard() {
                     color = if (isFound) GreenAccent else TextSecondary,
                     fontSize = 12.sp,
                     fontWeight = if (isFound) FontWeight.Bold else FontWeight.Normal,
-                    modifier = Modifier.weight(1f)
+                    modifier = Modifier.weight(1f),
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis
                 )
 
                 Surface(
