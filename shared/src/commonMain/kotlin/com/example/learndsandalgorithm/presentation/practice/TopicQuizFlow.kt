@@ -370,9 +370,9 @@ private fun TopicQuizSelectionScreen(
                 Text(
                     text = "What do you want to practice?",
                     color = TextPrimary,
-                    fontSize = 28.sp,
+                    fontSize = 24.sp,
                     fontWeight = FontWeight.Bold,
-                    lineHeight = 32.sp
+                    lineHeight = 28.sp
                 )
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
@@ -409,7 +409,7 @@ private fun TopicQuizSelectionScreen(
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(18.dp),
+                        .padding(16.dp),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
@@ -489,7 +489,7 @@ private fun TopicQuizSelectionScreen(
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(18.dp),
+                    .padding(16.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 Text(
@@ -533,8 +533,8 @@ private fun QuizQuestionScreen(
             .fillMaxSize()
             .background(DarkBgColor)
             .verticalScroll(rememberScrollState())
-            .padding(horizontal = 20.dp, vertical = 20.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
+            .padding(horizontal = 16.dp, vertical = 12.dp),
+        verticalArrangement = Arrangement.spacedBy(10.dp)
     ) {
         // Header Row
         Row(
@@ -602,7 +602,7 @@ private fun QuizQuestionScreen(
         Spacer(modifier = Modifier.height(4.dp))
 
         // Question Statement
-        Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+        Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
             Text(
                 text = "QUESTION ${questionIndex + 1}",
                 color = OrangeAccent,
@@ -613,9 +613,9 @@ private fun QuizQuestionScreen(
             Text(
                 text = question.statement,
                 color = TextPrimary,
-                fontSize = 20.sp,
+                fontSize = 18.sp,
                 fontWeight = FontWeight.Bold,
-                lineHeight = 26.sp
+                lineHeight = 23.sp
             )
         }
 
@@ -670,7 +670,7 @@ private fun QuizQuestionScreen(
 
             Surface(
                 color = bgColor,
-                shape = RoundedCornerShape(14.dp),
+                shape = RoundedCornerShape(12.dp),
                 border = BorderStroke(1.dp, borderColor),
                 modifier = Modifier
                     .fillMaxWidth()
@@ -679,26 +679,26 @@ private fun QuizQuestionScreen(
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(14.dp),
+                        .padding(horizontal = 12.dp, vertical = 10.dp),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(12.dp),
+                        horizontalArrangement = Arrangement.spacedBy(10.dp),
                         modifier = Modifier.weight(1f)
                     ) {
                         Box(
                             modifier = Modifier
-                                .size(32.dp)
-                                .clip(RoundedCornerShape(8.dp))
+                                .size(28.dp)
+                                .clip(RoundedCornerShape(6.dp))
                                 .background(letterBgColor),
                             contentAlignment = Alignment.Center
                         ) {
                             Text(
                                 text = optionLabels.getOrElse(index) { "?" },
                                 color = letterTextColor,
-                                fontSize = 13.sp,
+                                fontSize = 12.sp,
                                 fontWeight = FontWeight.Bold
                             )
                         }
@@ -706,7 +706,7 @@ private fun QuizQuestionScreen(
                         Text(
                             text = optionText,
                             color = TextPrimary,
-                            fontSize = 15.sp,
+                            fontSize = 14.sp,
                             fontWeight = FontWeight.Medium
                         )
                     }
@@ -731,27 +731,27 @@ private fun QuizQuestionScreen(
 
             Surface(
                 color = feedbackBgColor,
-                shape = RoundedCornerShape(14.dp),
+                shape = RoundedCornerShape(12.dp),
                 border = BorderStroke(1.dp, feedbackBorderColor),
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(6.dp)
+                        .padding(12.dp),
+                    verticalArrangement = Arrangement.spacedBy(4.dp)
                 ) {
                     Text(
                         text = if (isCorrect) "Correct!" else "Incorrect",
                         color = if (isCorrect) GreenAccent else RedAccent,
-                        fontSize = 16.sp,
+                        fontSize = 15.sp,
                         fontWeight = FontWeight.Bold
                     )
                     Text(
                         text = question.explanation,
                         color = Color(0xFFD1D5DB),
-                        fontSize = 13.sp,
-                        lineHeight = 18.sp
+                        fontSize = 12.sp,
+                        lineHeight = 16.sp
                     )
                 }
             }
@@ -767,7 +767,7 @@ private fun QuizQuestionScreen(
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(vertical = 14.dp),
+                        .padding(vertical = 11.dp),
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
@@ -845,7 +845,7 @@ private fun QuizCompleteScreen(
             Text(
                 text = "Quiz Complete",
                 color = TextPrimary,
-                fontSize = 28.sp,
+                fontSize = 24.sp,
                 fontWeight = FontWeight.Bold
             )
 
@@ -912,13 +912,13 @@ private fun QuizResultScreen(
         modifier = Modifier
             .fillMaxSize()
             .background(DarkBgColor)
-            .padding(horizontal = 20.dp, vertical = 24.dp),
+            .padding(horizontal = 16.dp, vertical = 16.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.SpaceBetween
     ) {
         Column(
             modifier = Modifier.fillMaxWidth(),
-            verticalArrangement = Arrangement.spacedBy(20.dp)
+            verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             // Header
             Row(
@@ -958,13 +958,13 @@ private fun QuizResultScreen(
                     Text(
                         text = "$correctCount",
                         color = TextPrimary,
-                        fontSize = 44.sp,
+                        fontSize = 38.sp,
                         fontWeight = FontWeight.Bold
                     )
                     Text(
                         text = " / $totalQuestions",
                         color = TextSecondary,
-                        fontSize = 28.sp,
+                        fontSize = 24.sp,
                         fontWeight = FontWeight.Bold,
                         modifier = Modifier.padding(bottom = 4.dp)
                     )
@@ -996,7 +996,7 @@ private fun QuizResultScreen(
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(18.dp),
+                            .padding(12.dp),
                         horizontalArrangement = Arrangement.SpaceAround,
                         verticalAlignment = Alignment.CenterVertically
                     ) {

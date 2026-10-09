@@ -204,7 +204,7 @@ private fun PracticeHeader() {
             Text(
                 text = "Practice",
                 color = TextPrimary,
-                fontSize = 28.sp,
+                fontSize = 24.sp,
                 fontWeight = FontWeight.Bold
             )
             Spacer(modifier = Modifier.height(4.dp))
@@ -246,7 +246,7 @@ private fun RecommendedCard(onOpenTopicQuiz: () -> Unit) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(18.dp),
+                .padding(14.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
@@ -391,7 +391,7 @@ private fun PracticeModeCard(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp),
+                .padding(12.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
@@ -500,7 +500,7 @@ private fun PracticeFeaturedCard(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(18.dp),
+                .padding(14.dp),
             verticalArrangement = Arrangement.spacedBy(14.dp)
         ) {
             Row(

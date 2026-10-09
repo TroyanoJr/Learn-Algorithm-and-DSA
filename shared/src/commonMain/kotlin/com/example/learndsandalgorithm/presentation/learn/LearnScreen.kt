@@ -263,16 +263,16 @@ private fun LearnHeader() {
             Text(
                 text = "What will you",
                 color = TextPrimary,
-                fontSize = 28.sp,
+                fontSize = 24.sp,
                 fontWeight = FontWeight.Bold,
-                lineHeight = 32.sp
+                lineHeight = 28.sp
             )
             Text(
                 text = "learn today?",
                 color = OrangeAccent,
-                fontSize = 28.sp,
+                fontSize = 24.sp,
                 fontWeight = FontWeight.Bold,
-                lineHeight = 32.sp
+                lineHeight = 28.sp
             )
         }
 
@@ -393,7 +393,7 @@ private fun CourseCategoryCard(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(18.dp)
+                .padding(14.dp)
         ) {
             // Header row
             Row(
@@ -417,24 +417,21 @@ private fun CourseCategoryCard(
                             .background(BlueAccent)
                     )
 
-                    Column {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(8.dp)
-                        ) {
-                            Text(
-                                text = category.title,
-                                color = BlueAccent,
-                                fontSize = 16.sp,
-                                fontWeight = FontWeight.Bold,
-                                letterSpacing = 0.5.sp
-                            )
-                            Text(
-                                text = category.topicsCountText,
-                                color = TextSecondary,
-                                fontSize = 12.sp
-                            )
-                        }
+                    Column(
+                        verticalArrangement = Arrangement.spacedBy(2.dp)
+                    ) {
+                        Text(
+                            text = category.title,
+                            color = BlueAccent,
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.Bold,
+                            letterSpacing = 0.5.sp
+                        )
+                        Text(
+                            text = category.topicsCountText,
+                            color = TextSecondary,
+                            fontSize = 12.sp
+                        )
                     }
                 }
 
@@ -540,7 +537,7 @@ private fun TopicItemRow(
         modifier = Modifier
             .fillMaxWidth()
             .clickable(enabled = !topic.isLocked, onClick = onClick)
-            .padding(vertical = 14.dp),
+            .padding(vertical = 10.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween
     ) {

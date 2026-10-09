@@ -48,7 +48,7 @@ fun MarkdownContent(
     SelectionContainer {
         Column(
             modifier = modifier.fillMaxWidth(),
-            verticalArrangement = Arrangement.spacedBy(14.dp)
+            verticalArrangement = Arrangement.spacedBy(10.dp)
         ) {
             blocks.forEach { block ->
                 when (block) {
@@ -63,7 +63,7 @@ fun MarkdownContent(
                             fontSize = fontSize,
                             fontWeight = fontWeight,
                             color = color,
-                            modifier = Modifier.padding(top = 8.dp)
+                            modifier = Modifier.padding(top = 4.dp)
                         )
                     }
 
@@ -125,7 +125,7 @@ fun MarkdownContent(
                                 .clip(RoundedCornerShape(12.dp))
                                 .background(CodeBgColor)
                                 .border(1.dp, CodeBorderColor, RoundedCornerShape(12.dp))
-                                .padding(14.dp)
+                                .padding(10.dp)
                         ) {
                             Column {
                                 if (block.language.isNotBlank()) {
