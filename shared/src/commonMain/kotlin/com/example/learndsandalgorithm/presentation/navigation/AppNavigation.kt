@@ -157,8 +157,10 @@ fun AppBottomNavigation(
     Surface(
         color = DarkCardBgColor,
         border = BorderStroke(1.dp, SubtleBorderColor),
-        shape = RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp),
-        modifier = Modifier.fillMaxWidth()
+        shape = RoundedCornerShape(24.dp),
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(start = 16.dp, end = 16.dp, top = 6.dp, bottom = 12.dp)
     ) {
         Row(
             modifier = Modifier

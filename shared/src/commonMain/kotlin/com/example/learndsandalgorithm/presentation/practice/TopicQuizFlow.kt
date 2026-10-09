@@ -324,8 +324,8 @@ private fun TopicQuizSelectionScreen(
             .fillMaxSize()
             .background(DarkBgColor)
             .verticalScroll(rememberScrollState())
-            .padding(horizontal = 20.dp, vertical = 24.dp),
-        verticalArrangement = Arrangement.spacedBy(20.dp)
+            .padding(horizontal = 20.dp, vertical = 16.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         // Top Bar
         Row(
@@ -409,24 +409,24 @@ private fun TopicQuizSelectionScreen(
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(16.dp),
+                        .padding(12.dp),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     // Topic content area (clickable to select topic details)
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(14.dp),
+                        horizontalArrangement = Arrangement.spacedBy(12.dp),
                         modifier = Modifier
                             .weight(1f)
                             .clickable { onSelectTopic(topic.id) }
                     ) {
                         Box(
                             modifier = Modifier
-                                .size(48.dp)
-                                .clip(RoundedCornerShape(12.dp))
+                                .size(42.dp)
+                                .clip(RoundedCornerShape(10.dp))
                                 .background(topic.iconBgColor)
-                                .border(1.dp, topic.iconBorderColor.copy(alpha = 0.5f), RoundedCornerShape(12.dp)),
+                                .border(1.dp, topic.iconBorderColor.copy(alpha = 0.5f), RoundedCornerShape(10.dp)),
                             contentAlignment = Alignment.Center
                         ) {
                             Text(
@@ -437,22 +437,22 @@ private fun TopicQuizSelectionScreen(
                             )
                         }
 
-                        Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                        Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
                             Text(
                                 text = topic.title,
                                 color = TextPrimary,
-                                fontSize = 18.sp,
+                                fontSize = 16.sp,
                                 fontWeight = FontWeight.Bold
                             )
                             Text(
                                 text = topic.category,
                                 color = TextSecondary,
-                                fontSize = 13.sp
+                                fontSize = 12.sp
                             )
                             Text(
                                 text = "${topic.questionCount} questions",
                                 color = TextPrimary,
-                                fontSize = 13.sp,
+                                fontSize = 12.sp,
                                 fontWeight = FontWeight.Medium
                             )
                         }
@@ -461,7 +461,7 @@ private fun TopicQuizSelectionScreen(
                     // Chevron action button (clickable to start quiz)
                     Box(
                         modifier = Modifier
-                            .size(36.dp)
+                            .size(32.dp)
                             .clip(CircleShape)
                             .background(Color(0xFF262634))
                             .clickable { onStartQuizForTopic(topic) },
@@ -470,7 +470,7 @@ private fun TopicQuizSelectionScreen(
                         Text(
                             text = "›",
                             color = TextPrimary,
-                            fontSize = 20.sp,
+                            fontSize = 18.sp,
                             fontWeight = FontWeight.Bold
                         )
                     }
@@ -489,8 +489,8 @@ private fun TopicQuizSelectionScreen(
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(16.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
+                    .padding(12.dp),
+                verticalArrangement = Arrangement.spacedBy(6.dp)
             ) {
                 Text(
                     text = "TOPIC DETAILS",
@@ -502,7 +502,7 @@ private fun TopicQuizSelectionScreen(
                 Text(
                     text = currentSelectedTopic.title,
                     color = TextPrimary,
-                    fontSize = 17.sp,
+                    fontSize = 16.sp,
                     fontWeight = FontWeight.Bold
                 )
                 Text(
@@ -533,8 +533,8 @@ private fun QuizQuestionScreen(
             .fillMaxSize()
             .background(DarkBgColor)
             .verticalScroll(rememberScrollState())
-            .padding(horizontal = 16.dp, vertical = 12.dp),
-        verticalArrangement = Arrangement.spacedBy(10.dp)
+            .padding(horizontal = 16.dp, vertical = 10.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         // Header Row
         Row(
@@ -679,7 +679,7 @@ private fun QuizQuestionScreen(
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 12.dp, vertical = 10.dp),
+                        .padding(horizontal = 12.dp, vertical = 8.dp),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
