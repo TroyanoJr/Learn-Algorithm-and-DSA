@@ -537,7 +537,7 @@ private fun TopicItemRow(
         modifier = Modifier
             .fillMaxWidth()
             .clickable(enabled = !topic.isLocked, onClick = onClick)
-            .padding(vertical = 10.dp),
+            .padding(vertical = 8.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
