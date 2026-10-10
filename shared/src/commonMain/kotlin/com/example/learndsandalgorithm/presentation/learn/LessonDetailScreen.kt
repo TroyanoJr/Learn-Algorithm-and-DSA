@@ -1573,9 +1573,30 @@ private fun ArrayComplexityComparisonCard() {
 private fun LinearSearchVisualizationCard() {
     val arrayData = listOf("4", "8", "2", "7", "5")
     val target = 7
-    var currentIndex by remember { mutableStateOf(0) }
-    val isFound = currentIndex < arrayData.size && arrayData[currentIndex].toInt() == target
-    val isFinished = isFound || currentIndex >= arrayData.size
+    val totalItems = arrayData.size
+
+    var currentIndex by remember { mutableStateOf(-1) }
+    var isPlaying by remember { mutableStateOf(false) }
+
+    val isFound = currentIndex in arrayData.indices && arrayData[currentIndex].toInt() == target
+    val isFinished = isFound || currentIndex >= totalItems
+    val inspectedCount = if (currentIndex < 0) 0 else (currentIndex + 1).coerceAtMost(totalItems)
+
+    // Auto-play timer mechanism
+    LaunchedEffect(isPlaying, currentIndex) {
+        if (isPlaying && !isFinished) {
+            delay(1000L)
+            if (currentIndex < 0) {
+                currentIndex = 0
+            } else if (!isFinished && currentIndex < totalItems - 1) {
+                currentIndex++
+            } else {
+                isPlaying = false
+            }
+        } else if (isFinished) {
+            isPlaying = false
+        }
+    }
 
     Surface(
         color = DarkCardBgColor,
@@ -1587,36 +1608,57 @@ private fun LinearSearchVisualizationCard() {
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(12.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
+            verticalArrangement = Arrangement.spacedBy(10.dp)
         ) {
+            // Header Row
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "LINEAR SEARCH VISUALIZATION",
+                    text = "LINEAR SEARCH",
                     color = OrangeAccent,
-                    fontSize = 10.sp,
+                    fontSize = 11.sp,
                     fontWeight = FontWeight.Bold,
                     letterSpacing = 1.2.sp
                 )
+
+                val badgeText = when {
+                    currentIndex < 0 -> "TARGET: $target"
+                    isFound -> "FOUND AT INDEX $currentIndex ✓"
+                    currentIndex >= totalItems -> "NOT FOUND"
+                    else -> "STEP ${currentIndex + 1} OF $totalItems"
+                }
+
+                val badgeColor = when {
+                    isFound -> GreenAccent
+                    currentIndex >= totalItems -> RedAccent
+                    else -> BlueAccent
+                }
+
+                val badgeBg = when {
+                    isFound -> Color(0xFF092317)
+                    currentIndex >= totalItems -> Color(0xFF210C0D)
+                    else -> Color(0xFF13233A)
+                }
+
                 Box(
                     modifier = Modifier
                         .clip(RoundedCornerShape(4.dp))
-                        .background(if (isFound) Color(0xFF092317) else Color(0xFF13233A))
+                        .background(badgeBg)
                         .padding(horizontal = 8.dp, vertical = 3.dp)
                 ) {
                     Text(
-                        text = "Target: $target",
-                        color = if (isFound) GreenAccent else BlueAccent,
+                        text = badgeText,
+                        color = badgeColor,
                         fontSize = 10.sp,
                         fontWeight = FontWeight.Bold
                     )
                 }
             }
 
-            // Array Cells Row
+            // Array Cells Row (Indices 0..4)
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceEvenly,
@@ -1625,92 +1667,235 @@ private fun LinearSearchVisualizationCard() {
                 arrayData.forEachIndexed { index, value ->
                     val isCurrent = index == currentIndex && !isFinished
                     val isTargetMatch = index == currentIndex && isFound
+                    val isInspected = index <= currentIndex && currentIndex >= 0
+
+                    val cellBg = when {
+                        isTargetMatch -> Color(0xFF092317)
+                        isCurrent -> Color(0xFF2A1C12)
+                        else -> Color(0xFF13131C)
+                    }
+
+                    val borderColor = when {
+                        isTargetMatch -> GreenAccent
+                        isCurrent -> OrangeAccent
+                        else -> CardBorderColor
+                    }
+
+                    val textColor = when {
+                        isTargetMatch -> GreenAccent
+                        isCurrent -> OrangeAccent
+                        isInspected -> TextSecondary
+                        else -> TextPrimary
+                    }
 
                     Column(
                         horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.spacedBy(6.dp)
+                        verticalArrangement = Arrangement.spacedBy(4.dp)
                     ) {
-                        Text(
-                            text = if (isCurrent || isTargetMatch) "↑ index $index" else "Index $index",
-                            color = if (isTargetMatch) GreenAccent else if (isCurrent) OrangeAccent else TextSecondary,
-                            fontSize = 11.sp,
-                            fontWeight = if (isCurrent || isTargetMatch) FontWeight.Bold else FontWeight.Normal
-                        )
                         Box(
                             modifier = Modifier
-                                .size(50.dp)
-                                .clip(RoundedCornerShape(12.dp))
-                                .background(
-                                    when {
-                                        isTargetMatch -> Color(0xFF092317)
-                                        isCurrent -> Color(0xFF2A1C12)
-                                        else -> Color(0xFF13131C)
-                                    }
-                                )
+                                .size(46.dp)
+                                .clip(RoundedCornerShape(10.dp))
+                                .background(cellBg)
                                 .border(
-                                    width = if (isCurrent || isTargetMatch) 2.dp else 1.dp,
-                                    color = when {
-                                        isTargetMatch -> GreenAccent
-                                        isCurrent -> OrangeAccent
-                                        else -> CardBorderColor
-                                    },
-                                    shape = RoundedCornerShape(12.dp)
+                                    width = if (isCurrent || isTargetMatch) 1.5.dp else 1.dp,
+                                    color = borderColor,
+                                    shape = RoundedCornerShape(10.dp)
                                 ),
                             contentAlignment = Alignment.Center
                         ) {
                             Text(
                                 text = value,
-                                color = when {
-                                    isTargetMatch -> GreenAccent
-                                    isCurrent -> OrangeAccent
-                                    else -> TextPrimary
-                                },
+                                color = textColor,
                                 fontSize = 16.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
+
+                        Text(
+                            text = index.toString(),
+                            color = if (isTargetMatch) GreenAccent else if (isCurrent) OrangeAccent else TextSecondary,
+                            fontSize = 10.sp,
+                            fontWeight = if (isCurrent || isTargetMatch) FontWeight.Bold else FontWeight.Normal
+                        )
+                    }
+                }
+            }
+
+            // Explanation Panel & Track Line
+            Surface(
+                color = Color(0xFF13131C),
+                shape = RoundedCornerShape(12.dp),
+                border = BorderStroke(1.dp, CardBorderColor),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(12.dp),
+                    verticalArrangement = Arrangement.spacedBy(10.dp)
+                ) {
+                    val explanationText = when {
+                        currentIndex < 0 -> "Target = $target. Inspect elements sequentially from index 0 until found."
+                        isFound -> "Target $target found at index $currentIndex! Linear Search complete. ✓"
+                        currentIndex >= totalItems -> "Target $target not found in array after inspecting all $totalItems items."
+                        else -> "Checking index $currentIndex: value ${arrayData[currentIndex]} != $target. Move to next index."
+                    }
+
+                    Text(
+                        text = explanationText,
+                        color = if (isFound) GreenAccent else TextPrimary,
+                        fontSize = 13.sp,
+                        lineHeight = 18.sp
+                    )
+
+                    // Track & Step Indicator Row
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .weight(1f)
+                                .height(3.dp)
+                                .clip(RoundedCornerShape(2.dp))
+                                .background(Color(0xFF262634))
+                        ) {
+                            val progressFloat = (inspectedCount.toFloat() / totalItems).coerceIn(0f, 1f)
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth(progressFloat)
+                                    .height(3.dp)
+                                    .background(if (isFound) GreenAccent else OrangeAccent, RoundedCornerShape(2.dp))
+                            )
+                        }
+
+                        Text(
+                            text = "$inspectedCount / $totalItems CHECKED",
+                            color = TextSecondary,
+                            fontSize = 10.sp,
+                            fontWeight = FontWeight.Bold,
+                            letterSpacing = 1.sp
+                        )
+                    }
+                }
+            }
+
+            // Controls Row (Reset, Previous, Play/Pause, Next)
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                // Reset (↻)
+                Surface(
+                    color = DarkCardBgColor,
+                    shape = RoundedCornerShape(12.dp),
+                    border = BorderStroke(1.dp, CardBorderColor),
+                    modifier = Modifier
+                        .size(44.dp)
+                        .clickable {
+                            isPlaying = false
+                            currentIndex = -1
+                        }
+                ) {
+                    Box(contentAlignment = Alignment.Center) {
+                        Text(
+                            text = "↻",
+                            color = TextPrimary,
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                }
+
+                // Previous (‹)
+                Surface(
+                    color = DarkCardBgColor,
+                    shape = RoundedCornerShape(12.dp),
+                    border = BorderStroke(1.dp, CardBorderColor),
+                    modifier = Modifier
+                        .size(44.dp)
+                        .clickable(enabled = currentIndex >= 0) {
+                            isPlaying = false
+                            if (currentIndex > 0) {
+                                currentIndex--
+                            } else {
+                                currentIndex = -1
+                            }
+                        }
+                ) {
+                    Box(contentAlignment = Alignment.Center) {
+                        Text(
+                            text = "‹",
+                            color = if (currentIndex >= 0) TextPrimary else TextSecondary.copy(alpha = 0.3f),
+                            fontSize = 20.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                }
+
+                // Play / Pause (▶ Play / ⏸ Pause)
+                Surface(
+                    color = if (isFinished) Color(0xFF22222E) else OrangeAccent,
+                    shape = RoundedCornerShape(12.dp),
+                    modifier = Modifier
+                        .weight(1f)
+                        .height(44.dp)
+                        .clickable(enabled = !isFinished) {
+                            if (!isFinished) {
+                                if (currentIndex < 0) {
+                                    currentIndex = 0
+                                }
+                                isPlaying = !isPlaying
+                            }
+                        }
+                ) {
+                    Box(contentAlignment = Alignment.Center) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(6.dp)
+                        ) {
+                            Text(
+                                text = if (isPlaying) "⏸" else "▶",
+                                color = if (isFinished) TextSecondary else Color(0xFF111115),
+                                fontSize = 14.sp
+                            )
+                            Text(
+                                text = if (isPlaying) "Pause" else "Play",
+                                color = if (isFinished) TextSecondary else Color(0xFF111115),
+                                fontSize = 15.sp,
                                 fontWeight = FontWeight.Bold
                             )
                         }
                     }
                 }
-            }
 
-            // Status and Control
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(12.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = when {
-                        isFound -> "Target 7 found at index $currentIndex! ✓"
-                        currentIndex >= arrayData.size -> "Target not found in array"
-                        else -> "Checking index $currentIndex: ${arrayData[currentIndex]} != 7"
-                    },
-                    color = if (isFound) GreenAccent else TextSecondary,
-                    fontSize = 12.sp,
-                    fontWeight = if (isFound) FontWeight.Bold else FontWeight.Normal,
-                    modifier = Modifier.weight(1f, fill = false),
-                    maxLines = 2,
-                    overflow = TextOverflow.Ellipsis
-                )
-
+                // Next (›)
                 Surface(
-                    color = if (isFinished) Color(0xFF22222E) else OrangeAccent,
-                    shape = RoundedCornerShape(8.dp),
-                    modifier = Modifier.clickable {
-                        if (isFinished) {
-                            currentIndex = 0
-                        } else {
-                            currentIndex++
+                    color = DarkCardBgColor,
+                    shape = RoundedCornerShape(12.dp),
+                    border = BorderStroke(1.dp, CardBorderColor),
+                    modifier = Modifier
+                        .size(44.dp)
+                        .clickable(enabled = !isFinished) {
+                            isPlaying = false
+                            if (currentIndex < 0) {
+                                currentIndex = 0
+                            } else if (!isFinished) {
+                                currentIndex++
+                            }
                         }
-                    }
                 ) {
-                    Text(
-                        text = if (isFinished) "Restart ↻" else "Next Step →",
-                        color = if (isFinished) TextPrimary else DarkBgColor,
-                        fontSize = 12.sp,
-                        fontWeight = FontWeight.Bold,
-                        modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp)
-                    )
+                    Box(contentAlignment = Alignment.Center) {
+                        Text(
+                            text = "›",
+                            color = if (!isFinished) TextPrimary else TextSecondary.copy(alpha = 0.3f),
+                            fontSize = 20.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
                 }
             }
         }
