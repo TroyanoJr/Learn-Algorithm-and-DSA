@@ -224,68 +224,94 @@ fun LessonDetailScreen(
             }
 
             is LessonUiState.Success -> {
+                var showCelebrationOverlay by remember { mutableStateOf(false) }
                 val scrollState = rememberScrollState()
+
                 LaunchedEffect(lessonId) {
                     scrollState.scrollTo(0)
+                    showCelebrationOverlay = false
                 }
 
-                Column(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .verticalScroll(scrollState)
-                        .padding(horizontal = 16.dp, vertical = 10.dp),
-                    verticalArrangement = Arrangement.spacedBy(10.dp)
-                ) {
-                    // Theory & Key Concepts Markdown Content
-                    MarkdownContent(content = state.markdownContent)
+                Box(modifier = Modifier.fillMaxSize()) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .verticalScroll(scrollState)
+                            .padding(horizontal = 16.dp, vertical = 10.dp),
+                        verticalArrangement = Arrangement.spacedBy(10.dp)
+                    ) {
+                        // Theory & Key Concepts Markdown Content
+                        MarkdownContent(content = state.markdownContent)
 
-                    // Lesson Specific Visualizations
-                    when (state.lesson.id) {
-                        "lesson_arrays_1" -> ArrayVisualizationCard()
-                        "lesson_arrays_2" -> ArrayInsertDeleteVisualizationCard()
-                        "lesson_arrays_3" -> ArrayTraversalVisualizationCard()
-                        "lesson_arrays_4" -> ArrayInsertDeleteVisualizationCard()
-                        "lesson_arrays_5" -> ArrayComplexityComparisonCard()
-                        "searching_2" -> LinearSearchVisualizationCard()
-                        "searching_3" -> BinarySearchVisualizationCard()
-                        "searching_4" -> SearchComparisonCard()
-                        "sorting_2" -> BubbleSortVisualizationCard()
-                        "sorting_3" -> SelectionSortVisualizationCard()
-                        "sorting_4" -> InsertionSortVisualizationCard()
-                        "sorting_5" -> SortingComparisonCard()
-                        else -> {
-                            if (state.lesson.topicId == "arrays") {
-                                ArrayVisualizationCard()
+                        // Lesson Specific Visualizations
+                        when (state.lesson.id) {
+                            "lesson_arrays_1" -> ArrayVisualizationCard()
+                            "lesson_arrays_2" -> ArrayInsertDeleteVisualizationCard()
+                            "lesson_arrays_3" -> ArrayTraversalVisualizationCard()
+                            "lesson_arrays_4" -> ArrayInsertDeleteVisualizationCard()
+                            "lesson_arrays_5" -> ArrayComplexityComparisonCard()
+                            "searching_2" -> LinearSearchVisualizationCard()
+                            "searching_3" -> BinarySearchVisualizationCard()
+                            "searching_4" -> SearchComparisonCard()
+                            "sorting_2" -> BubbleSortVisualizationCard()
+                            "sorting_3" -> SelectionSortVisualizationCard()
+                            "sorting_4" -> InsertionSortVisualizationCard()
+                            "sorting_5" -> SortingComparisonCard()
+                            else -> {
+                                if (state.lesson.topicId == "arrays") {
+                                    ArrayVisualizationCard()
+                                }
                             }
                         }
+
+                        // Check Your Understanding Quiz Section
+                        if (state.questions.isNotEmpty()) {
+                            val question = state.questions.first()
+                            CheckYourUnderstandingSection(
+                                statement = question.statement,
+                                options = question.options,
+                                correctIndex = question.correctOptionIndex,
+                                explanation = question.explanation,
+                                selectedOption = selectedQuestionOption,
+                                onSelectOption = { selectedQuestionOption = it }
+                            )
+                        }
+
+                        // Finish Lesson Section with Next Lesson capability
+                        FinishLessonSection(
+                            isCompleted = isLessonCompleted,
+                            nextLessonId = state.nextLessonId,
+                            onComplete = {
+                                viewModel.markLessonCompleted()
+                                isLessonCompleted = true
+                                showCelebrationOverlay = true
+                            },
+                            onNavigateToNextLesson = onNavigateToLesson,
+                            onBackToTopic = onBack
+                        )
+
+                        Spacer(modifier = Modifier.height(16.dp))
                     }
 
-                    // Check Your Understanding Quiz Section
-                    if (state.questions.isNotEmpty()) {
-                        val question = state.questions.first()
-                        CheckYourUnderstandingSection(
-                            statement = question.statement,
-                            options = question.options,
-                            correctIndex = question.correctOptionIndex,
-                            explanation = question.explanation,
-                            selectedOption = selectedQuestionOption,
-                            onSelectOption = { selectedQuestionOption = it }
+                    // Full-Screen Celebration Overlay (Figma Reference)
+                    if (showCelebrationOverlay) {
+                        LessonCompletionCelebrationOverlay(
+                            lessonTitle = state.lesson.title,
+                            xpAmount = state.lesson.xp,
+                            nextLessonId = state.nextLessonId,
+                            onContinue = {
+                                showCelebrationOverlay = false
+                                if (state.nextLessonId != null) {
+                                    onNavigateToLesson(state.nextLessonId)
+                                } else {
+                                    onBack()
+                                }
+                            },
+                            onReview = {
+                                showCelebrationOverlay = false
+                            }
                         )
                     }
-
-                    // Finish Lesson Section with Next Lesson capability
-                    FinishLessonSection(
-                        isCompleted = isLessonCompleted,
-                        nextLessonId = state.nextLessonId,
-                        onComplete = {
-                            viewModel.markLessonCompleted()
-                            isLessonCompleted = true
-                        },
-                        onNavigateToNextLesson = onNavigateToLesson,
-                        onBackToTopic = onBack
-                    )
-
-                    Spacer(modifier = Modifier.height(16.dp))
                 }
             }
         }
@@ -1698,6 +1724,217 @@ private fun FinishLessonSection(
                     fontSize = 15.sp,
                     fontWeight = FontWeight.Bold
                 )
+            }
+        }
+    }
+}
+
+@Composable
+private fun LessonCompletionCelebrationOverlay(
+    lessonTitle: String,
+    xpAmount: Int,
+    nextLessonId: String?,
+    onContinue: () -> Unit,
+    onReview: () -> Unit
+) {
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color(0xF2111115))
+            .clickable(enabled = false) {}
+            .padding(horizontal = 24.dp, vertical = 28.dp),
+        contentAlignment = Alignment.Center
+    ) {
+        Column(
+            modifier = Modifier.fillMaxSize(),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.SpaceBetween
+        ) {
+            Spacer(modifier = Modifier.height(10.dp))
+
+            // Center Content
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(14.dp)
+            ) {
+                // Celebration Badge Container with spark accents
+                Box(contentAlignment = Alignment.Center) {
+                    Text(
+                        text = "✨",
+                        fontSize = 18.sp,
+                        modifier = Modifier
+                            .align(Alignment.TopStart)
+                            .padding(end = 40.dp)
+                    )
+                    Text(
+                        text = "⭐",
+                        fontSize = 16.sp,
+                        modifier = Modifier
+                            .align(Alignment.TopEnd)
+                            .padding(start = 40.dp)
+                    )
+
+                    Surface(
+                        color = Color(0xFF221A15),
+                        shape = RoundedCornerShape(24.dp),
+                        border = BorderStroke(1.5.dp, OrangeAccent),
+                        modifier = Modifier.size(88.dp)
+                    ) {
+                        Box(contentAlignment = Alignment.Center) {
+                            Surface(
+                                color = Color.Transparent,
+                                shape = RoundedCornerShape(16.dp),
+                                border = BorderStroke(2.dp, OrangeAccent),
+                                modifier = Modifier.size(44.dp)
+                            ) {
+                                Box(contentAlignment = Alignment.Center) {
+                                    Text(
+                                        text = "✓",
+                                        color = OrangeAccent,
+                                        fontSize = 24.sp,
+                                        fontWeight = FontWeight.Bold
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(4.dp))
+
+                Text(
+                    text = "LESSON COMPLETE",
+                    color = OrangeAccent,
+                    fontSize = 11.sp,
+                    fontWeight = FontWeight.Bold,
+                    letterSpacing = 1.5.sp
+                )
+
+                Text(
+                    text = "Lesson completed!",
+                    color = TextPrimary,
+                    fontSize = 30.sp,
+                    fontWeight = FontWeight.Bold
+                )
+
+                Text(
+                    text = lessonTitle,
+                    color = TextSecondary,
+                    fontSize = 15.sp,
+                    fontWeight = FontWeight.Medium
+                )
+
+                Spacer(modifier = Modifier.height(6.dp))
+
+                // XP Reward Card
+                Surface(
+                    color = Color(0xFF1E1713),
+                    shape = RoundedCornerShape(18.dp),
+                    border = BorderStroke(1.dp, OrangeAccent.copy(alpha = 0.35f)),
+                    modifier = Modifier.padding(horizontal = 16.dp)
+                ) {
+                    Column(
+                        modifier = Modifier.padding(horizontal = 36.dp, vertical = 14.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
+                        Text(
+                            text = "LESSON REWARD",
+                            color = TextSecondary,
+                            fontSize = 10.sp,
+                            fontWeight = FontWeight.Bold,
+                            letterSpacing = 1.2.sp
+                        )
+                        Text(
+                            text = "+$xpAmount XP",
+                            color = OrangeAccent,
+                            fontSize = 30.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(4.dp))
+
+                // Saved Progress Confirmation Row
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .size(20.dp)
+                            .clip(CircleShape)
+                            .background(Color(0xFF064E3B))
+                            .border(1.dp, GreenAccent, CircleShape),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = "✓",
+                            color = GreenAccent,
+                            fontSize = 11.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                    Text(
+                        text = "Your progress has been saved.",
+                        color = Color(0xFFD1D5DB),
+                        fontSize = 13.sp
+                    )
+                }
+            }
+
+            // Bottom Action Buttons
+            Column(
+                modifier = Modifier.fillMaxWidth(),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                // Primary: Continue to next lesson
+                Surface(
+                    color = OrangeAccent,
+                    shape = RoundedCornerShape(14.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable { onContinue() }
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 15.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = if (nextLessonId != null) "Continue to next lesson →" else "Back to Topic →",
+                            color = Color(0xFF111115),
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                }
+
+                // Secondary: Review lesson
+                Surface(
+                    color = DarkCardBgColor,
+                    shape = RoundedCornerShape(14.dp),
+                    border = BorderStroke(1.dp, CardBorderColor),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable { onReview() }
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 15.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = "Review lesson",
+                            color = TextPrimary,
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                }
             }
         }
     }
