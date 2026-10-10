@@ -37,6 +37,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.learndsandalgorithm.presentation.components.MarkdownContent
+import kotlinx.coroutines.delay
 
 private val DarkBgColor = Color(0xFF111115)
 private val DarkCardBgColor = Color(0xFF181820)
@@ -683,9 +684,27 @@ private fun ArrayVisualizationCard() {
 
 @Composable
 private fun ArrayTraversalVisualizationCard() {
-    val arrayData = listOf("10", "20", "30", "40")
-    var currentIndex by remember { mutableStateOf(0) }
-    val isComplete = currentIndex >= arrayData.size
+    val arrayData = listOf("10", "25", "42", "67", "91")
+    var currentIndex by remember { mutableStateOf(-1) }
+    var isPlaying by remember { mutableStateOf(false) }
+
+    val totalElements = arrayData.size
+    val isCompleted = currentIndex >= totalElements
+    val visitedCount = if (currentIndex < 0) 0 else (currentIndex + 1).coerceAtMost(totalElements)
+
+    LaunchedEffect(isPlaying, currentIndex) {
+        if (isPlaying && currentIndex < totalElements) {
+            delay(1000L)
+            if (currentIndex < 0) {
+                currentIndex = 0
+            } else if (currentIndex < totalElements - 1) {
+                currentIndex++
+            } else {
+                currentIndex = totalElements
+                isPlaying = false
+            }
+        }
+    }
 
     Surface(
         color = DarkCardBgColor,
@@ -696,58 +715,66 @@ private fun ArrayTraversalVisualizationCard() {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(12.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
+                .padding(14.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
+            // Header Row
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "ARRAY TRAVERSAL VISUALIZATION",
+                    text = "ARRAY TRAVERSAL",
                     color = OrangeAccent,
-                    fontSize = 10.sp,
+                    fontSize = 11.sp,
                     fontWeight = FontWeight.Bold,
                     letterSpacing = 1.2.sp
                 )
+
+                val badgeText = when {
+                    currentIndex < 0 -> "READY"
+                    isCompleted -> "COMPLETED"
+                    else -> "STEP ${currentIndex + 1} OF $totalElements"
+                }
+
+                val badgeColor = when {
+                    currentIndex < 0 -> TextSecondary
+                    isCompleted -> GreenAccent
+                    else -> BlueAccent
+                }
+
                 Box(
                     modifier = Modifier
                         .clip(RoundedCornerShape(4.dp))
-                        .background(if (isComplete) Color(0xFF092317) else Color(0xFF13233A))
+                        .background(if (isCompleted) Color(0xFF092317) else Color(0xFF13233A))
                         .padding(horizontal = 8.dp, vertical = 3.dp)
                 ) {
                     Text(
-                        text = if (isComplete) "Traversal complete ✓" else "Step ${currentIndex + 1} of ${arrayData.size}",
-                        color = if (isComplete) GreenAccent else BlueAccent,
+                        text = badgeText,
+                        color = badgeColor,
                         fontSize = 10.sp,
                         fontWeight = FontWeight.Bold
                     )
                 }
             }
 
-            // Array Cells Row with Current Pointer
+            // Array Cells Row (Indices 0..4 below cells)
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceEvenly,
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 arrayData.forEachIndexed { index, value ->
-                    val isCurrent = index == currentIndex && !isComplete
+                    val isCurrent = index == currentIndex && !isCompleted
 
                     Column(
                         horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.spacedBy(6.dp)
+                        verticalArrangement = Arrangement.spacedBy(4.dp)
                     ) {
-                        Text(
-                            text = if (isCurrent) "↑ index $index" else "Index $index",
-                            color = if (isCurrent) OrangeAccent else TextSecondary,
-                            fontSize = 11.sp,
-                            fontWeight = if (isCurrent) FontWeight.Bold else FontWeight.Normal
-                        )
                         Box(
                             modifier = Modifier
-                                .size(56.dp)
+                                .size(48.dp)
                                 .clip(RoundedCornerShape(12.dp))
                                 .background(if (isCurrent) Color(0xFF2A1C12) else Color(0xFF13131C))
                                 .border(
@@ -760,53 +787,196 @@ private fun ArrayTraversalVisualizationCard() {
                             Text(
                                 text = value,
                                 color = if (isCurrent) OrangeAccent else TextPrimary,
-                                fontSize = 18.sp,
+                                fontSize = 17.sp,
                                 fontWeight = FontWeight.Bold
                             )
-                         }
+                        }
+
+                        Text(
+                            text = index.toString(),
+                            color = if (isCurrent) OrangeAccent else TextSecondary,
+                            fontSize = 11.sp,
+                            fontWeight = if (isCurrent) FontWeight.Bold else FontWeight.Normal
+                        )
                     }
                 }
             }
 
-            // Status Information
+            // Explanation Panel with Visited Counter
+            Surface(
+                color = Color(0xFF13131C),
+                shape = RoundedCornerShape(12.dp),
+                border = BorderStroke(1.dp, CardBorderColor),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(12.dp),
+                    verticalArrangement = Arrangement.spacedBy(10.dp)
+                ) {
+                    val explanationText = when {
+                        currentIndex < 0 -> "Start at index 0, then visit each element from left to right."
+                        isCompleted -> "Traversal complete! All $totalElements elements have been visited."
+                        else -> "Visiting index $currentIndex: value = ${arrayData[currentIndex]}."
+                    }
+
+                    Text(
+                        text = explanationText,
+                        color = TextPrimary,
+                        fontSize = 13.sp,
+                        lineHeight = 18.sp
+                    )
+
+                    // Track & Visited Counter Row
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .weight(1f)
+                                .height(3.dp)
+                                .clip(RoundedCornerShape(2.dp))
+                                .background(Color(0xFF262634))
+                        ) {
+                            val progressFloat = (visitedCount.toFloat() / totalElements).coerceIn(0f, 1f)
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth(progressFloat)
+                                    .height(3.dp)
+                                    .background(OrangeAccent, RoundedCornerShape(2.dp))
+                            )
+                        }
+
+                        Text(
+                            text = "$visitedCount / $totalElements VISITED",
+                            color = TextSecondary,
+                            fontSize = 10.sp,
+                            fontWeight = FontWeight.Bold,
+                            letterSpacing = 1.sp
+                        )
+                    }
+                }
+            }
+
+            // Controls Row (Reset, Previous, Play/Pause, Next)
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(
-                    text = if (isComplete) {
-                        "Traversal complete ✓ (All elements visited)"
-                    } else {
-                        "Current index: $currentIndex  |  Current value: ${arrayData[currentIndex]}"
-                    },
-                    color = if (isComplete) GreenAccent else TextSecondary,
-                    fontSize = 12.sp,
-                    fontWeight = if (isComplete) FontWeight.Bold else FontWeight.Normal,
-                    modifier = Modifier.weight(1f, fill = false),
-                    maxLines = 2,
-                    overflow = TextOverflow.Ellipsis
-                )
-
-                // Next Step Button
+                // Reset (↻)
                 Surface(
-                    color = if (isComplete) Color(0xFF22222E) else OrangeAccent,
-                    shape = RoundedCornerShape(8.dp),
-                    modifier = Modifier.clickable {
-                        if (isComplete) {
-                            currentIndex = 0
-                        } else {
-                            currentIndex++
+                    color = DarkCardBgColor,
+                    shape = RoundedCornerShape(12.dp),
+                    border = BorderStroke(1.dp, CardBorderColor),
+                    modifier = Modifier
+                        .size(44.dp)
+                        .clickable {
+                            isPlaying = false
+                            currentIndex = -1
+                        }
+                ) {
+                    Box(contentAlignment = Alignment.Center) {
+                        Text(
+                            text = "↻",
+                            color = TextPrimary,
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                }
+
+                // Previous (‹)
+                Surface(
+                    color = DarkCardBgColor,
+                    shape = RoundedCornerShape(12.dp),
+                    border = BorderStroke(1.dp, CardBorderColor),
+                    modifier = Modifier
+                        .size(44.dp)
+                        .clickable(enabled = currentIndex >= 0) {
+                            isPlaying = false
+                            if (currentIndex > 0) {
+                                currentIndex--
+                            } else {
+                                currentIndex = -1
+                            }
+                        }
+                ) {
+                    Box(contentAlignment = Alignment.Center) {
+                        Text(
+                            text = "‹",
+                            color = if (currentIndex >= 0) TextPrimary else TextSecondary.copy(alpha = 0.3f),
+                            fontSize = 20.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                }
+
+                // Play / Pause (▶ Play / ⏸ Pause)
+                Surface(
+                    color = if (isCompleted) Color(0xFF22222E) else OrangeAccent,
+                    shape = RoundedCornerShape(12.dp),
+                    modifier = Modifier
+                        .weight(1f)
+                        .height(44.dp)
+                        .clickable(enabled = !isCompleted) {
+                            if (!isCompleted) {
+                                if (currentIndex < 0) {
+                                    currentIndex = 0
+                                }
+                                isPlaying = !isPlaying
+                            }
+                        }
+                ) {
+                    Box(contentAlignment = Alignment.Center) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(6.dp)
+                        ) {
+                            Text(
+                                text = if (isPlaying) "⏸" else "▶",
+                                color = if (isCompleted) TextSecondary else Color(0xFF111115),
+                                fontSize = 14.sp
+                            )
+                            Text(
+                                text = if (isPlaying) "Pause" else "Play",
+                                color = if (isCompleted) TextSecondary else Color(0xFF111115),
+                                fontSize = 15.sp,
+                                fontWeight = FontWeight.Bold
+                            )
                         }
                     }
+                }
+
+                // Next (›)
+                Surface(
+                    color = DarkCardBgColor,
+                    shape = RoundedCornerShape(12.dp),
+                    border = BorderStroke(1.dp, CardBorderColor),
+                    modifier = Modifier
+                        .size(44.dp)
+                        .clickable(enabled = !isCompleted) {
+                            isPlaying = false
+                            if (currentIndex < 0) {
+                                currentIndex = 0
+                            } else if (currentIndex < totalElements - 1) {
+                                currentIndex++
+                            } else {
+                                currentIndex = totalElements
+                            }
+                        }
                 ) {
-                    Text(
-                        text = if (isComplete) "Restart ↻" else "Next →",
-                        color = if (isComplete) TextPrimary else DarkBgColor,
-                        fontSize = 12.sp,
-                        fontWeight = FontWeight.Bold,
-                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
-                    )
+                    Box(contentAlignment = Alignment.Center) {
+                        Text(
+                            text = "›",
+                            color = if (!isCompleted) TextPrimary else TextSecondary.copy(alpha = 0.3f),
+                            fontSize = 20.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
                 }
             }
         }
@@ -816,7 +986,24 @@ private fun ArrayTraversalVisualizationCard() {
 @Composable
 private fun ArrayInsertDeleteVisualizationCard() {
     var operationMode by remember { mutableStateOf("INSERT") } // "INSERT" or "DELETE"
-    var stepIndex by remember { mutableStateOf(0) } // 0, 1, 2
+    var stepIndex by remember { mutableStateOf(0) } // 0: READY, 1: STEP 1 OF 2, 2: COMPLETED
+    var isPlaying by remember { mutableStateOf(false) }
+
+    val totalSteps = 2
+    val isCompleted = stepIndex >= totalSteps
+
+    // Auto-play timer mechanism
+    LaunchedEffect(isPlaying, stepIndex) {
+        if (isPlaying && stepIndex < totalSteps) {
+            delay(1000L)
+            if (stepIndex < totalSteps - 1) {
+                stepIndex++
+            } else {
+                stepIndex = totalSteps
+                isPlaying = false
+            }
+        }
+    }
 
     val displayItems = when (operationMode) {
         "INSERT" -> when (stepIndex) {
@@ -831,17 +1018,29 @@ private fun ArrayInsertDeleteVisualizationCard() {
         }
     }
 
-    val statusMessage = when (operationMode) {
+    val explanationText = when (operationMode) {
         "INSERT" -> when (stepIndex) {
-            0 -> "Initial Array: Insert 25 at Index 2"
-            1 -> "Step 1: Shift elements at Index 2 & 3 right"
-            else -> "Step 2: Inserted 25 at Index 2 ✓"
+            0 -> "Target: Insert 25 at index 2."
+            1 -> "Step 1: Elements at index 2 and above shift right to make room."
+            else -> "Step 2: Inserted 25 at index 2. Array now contains 5 elements."
         }
         else -> when (stepIndex) {
-            0 -> "Initial Array: Delete 20 at Index 1"
-            1 -> "Step 1: Remove element 20 at Index 1"
-            else -> "Step 2: Shift subsequent elements left ✓"
+            0 -> "Target: Delete 20 at index 1."
+            1 -> "Step 1: Removed 20 at index 1, leaving a gap."
+            else -> "Step 2: Subsequent elements shift left to fill the gap. Array now contains 3 elements."
         }
+    }
+
+    val badgeText = when (stepIndex) {
+        0 -> "READY"
+        1 -> "STEP 1 OF 2"
+        else -> "COMPLETED"
+    }
+
+    val badgeColor = when (stepIndex) {
+        0 -> TextSecondary
+        1 -> BlueAccent
+        else -> GreenAccent
     }
 
     Surface(
@@ -854,27 +1053,48 @@ private fun ArrayInsertDeleteVisualizationCard() {
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(12.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
+            verticalArrangement = Arrangement.spacedBy(10.dp)
         ) {
+            // Header Row with Title, Badge, and Mode Selector Toggle
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(
-                    text = "INSERT & DELETE VISUALIZATION",
-                    color = OrangeAccent,
-                    fontSize = 10.sp,
-                    fontWeight = FontWeight.Bold,
-                    letterSpacing = 1.2.sp
-                )
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Text(
+                        text = "INSERT & DELETE",
+                        color = OrangeAccent,
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.Bold,
+                        letterSpacing = 1.2.sp
+                    )
 
-                // Mode Selector Toggle
-                Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                    Box(
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(4.dp))
+                            .background(if (isCompleted) Color(0xFF092317) else Color(0xFF13233A))
+                            .padding(horizontal = 6.dp, vertical = 2.dp)
+                    ) {
+                        Text(
+                            text = badgeText,
+                            color = badgeColor,
+                            fontSize = 9.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                }
+
+                // Mode Selector Toggle (Insert / Delete)
+                Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
                     Surface(
                         color = if (operationMode == "INSERT") OrangeAccent else Color(0xFF22222E),
                         shape = RoundedCornerShape(6.dp),
                         modifier = Modifier.clickable {
+                            isPlaying = false
                             operationMode = "INSERT"
                             stepIndex = 0
                         }
@@ -891,6 +1111,7 @@ private fun ArrayInsertDeleteVisualizationCard() {
                         color = if (operationMode == "DELETE") OrangeAccent else Color(0xFF22222E),
                         shape = RoundedCornerShape(6.dp),
                         modifier = Modifier.clickable {
+                            isPlaying = false
                             operationMode = "DELETE"
                             stepIndex = 0
                         }
@@ -906,82 +1127,210 @@ private fun ArrayInsertDeleteVisualizationCard() {
                 }
             }
 
-            // Array Cells Row
+            // Array Cells Row (Size 44.dp for compact 360dp width fit)
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceEvenly,
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 displayItems.forEachIndexed { index, value ->
-                    val isInsertedOrDeleted = (operationMode == "INSERT" && index == 2 && stepIndex == 2) ||
+                    val isHighlighted = (operationMode == "INSERT" && index == 2 && stepIndex == 2) ||
                             (operationMode == "DELETE" && index == 1 && stepIndex == 1)
 
                     Column(
                         horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.spacedBy(6.dp)
+                        verticalArrangement = Arrangement.spacedBy(4.dp)
                     ) {
-                        Text(
-                            text = "Index $index",
-                            color = if (isInsertedOrDeleted) OrangeAccent else TextSecondary,
-                            fontSize = 10.sp
-                        )
                         Box(
                             modifier = Modifier
-                                .size(48.dp)
+                                .size(44.dp)
                                 .clip(RoundedCornerShape(10.dp))
-                                .background(if (isInsertedOrDeleted) Color(0xFF2A1C12) else Color(0xFF13131C))
+                                .background(if (isHighlighted) Color(0xFF2A1C12) else Color(0xFF13131C))
                                 .border(
-                                    width = if (isInsertedOrDeleted) 1.5.dp else 1.dp,
-                                    color = if (isInsertedOrDeleted) OrangeAccent else CardBorderColor,
+                                    width = if (isHighlighted) 1.5.dp else 1.dp,
+                                    color = if (isHighlighted) OrangeAccent else CardBorderColor,
                                     shape = RoundedCornerShape(10.dp)
                                 ),
                             contentAlignment = Alignment.Center
                         ) {
                             Text(
                                 text = value,
-                                color = if (isInsertedOrDeleted) OrangeAccent else TextPrimary,
+                                color = if (isHighlighted) OrangeAccent else TextPrimary,
                                 fontSize = 16.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
+
+                        Text(
+                            text = index.toString(),
+                            color = if (isHighlighted) OrangeAccent else TextSecondary,
+                            fontSize = 10.sp,
+                            fontWeight = if (isHighlighted) FontWeight.Bold else FontWeight.Normal
+                        )
+                    }
+                }
+            }
+
+            // Explanation Panel & Track Line
+            Surface(
+                color = Color(0xFF13131C),
+                shape = RoundedCornerShape(12.dp),
+                border = BorderStroke(1.dp, CardBorderColor),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(12.dp),
+                    verticalArrangement = Arrangement.spacedBy(10.dp)
+                ) {
+                    Text(
+                        text = explanationText,
+                        color = TextPrimary,
+                        fontSize = 13.sp,
+                        lineHeight = 18.sp
+                    )
+
+                    // Track & Step Indicator Row
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .weight(1f)
+                                .height(3.dp)
+                                .clip(RoundedCornerShape(2.dp))
+                                .background(Color(0xFF262634))
+                        ) {
+                            val progressFloat = stepIndex / 2f
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth(progressFloat)
+                                    .height(3.dp)
+                                    .background(OrangeAccent, RoundedCornerShape(2.dp))
+                            )
+                        }
+
+                        Text(
+                            text = "STEP $stepIndex / 2",
+                            color = TextSecondary,
+                            fontSize = 10.sp,
+                            fontWeight = FontWeight.Bold,
+                            letterSpacing = 1.sp
+                        )
+                    }
+                }
+            }
+
+            // Controls Row (Reset, Previous, Play/Pause, Next)
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                // Reset (↻)
+                Surface(
+                    color = DarkCardBgColor,
+                    shape = RoundedCornerShape(12.dp),
+                    border = BorderStroke(1.dp, CardBorderColor),
+                    modifier = Modifier
+                        .size(44.dp)
+                        .clickable {
+                            isPlaying = false
+                            stepIndex = 0
+                        }
+                ) {
+                    Box(contentAlignment = Alignment.Center) {
+                        Text(
+                            text = "↻",
+                            color = TextPrimary,
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                }
+
+                // Previous (‹)
+                Surface(
+                    color = DarkCardBgColor,
+                    shape = RoundedCornerShape(12.dp),
+                    border = BorderStroke(1.dp, CardBorderColor),
+                    modifier = Modifier
+                        .size(44.dp)
+                        .clickable(enabled = stepIndex > 0) {
+                            isPlaying = false
+                            if (stepIndex > 0) {
+                                stepIndex--
+                            }
+                        }
+                ) {
+                    Box(contentAlignment = Alignment.Center) {
+                        Text(
+                            text = "‹",
+                            color = if (stepIndex > 0) TextPrimary else TextSecondary.copy(alpha = 0.3f),
+                            fontSize = 20.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                }
+
+                // Play / Pause (▶ Play / ⏸ Pause)
+                Surface(
+                    color = if (isCompleted) Color(0xFF22222E) else OrangeAccent,
+                    shape = RoundedCornerShape(12.dp),
+                    modifier = Modifier
+                        .weight(1f)
+                        .height(44.dp)
+                        .clickable(enabled = !isCompleted) {
+                            if (!isCompleted) {
+                                isPlaying = !isPlaying
+                            }
+                        }
+                ) {
+                    Box(contentAlignment = Alignment.Center) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(6.dp)
+                        ) {
+                            Text(
+                                text = if (isPlaying) "⏸" else "▶",
+                                color = if (isCompleted) TextSecondary else Color(0xFF111115),
+                                fontSize = 14.sp
+                            )
+                            Text(
+                                text = if (isPlaying) "Pause" else "Play",
+                                color = if (isCompleted) TextSecondary else Color(0xFF111115),
+                                fontSize = 15.sp,
                                 fontWeight = FontWeight.Bold
                             )
                         }
                     }
                 }
-            }
 
-            // Status and Step Action
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(12.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = statusMessage,
-                    color = if (stepIndex == 2) GreenAccent else TextSecondary,
-                    fontSize = 12.sp,
-                    fontWeight = if (stepIndex == 2) FontWeight.Bold else FontWeight.Normal,
-                    modifier = Modifier.weight(1f, fill = false),
-                    maxLines = 2,
-                    overflow = TextOverflow.Ellipsis
-                )
-
+                // Next (›)
                 Surface(
-                    color = if (stepIndex == 2) Color(0xFF22222E) else OrangeAccent,
-                    shape = RoundedCornerShape(8.dp),
-                    modifier = Modifier.clickable {
-                        if (stepIndex == 2) {
-                            stepIndex = 0
-                        } else {
-                            stepIndex++
+                    color = DarkCardBgColor,
+                    shape = RoundedCornerShape(12.dp),
+                    border = BorderStroke(1.dp, CardBorderColor),
+                    modifier = Modifier
+                        .size(44.dp)
+                        .clickable(enabled = !isCompleted) {
+                            isPlaying = false
+                            if (stepIndex < totalSteps) {
+                                stepIndex++
+                            }
                         }
-                    }
                 ) {
-                    Text(
-                        text = if (stepIndex == 2) "Reset ↻" else "Next Step →",
-                        color = if (stepIndex == 2) TextPrimary else DarkBgColor,
-                        fontSize = 12.sp,
-                        fontWeight = FontWeight.Bold,
-                        modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp)
-                    )
+                    Box(contentAlignment = Alignment.Center) {
+                        Text(
+                            text = "›",
+                            color = if (!isCompleted) TextPrimary else TextSecondary.copy(alpha = 0.3f),
+                            fontSize = 20.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
                 }
             }
         }
