@@ -38,6 +38,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.learndsandalgorithm.data.repository.ProgressRepository
 import com.example.learndsandalgorithm.domain.model.Lesson
+import com.example.learndsandalgorithm.presentation.components.TopicIcon
 import com.example.learndsandalgorithm.domain.model.Topic
 import com.example.learndsandalgorithm.domain.model.TopicCategory
 import com.example.learndsandalgorithm.domain.model.TopicLevel
@@ -543,14 +544,18 @@ private fun TopicItemRow(
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(14.dp),
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
             modifier = Modifier.weight(1f)
         ) {
-            // Status Icon
-            TopicStatusIcon(status = topic.status)
+            // Topic Vector Icon
+            TopicIcon(
+                topicId = topic.topicId,
+                containerSize = 36.dp,
+                iconSize = 18.dp
+            )
 
             Column(
-                verticalArrangement = Arrangement.spacedBy(4.dp)
+                verticalArrangement = Arrangement.spacedBy(3.dp)
             ) {
                 Text(
                     text = topic.title,
@@ -561,8 +566,9 @@ private fun TopicItemRow(
 
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    horizontalArrangement = Arrangement.spacedBy(6.dp)
                 ) {
+                    TopicStatusIcon(status = topic.status)
                     TopicLevelBadge(level = topic.level)
                     Text(
                         text = topic.lessonProgressText,

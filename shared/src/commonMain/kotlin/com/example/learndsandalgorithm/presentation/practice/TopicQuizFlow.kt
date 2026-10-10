@@ -39,6 +39,7 @@ import androidx.compose.ui.unit.sp
 import com.example.learndsandalgorithm.domain.model.Question
 import com.example.learndsandalgorithm.domain.model.TopicCategory
 import com.example.learndsandalgorithm.domain.repository.ContentRepository
+import com.example.learndsandalgorithm.presentation.components.TopicIcon
 
 private val DarkBgColor = Color(0xFF111115)
 private val DarkCardBgColor = Color(0xFF181820)
@@ -62,20 +63,8 @@ private data class QuizTopicState(
     val title: String,
     val category: String,
     val questionCount: Int,
-    val iconStr: String,
-    val iconBgColor: Color,
-    val iconBorderColor: Color,
-    val iconTextColor: Color,
     val description: String,
     val questions: List<QuizQuestionState>
-)
-
-private data class TopicVisuals(
-    val iconStr: String,
-    val iconBgColor: Color,
-    val iconBorderColor: Color,
-    val iconTextColor: Color,
-    val description: String
 )
 
 private enum class QuizFlowState {
@@ -100,11 +89,11 @@ private fun prepareQuizQuestions(rawQuestions: List<Question>): List<QuizQuestio
     }
 }
 
-private fun getTopicVisuals(topicId: String): TopicVisuals = when (topicId) {
-    "arrays" -> TopicVisuals("🥞", Color(0xFF2A1A10), OrangeAccent, OrangeAccent, "Contiguous memory elements with instant index-based lookup.")
-    "linear_search" -> TopicVisuals("🔍", Color(0xFF1E162A), PurpleAccent, PurpleAccent, "Sequential element inspection from start to end.")
-    "sorting" -> TopicVisuals("📊", Color(0xFF0E281E), GreenAccent, GreenAccent, "Arranging elements in a defined ascending or descending order.")
-    else -> TopicVisuals("🧠", Color(0xFF1E1E28), OrangeAccent, OrangeAccent, "Practice core computer science concepts.")
+private fun getTopicDescription(topicId: String): String = when (topicId) {
+    "arrays" -> "Contiguous memory elements with instant index-based lookup."
+    "linear_search" -> "Sequential element inspection from start to end."
+    "sorting" -> "Arranging elements in a defined ascending or descending order."
+    else -> "Practice core computer science concepts."
 }
 
 @Composable
@@ -134,7 +123,6 @@ fun TopicQuizFlow(
             val rawQuestions = contentRepository.getQuestionsByTopic(topic.id)
             if (rawQuestions.isNotEmpty()) {
                 val preparedQuestions = prepareQuizQuestions(rawQuestions)
-                val visuals = getTopicVisuals(topic.id)
                 val categoryName = if (topic.category == TopicCategory.DATA_STRUCTURES) "Data Structures" else "Algorithms"
 
                 loadedTopics.add(
@@ -143,11 +131,7 @@ fun TopicQuizFlow(
                         title = topic.title,
                         category = categoryName,
                         questionCount = preparedQuestions.size,
-                        iconStr = visuals.iconStr,
-                        iconBgColor = visuals.iconBgColor,
-                        iconBorderColor = visuals.iconBorderColor,
-                        iconTextColor = visuals.iconTextColor,
-                        description = visuals.description,
+                        description = getTopicDescription(topic.id),
                         questions = preparedQuestions
                     )
                 )
@@ -421,21 +405,11 @@ private fun TopicQuizSelectionScreen(
                             .weight(1f)
                             .clickable { onSelectTopic(topic.id) }
                     ) {
-                        Box(
-                            modifier = Modifier
-                                .size(42.dp)
-                                .clip(RoundedCornerShape(10.dp))
-                                .background(topic.iconBgColor)
-                                .border(1.dp, topic.iconBorderColor.copy(alpha = 0.5f), RoundedCornerShape(10.dp)),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Text(
-                                text = topic.iconStr,
-                                color = topic.iconTextColor,
-                                fontSize = 18.sp,
-                                fontWeight = FontWeight.Bold
-                            )
-                        }
+                        TopicIcon(
+                            topicId = topic.id,
+                            containerSize = 42.dp,
+                            iconSize = 20.dp
+                        )
 
                         Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
                             Text(

@@ -19,6 +19,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -30,6 +31,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.graphics.vector.PathBuilder
+import androidx.compose.ui.graphics.vector.path
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -45,13 +50,114 @@ private val GreenAccent = Color(0xFF10B981)
 private val TextPrimary = Color(0xFFFFFFFF)
 private val TextSecondary = Color(0xFF9CA3AF)
 
+private fun buildVectorIcon(name: String, block: PathBuilder.() -> Unit): ImageVector {
+    return ImageVector.Builder(
+        name = name,
+        defaultWidth = 24.dp,
+        defaultHeight = 24.dp,
+        viewportWidth = 24f,
+        viewportHeight = 24f
+    ).path(
+        fill = SolidColor(Color.White),
+        pathBuilder = block
+    ).build()
+}
+
+private val IconBrain = buildVectorIcon("Brain") {
+    moveTo(12f, 3f)
+    curveTo(7.03f, 3f, 3f, 7.03f, 3f, 12f)
+    curveTo(3f, 16.97f, 7.03f, 21f, 12f, 21f)
+    curveTo(16.97f, 21f, 21f, 16.97f, 21f, 12f)
+    curveTo(21f, 7.03f, 16.97f, 3f, 12f, 3f)
+    close()
+    moveTo(12f, 18f)
+    curveTo(8.69f, 18f, 6f, 15.31f, 6f, 12f)
+    curveTo(6f, 8.69f, 8.69f, 6f, 12f, 6f)
+    curveTo(15.31f, 6f, 18f, 8.69f, 18f, 12f)
+    curveTo(18f, 15.31f, 15.31f, 18f, 12f, 18f)
+    close()
+}
+
+private val IconBolt = buildVectorIcon("Bolt") {
+    moveTo(11f, 21f)
+    lineTo(12.5f, 13f)
+    horizontalLineTo(7f)
+    lineTo(13f, 3f)
+    lineTo(11.5f, 11f)
+    horizontalLineTo(17f)
+    lineTo(11f, 21f)
+    close()
+}
+
+private val IconMedal = buildVectorIcon("Medal") {
+    moveTo(12f, 2f)
+    lineTo(9.19f, 8.63f)
+    lineTo(2f, 9.24f)
+    lineTo(7.46f, 13.97f)
+    lineTo(5.82f, 21f)
+    lineTo(12f, 17.27f)
+    lineTo(18.18f, 21f)
+    lineTo(16.54f, 13.97f)
+    lineTo(22f, 9.24f)
+    lineTo(14.81f, 8.63f)
+    close()
+}
+
+private val IconCode = buildVectorIcon("Code") {
+    moveTo(9.4f, 16.6f)
+    lineTo(4.8f, 12f)
+    lineTo(9.4f, 7.4f)
+    lineTo(8f, 6f)
+    lineTo(2f, 12f)
+    lineTo(8f, 18f)
+    close()
+    moveTo(14.6f, 16.6f)
+    lineTo(19.2f, 12f)
+    lineTo(14.6f, 7.4f)
+    lineTo(16f, 6f)
+    lineTo(22f, 12f)
+    lineTo(16f, 18f)
+    close()
+}
+
+private val IconLock = buildVectorIcon("Lock") {
+    moveTo(18f, 8f)
+    horizontalLineTo(17f)
+    verticalLineTo(6f)
+    curveTo(17f, 3.24f, 14.76f, 1f, 12f, 1f)
+    curveTo(9.24f, 1f, 7f, 3.24f, 7f, 6f)
+    verticalLineTo(8f)
+    horizontalLineTo(6f)
+    curveTo(4.9f, 8f, 4f, 8.9f, 4f, 10f)
+    verticalLineTo(20f)
+    curveTo(4f, 21.1f, 4.9f, 22f, 6f, 22f)
+    horizontalLineTo(18f)
+    curveTo(19.1f, 22f, 20f, 21.1f, 20f, 20f)
+    verticalLineTo(10f)
+    curveTo(20f, 8.9f, 19.1f, 8f, 18f, 8f)
+    close()
+    moveTo(9f, 6f)
+    curveTo(9f, 4.34f, 10.34f, 3f, 12f, 3f)
+    curveTo(13.66f, 3f, 15f, 4.34f, 15f, 6f)
+    verticalLineTo(8f)
+    horizontalLineTo(9f)
+    verticalLineTo(6f)
+    close()
+    moveTo(12f, 17f)
+    curveTo(10.9f, 17f, 10f, 16.1f, 10f, 15f)
+    curveTo(10f, 13.9f, 10.9f, 13f, 12f, 13f)
+    curveTo(13.1f, 13f, 14f, 13.9f, 14f, 15f)
+    curveTo(14f, 16.1f, 13.1f, 17f, 12f, 17f)
+    close()
+}
+
 private data class PracticeMode(
     val id: String,
     val title: String,
     val description: String,
     val metaText: String,
     val isAvailable: Boolean,
-    val iconStr: String,
+    val icon: ImageVector,
     val iconBgColor: Color,
     val iconBorderColor: Color,
     val iconTextColor: Color,
@@ -79,7 +185,7 @@ fun PracticeScreen(
                 description = "Focus on a specific concept",
                 metaText = "8 questions per topic · 10 min",
                 isAvailable = true,
-                iconStr = "🧠",
+                icon = IconBrain,
                 iconBgColor = Color(0xFF1E162A),
                 iconBorderColor = PurpleAccent,
                 iconTextColor = PurpleAccent,
@@ -98,7 +204,7 @@ fun PracticeScreen(
                 description = "Test your knowledge in 5 minutes",
                 metaText = "Coming Soon",
                 isAvailable = false,
-                iconStr = "⚡",
+                icon = IconBolt,
                 iconBgColor = Color(0xFF2A1A10),
                 iconBorderColor = OrangeAccent.copy(alpha = 0.4f),
                 iconTextColor = OrangeAccent,
@@ -117,7 +223,7 @@ fun PracticeScreen(
                 description = "Put your skills to the test",
                 metaText = "Coming Soon",
                 isAvailable = false,
-                iconStr = "🏅",
+                icon = IconMedal,
                 iconBgColor = Color(0xFF122038),
                 iconBorderColor = BlueAccent.copy(alpha = 0.4f),
                 iconTextColor = BlueAccent,
@@ -136,7 +242,7 @@ fun PracticeScreen(
                 description = "Solve real coding problems",
                 metaText = "Coming Soon",
                 isAvailable = false,
-                iconStr = "</>",
+                icon = IconCode,
                 iconBgColor = Color(0xFF0E281E),
                 iconBorderColor = GreenAccent.copy(alpha = 0.4f),
                 iconTextColor = GreenAccent,
@@ -411,11 +517,11 @@ private fun PracticeModeCard(
                         .border(1.dp, mode.iconBorderColor.copy(alpha = 0.5f), RoundedCornerShape(12.dp)),
                     contentAlignment = Alignment.Center
                 ) {
-                    Text(
-                        text = mode.iconStr,
-                        color = mode.iconTextColor,
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.Bold
+                    Icon(
+                        imageVector = mode.icon,
+                        contentDescription = null,
+                        tint = mode.iconTextColor,
+                        modifier = Modifier.size(22.dp)
                     )
                 }
 
@@ -476,9 +582,11 @@ private fun PracticeModeCard(
                         fontWeight = FontWeight.Bold
                     )
                 } else {
-                    Text(
-                        text = "🔒",
-                        fontSize = 14.sp
+                    Icon(
+                        imageVector = IconLock,
+                        contentDescription = "Locked",
+                        tint = TextSecondary,
+                        modifier = Modifier.size(16.dp)
                     )
                 }
             }

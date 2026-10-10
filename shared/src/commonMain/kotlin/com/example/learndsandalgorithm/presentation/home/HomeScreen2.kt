@@ -18,12 +18,17 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.graphics.vector.PathBuilder
+import androidx.compose.ui.graphics.vector.path
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.learndsandalgorithm.domain.model.Topic
 import com.example.learndsandalgorithm.domain.model.TopicCategory
 import com.example.learndsandalgorithm.domain.model.UserStats
+import com.example.learndsandalgorithm.presentation.components.TopicIcon
 
 private val DarkBgColor = Color(0xFF111115)
 private val DarkCardBgColor = Color(0xFF1A1A22)
@@ -33,6 +38,106 @@ private val OrangeAccent = Color(0xFFFA6E13)
 private val PurpleAccent = Color(0xFF9E66FF)
 private val TextPrimary = Color(0xFFFFFFFF)
 private val TextSecondary = Color(0xFF9CA3AF)
+
+private fun buildVectorIcon(name: String, block: PathBuilder.() -> Unit): ImageVector {
+    return ImageVector.Builder(
+        name = name,
+        defaultWidth = 24.dp,
+        defaultHeight = 24.dp,
+        viewportWidth = 24f,
+        viewportHeight = 24f
+    ).path(
+        fill = SolidColor(Color.White),
+        pathBuilder = block
+    ).build()
+}
+
+private val IconBolt = buildVectorIcon("Bolt") {
+    moveTo(11f, 21f)
+    lineTo(12.5f, 13f)
+    horizontalLineTo(7f)
+    lineTo(13f, 3f)
+    lineTo(11.5f, 11f)
+    horizontalLineTo(17f)
+    lineTo(11f, 21f)
+    close()
+}
+
+private val IconTrophy = buildVectorIcon("Trophy") {
+    moveTo(19f, 5f)
+    horizontalLineTo(16f)
+    verticalLineTo(3f)
+    horizontalLineTo(8f)
+    verticalLineTo(5f)
+    horizontalLineTo(5f)
+    curveTo(3.9f, 5f, 3f, 5.9f, 3f, 7f)
+    verticalLineTo(8f)
+    curveTo(3f, 10.21f, 4.79f, 12f, 7f, 12f)
+    horizontalLineTo(7.1f)
+    curveTo(7.8f, 13.77f, 9.51f, 15f, 11f, 15.35f)
+    verticalLineTo(18f)
+    horizontalLineTo(8f)
+    verticalLineTo(20f)
+    horizontalLineTo(16f)
+    verticalLineTo(18f)
+    horizontalLineTo(13f)
+    verticalLineTo(15.35f)
+    curveTo(14.49f, 15f, 16.2f, 13.77f, 16.9f, 12f)
+    horizontalLineTo(17f)
+    curveTo(19.21f, 12f, 21f, 10.21f, 21f, 8f)
+    verticalLineTo(7f)
+    curveTo(21f, 5.9f, 20.1f, 5f, 19f, 5f)
+    close()
+    moveTo(5f, 8f)
+    verticalLineTo(7f)
+    horizontalLineTo(7f)
+    verticalLineTo(10f)
+    curveTo(5.9f, 10f, 5f, 9.1f, 5f, 8f)
+    close()
+    moveTo(19f, 8f)
+    curveTo(19f, 9.1f, 18.1f, 10f, 17f, 10f)
+    verticalLineTo(7f)
+    horizontalLineTo(19f)
+    verticalLineTo(8f)
+    close()
+}
+
+private val IconCheckCircle = buildVectorIcon("CheckCircle") {
+    moveTo(12f, 2f)
+    curveTo(6.48f, 2f, 2f, 6.48f, 2f, 12f)
+    curveTo(2f, 17.52f, 6.48f, 22f, 12f, 22f)
+    curveTo(17.52f, 22f, 22f, 17.52f, 22f, 12f)
+    curveTo(22f, 6.48f, 17.52f, 2f, 12f, 2f)
+    close()
+    moveTo(10f, 17f)
+    lineTo(5f, 12f)
+    lineTo(6.41f, 10.59f)
+    lineTo(10f, 14.17f)
+    lineTo(17.59f, 6.58f)
+    lineTo(19f, 8f)
+    lineTo(10f, 17f)
+    close()
+}
+
+private val IconBook = buildVectorIcon("Book") {
+    moveTo(18f, 2f)
+    horizontalLineTo(6f)
+    curveTo(4.9f, 2f, 4f, 2.9f, 4f, 4f)
+    verticalLineTo(20f)
+    curveTo(4f, 21.1f, 4.9f, 22f, 6f, 22f)
+    horizontalLineTo(18f)
+    curveTo(19.1f, 22f, 20f, 21.1f, 20f, 20f)
+    verticalLineTo(4f)
+    curveTo(20f, 2.9f, 19.1f, 2f, 18f, 2f)
+    close()
+    moveTo(6f, 4f)
+    horizontalLineTo(11f)
+    verticalLineTo(12f)
+    lineTo(8.5f, 10.5f)
+    lineTo(6f, 12f)
+    verticalLineTo(4f)
+    close()
+}
 
 @Composable
 fun HomeScreen(
@@ -153,13 +258,15 @@ fun HomeStatistics(userStats: UserStats) {
             modifier = Modifier.weight(1f),
             value = formattedXp,
             label = "total\nXP",
-            iconText = "⚡"
+            icon = IconBolt,
+            iconTint = OrangeAccent
         )
         StatCard(
             modifier = Modifier.weight(1f),
             value = "${userStats.completedLessons}",
             label = lessonLabel,
-            iconText = "🏆"
+            icon = IconTrophy,
+            iconTint = OrangeAccent
         )
     }
 }
@@ -179,7 +286,13 @@ private fun formatNumberWithCommas(number: Int): String {
 }
 
 @Composable
-fun StatCard(modifier: Modifier = Modifier, value: String, label: String, iconText: String) {
+fun StatCard(
+    modifier: Modifier = Modifier,
+    value: String,
+    label: String,
+    icon: ImageVector,
+    iconTint: Color = OrangeAccent
+) {
     Card(
         modifier = modifier
             .border(BorderStroke(1.dp, SubtleBorderColor), RoundedCornerShape(16.dp)),
@@ -193,7 +306,12 @@ fun StatCard(modifier: Modifier = Modifier, value: String, label: String, iconTe
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(10.dp)
         ) {
-            Text(text = iconText, fontSize = 20.sp)
+            Icon(
+                imageVector = icon,
+                contentDescription = null,
+                tint = iconTint,
+                modifier = Modifier.size(20.dp)
+            )
             Column {
                 Text(
                     text = value,
@@ -254,7 +372,12 @@ fun ContinueLearningSection(
                             .background(OrangeAccent.copy(alpha = 0.1f)),
                         contentAlignment = Alignment.Center
                     ) {
-                        Text(if (info.isAllComplete) "🎉" else "📚", fontSize = 24.sp)
+                        Icon(
+                            imageVector = if (info.isAllComplete) IconCheckCircle else IconBook,
+                            contentDescription = null,
+                            tint = OrangeAccent,
+                            modifier = Modifier.size(24.dp)
+                        )
                     }
                     Column {
                         Text(
@@ -413,12 +536,22 @@ fun TopicCardItem(topic: Topic, progressPercent: Int) {
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Column {
-                Text(text = topic.title, color = TextPrimary, fontSize = 16.sp, fontWeight = FontWeight.Bold)
-                Spacer(modifier = Modifier.height(4.dp))
-                Text(text = categoryDisplayName, color = TextSecondary, fontSize = 12.sp)
-                Spacer(modifier = Modifier.height(4.dp))
-                Text(text = "$progressPercent%", color = TextSecondary, fontSize = 11.sp)
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                TopicIcon(
+                    topicId = topic.id,
+                    containerSize = 40.dp,
+                    iconSize = 20.dp
+                )
+                Column {
+                    Text(text = topic.title, color = TextPrimary, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                    Spacer(modifier = Modifier.height(2.dp))
+                    Text(text = categoryDisplayName, color = TextSecondary, fontSize = 12.sp)
+                    Spacer(modifier = Modifier.height(2.dp))
+                    Text(text = "$progressPercent%", color = TextSecondary, fontSize = 11.sp)
+                }
             }
             Box(modifier = Modifier.width(100.dp)) {
                 LinearProgressIndicator(
