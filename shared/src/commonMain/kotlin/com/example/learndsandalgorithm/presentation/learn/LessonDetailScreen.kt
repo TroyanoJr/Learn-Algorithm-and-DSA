@@ -326,9 +326,26 @@ private fun SortingBarVisualizationCard(
     algorithmBadge: String,
     steps: List<SortingStep>
 ) {
-    var stepIndex by remember { mutableStateOf(0) }
+    var stepIndex by remember(steps) { mutableStateOf(0) }
+    var isPlaying by remember(steps) { mutableStateOf(false) }
+
+    val totalSteps = steps.size
     val currentStep = steps.getOrElse(stepIndex) { steps.last() }
-    val isFinished = stepIndex >= steps.size - 1
+    val isFinished = stepIndex >= totalSteps - 1
+
+    // Auto-play timer mechanism
+    LaunchedEffect(isPlaying, stepIndex, steps) {
+        if (isPlaying && stepIndex < totalSteps - 1) {
+            delay(1000L)
+            if (stepIndex < totalSteps - 1) {
+                stepIndex++
+            } else {
+                isPlaying = false
+            }
+        } else if (stepIndex >= totalSteps - 1) {
+            isPlaying = false
+        }
+    }
 
     Surface(
         color = DarkCardBgColor,
@@ -340,8 +357,9 @@ private fun SortingBarVisualizationCard(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(12.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
+            verticalArrangement = Arrangement.spacedBy(10.dp)
         ) {
+            // Header Row with Title and Badge
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -350,10 +368,22 @@ private fun SortingBarVisualizationCard(
                 Text(
                     text = title,
                     color = OrangeAccent,
-                    fontSize = 10.sp,
+                    fontSize = 11.sp,
                     fontWeight = FontWeight.Bold,
                     letterSpacing = 1.2.sp
                 )
+
+                val badgeText = when {
+                    isFinished -> "Sorted ✓"
+                    stepIndex == 0 -> algorithmBadge
+                    else -> "STEP ${stepIndex + 1} OF $totalSteps"
+                }
+
+                val badgeColor = when {
+                    isFinished -> GreenAccent
+                    else -> BlueAccent
+                }
+
                 Box(
                     modifier = Modifier
                         .clip(RoundedCornerShape(4.dp))
@@ -361,8 +391,8 @@ private fun SortingBarVisualizationCard(
                         .padding(horizontal = 8.dp, vertical = 3.dp)
                 ) {
                     Text(
-                        text = if (isFinished) "Sorted ✓" else algorithmBadge,
-                        color = if (isFinished) GreenAccent else BlueAccent,
+                        text = badgeText,
+                        color = badgeColor,
                         fontSize = 10.sp,
                         fontWeight = FontWeight.Bold
                     )
@@ -415,40 +445,168 @@ private fun SortingBarVisualizationCard(
                 }
             }
 
-            // Status Text and Next Step Control
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(12.dp),
-                verticalAlignment = Alignment.CenterVertically
+            // Explanation Panel & Track Line
+            Surface(
+                color = Color(0xFF13131C),
+                shape = RoundedCornerShape(12.dp),
+                border = BorderStroke(1.dp, CardBorderColor),
+                modifier = Modifier.fillMaxWidth()
             ) {
-                Text(
-                    text = currentStep.message,
-                    color = if (isFinished) GreenAccent else TextSecondary,
-                    fontSize = 12.sp,
-                    fontWeight = if (isFinished) FontWeight.Bold else FontWeight.Normal,
-                    modifier = Modifier.weight(1f, fill = false),
-                    maxLines = 2,
-                    overflow = TextOverflow.Ellipsis
-                )
-
-                Surface(
-                    color = if (isFinished) Color(0xFF22222E) else OrangeAccent,
-                    shape = RoundedCornerShape(8.dp),
-                    modifier = Modifier.clickable {
-                        if (isFinished) {
-                            stepIndex = 0
-                        } else {
-                            stepIndex++
-                        }
-                    }
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(12.dp),
+                    verticalArrangement = Arrangement.spacedBy(10.dp)
                 ) {
                     Text(
-                        text = if (isFinished) "Restart ↻" else "Next Step →",
-                        color = if (isFinished) TextPrimary else DarkBgColor,
-                        fontSize = 12.sp,
-                        fontWeight = FontWeight.Bold,
-                        modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp)
+                        text = currentStep.message,
+                        color = if (isFinished) GreenAccent else TextPrimary,
+                        fontSize = 13.sp,
+                        lineHeight = 18.sp,
+                        maxLines = 2,
+                        overflow = TextOverflow.Ellipsis
                     )
+
+                    // Track & Step Indicator Row
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .weight(1f)
+                                .height(3.dp)
+                                .clip(RoundedCornerShape(2.dp))
+                                .background(Color(0xFF262634))
+                        ) {
+                            val progressFloat = if (totalSteps > 1) stepIndex.toFloat() / (totalSteps - 1) else 1f
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth(progressFloat.coerceIn(0f, 1f))
+                                    .height(3.dp)
+                                    .background(if (isFinished) GreenAccent else OrangeAccent, RoundedCornerShape(2.dp))
+                            )
+                        }
+
+                        Text(
+                            text = "STEP ${stepIndex + 1} / $totalSteps",
+                            color = TextSecondary,
+                            fontSize = 10.sp,
+                            fontWeight = FontWeight.Bold,
+                            letterSpacing = 1.sp
+                        )
+                    }
+                }
+            }
+
+            // Controls Row (Reset, Previous, Play/Pause, Next)
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                // Reset (↻)
+                Surface(
+                    color = DarkCardBgColor,
+                    shape = RoundedCornerShape(12.dp),
+                    border = BorderStroke(1.dp, CardBorderColor),
+                    modifier = Modifier
+                        .size(44.dp)
+                        .clickable {
+                            isPlaying = false
+                            stepIndex = 0
+                        }
+                ) {
+                    Box(contentAlignment = Alignment.Center) {
+                        Text(
+                            text = "↻",
+                            color = TextPrimary,
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                }
+
+                // Previous (‹)
+                Surface(
+                    color = DarkCardBgColor,
+                    shape = RoundedCornerShape(12.dp),
+                    border = BorderStroke(1.dp, CardBorderColor),
+                    modifier = Modifier
+                        .size(44.dp)
+                        .clickable(enabled = stepIndex > 0) {
+                            isPlaying = false
+                            if (stepIndex > 0) {
+                                stepIndex--
+                            }
+                        }
+                ) {
+                    Box(contentAlignment = Alignment.Center) {
+                        Text(
+                            text = "‹",
+                            color = if (stepIndex > 0) TextPrimary else TextSecondary.copy(alpha = 0.3f),
+                            fontSize = 20.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                }
+
+                // Play / Pause (▶ Play / ⏸ Pause)
+                Surface(
+                    color = if (isFinished) Color(0xFF22222E) else OrangeAccent,
+                    shape = RoundedCornerShape(12.dp),
+                    modifier = Modifier
+                        .weight(1f)
+                        .height(44.dp)
+                        .clickable(enabled = !isFinished) {
+                            if (!isFinished) {
+                                isPlaying = !isPlaying
+                            }
+                        }
+                ) {
+                    Box(contentAlignment = Alignment.Center) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(6.dp)
+                        ) {
+                            Text(
+                                text = if (isPlaying) "⏸" else "▶",
+                                color = if (isFinished) TextSecondary else Color(0xFF111115),
+                                fontSize = 14.sp
+                            )
+                            Text(
+                                text = if (isPlaying) "Pause" else "Play",
+                                color = if (isFinished) TextSecondary else Color(0xFF111115),
+                                fontSize = 15.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
+                    }
+                }
+
+                // Next (›)
+                Surface(
+                    color = DarkCardBgColor,
+                    shape = RoundedCornerShape(12.dp),
+                    border = BorderStroke(1.dp, CardBorderColor),
+                    modifier = Modifier
+                        .size(44.dp)
+                        .clickable(enabled = !isFinished) {
+                            isPlaying = false
+                            if (stepIndex < totalSteps - 1) {
+                                stepIndex++
+                            }
+                        }
+                ) {
+                    Box(contentAlignment = Alignment.Center) {
+                        Text(
+                            text = "›",
+                            color = if (!isFinished) TextPrimary else TextSecondary.copy(alpha = 0.3f),
+                            fontSize = 20.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
                 }
             }
         }
