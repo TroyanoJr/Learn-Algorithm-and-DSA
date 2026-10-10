@@ -1906,16 +1906,36 @@ private fun LinearSearchVisualizationCard() {
 private fun BinarySearchVisualizationCard() {
     val arrayData = listOf("1", "3", "5", "7", "9", "11", "13")
     val target = 11
-    var stepIndex by remember { mutableStateOf(0) } // 0, 1
+    val totalSteps = 2
 
-    // Step 0: L=0, R=6, M=3 (val 7)
-    // Step 1: L=4, R=6, M=5 (val 11 - Found!)
+    var stepIndex by remember { mutableStateOf(-1) } // -1: READY, 0: Step 1, 1: Step 2
+    var isPlaying by remember { mutableStateOf(false) }
+
+    val isCompleted = stepIndex >= totalSteps - 1
+    val isFound = stepIndex == 1
+
+    // Step parameters: (Left, Right, Mid)
     val (left, right, mid) = when (stepIndex) {
         0 -> Triple(0, 6, 3)
-        else -> Triple(4, 6, 5)
+        1 -> Triple(4, 6, 5)
+        else -> Triple(0, 6, -1)
     }
 
-    val isFound = stepIndex == 1
+    // Auto-play timer mechanism
+    LaunchedEffect(isPlaying, stepIndex) {
+        if (isPlaying && stepIndex < totalSteps - 1) {
+            delay(1000L)
+            if (stepIndex < 0) {
+                stepIndex = 0
+            } else if (stepIndex < totalSteps - 1) {
+                stepIndex++
+            } else {
+                isPlaying = false
+            }
+        } else if (isCompleted) {
+            isPlaying = false
+        }
+    }
 
     Surface(
         color = DarkCardBgColor,
@@ -1927,52 +1947,92 @@ private fun BinarySearchVisualizationCard() {
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(12.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
+            verticalArrangement = Arrangement.spacedBy(10.dp)
         ) {
+            // Header Row
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "BINARY SEARCH VISUALIZATION",
+                    text = "BINARY SEARCH",
                     color = OrangeAccent,
-                    fontSize = 10.sp,
+                    fontSize = 11.sp,
                     fontWeight = FontWeight.Bold,
                     letterSpacing = 1.2.sp
                 )
+
+                val badgeText = when {
+                    stepIndex < 0 -> "TARGET: $target (SORTED)"
+                    isFound -> "FOUND AT INDEX 5 ✓"
+                    else -> "STEP ${stepIndex + 1} OF $totalSteps"
+                }
+
+                val badgeColor = when {
+                    isFound -> GreenAccent
+                    else -> BlueAccent
+                }
+
+                val badgeBg = when {
+                    isFound -> Color(0xFF092317)
+                    else -> Color(0xFF13233A)
+                }
+
                 Box(
                     modifier = Modifier
                         .clip(RoundedCornerShape(4.dp))
-                        .background(if (isFound) Color(0xFF092317) else Color(0xFF13233A))
+                        .background(badgeBg)
                         .padding(horizontal = 8.dp, vertical = 3.dp)
                 ) {
                     Text(
-                        text = "Target: $target (Sorted)",
-                        color = if (isFound) GreenAccent else BlueAccent,
+                        text = badgeText,
+                        color = badgeColor,
                         fontSize = 10.sp,
                         fontWeight = FontWeight.Bold
                     )
                 }
             }
 
-            // Array Cells Row with L, M, R indicators
+            // Array Cells Row with L, M, R indicators & Index labels
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceEvenly,
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 arrayData.forEachIndexed { index, value ->
-                    val isMid = index == mid
-                    val isLeft = index == left
-                    val isRight = index == right
-                    val isEliminated = index < left || index > right
+                    val isMid = stepIndex >= 0 && index == mid
+                    val isLeft = stepIndex >= 0 && index == left
+                    val isRight = stepIndex >= 0 && index == right
+                    val isEliminated = stepIndex >= 0 && (index < left || index > right)
 
                     val pointerLabel = when {
                         isMid -> "M"
+                        isLeft && isRight -> "L,R"
                         isLeft -> "L"
                         isRight -> "R"
                         else -> " "
+                    }
+
+                    val cellBg = when {
+                        isFound && isMid -> Color(0xFF092317)
+                        isMid -> Color(0xFF2A1C12)
+                        isEliminated -> Color(0xFF0F0F14)
+                        else -> Color(0xFF13131C)
+                    }
+
+                    val borderColor = when {
+                        isFound && isMid -> GreenAccent
+                        isMid -> OrangeAccent
+                        isEliminated -> Color(0xFF1E1E26)
+                        else -> CardBorderColor
+                    }
+
+                    val textColor = when {
+                        isFound && isMid -> GreenAccent
+                        isMid -> OrangeAccent
+                        isEliminated -> Color(0xFF4B5563)
+                        else -> TextPrimary
                     }
 
                     Column(
@@ -1982,87 +2042,209 @@ private fun BinarySearchVisualizationCard() {
                         Text(
                             text = pointerLabel,
                             color = if (isMid) OrangeAccent else if (isLeft || isRight) BlueAccent else Color.Transparent,
-                            fontSize = 12.sp,
+                            fontSize = 11.sp,
                             fontWeight = FontWeight.ExtraBold
                         )
                         Box(
                             modifier = Modifier
                                 .size(40.dp)
                                 .clip(RoundedCornerShape(10.dp))
-                                .background(
-                                    when {
-                                        isFound && isMid -> Color(0xFF092317)
-                                        isMid -> Color(0xFF2A1C12)
-                                        isEliminated -> Color(0xFF0F0F14)
-                                        else -> Color(0xFF13131C)
-                                    }
-                                )
+                                .background(cellBg)
                                 .border(
-                                    width = if (isMid) 2.dp else 1.dp,
-                                    color = when {
-                                        isFound && isMid -> GreenAccent
-                                        isMid -> OrangeAccent
-                                        isEliminated -> Color(0xFF1E1E26)
-                                        else -> CardBorderColor
-                                    },
+                                    width = if (isMid) 1.5.dp else 1.dp,
+                                    color = borderColor,
                                     shape = RoundedCornerShape(10.dp)
                                 ),
                             contentAlignment = Alignment.Center
                         ) {
                             Text(
                                 text = value,
-                                color = when {
-                                    isFound && isMid -> GreenAccent
-                                    isMid -> OrangeAccent
-                                    isEliminated -> Color(0xFF4B5563)
-                                    else -> TextPrimary
-                                },
+                                color = textColor,
                                 fontSize = 14.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
+
+                        Text(
+                            text = index.toString(),
+                            color = if (isFound && isMid) GreenAccent else if (isMid) OrangeAccent else TextSecondary,
+                            fontSize = 10.sp,
+                            fontWeight = if (isMid) FontWeight.Bold else FontWeight.Normal
+                        )
+                    }
+                }
+            }
+
+            // Explanation Panel & Track Line
+            Surface(
+                color = Color(0xFF13131C),
+                shape = RoundedCornerShape(12.dp),
+                border = BorderStroke(1.dp, CardBorderColor),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(12.dp),
+                    verticalArrangement = Arrangement.spacedBy(10.dp)
+                ) {
+                    val explanationText = when {
+                        stepIndex < 0 -> "Target = $target (Sorted array). Compare midpoint with target to eliminate half."
+                        stepIndex == 0 -> "Mid = index 3 (val 7) < 11. Target is greater → Eliminate left half [1, 3, 5, 7]."
+                        else -> "Mid = index 5 (val 11) == 11. Target 11 found at index 5! Binary Search complete. ✓"
+                    }
+
+                    Text(
+                        text = explanationText,
+                        color = if (isFound) GreenAccent else TextPrimary,
+                        fontSize = 13.sp,
+                        lineHeight = 18.sp
+                    )
+
+                    // Track & Step Indicator Row
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .weight(1f)
+                                .height(3.dp)
+                                .clip(RoundedCornerShape(2.dp))
+                                .background(Color(0xFF262634))
+                        ) {
+                            val progressFloat = if (stepIndex < 0) 0f else (stepIndex + 1) / 2f
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth(progressFloat)
+                                    .height(3.dp)
+                                    .background(if (isFound) GreenAccent else OrangeAccent, RoundedCornerShape(2.dp))
+                            )
+                        }
+
+                        val stepCountDisplay = if (stepIndex < 0) 0 else stepIndex + 1
+                        Text(
+                            text = "$stepCountDisplay / $totalSteps STEPS",
+                            color = TextSecondary,
+                            fontSize = 10.sp,
+                            fontWeight = FontWeight.Bold,
+                            letterSpacing = 1.sp
+                        )
+                    }
+                }
+            }
+
+            // Controls Row (Reset, Previous, Play/Pause, Next)
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                // Reset (↻)
+                Surface(
+                    color = DarkCardBgColor,
+                    shape = RoundedCornerShape(12.dp),
+                    border = BorderStroke(1.dp, CardBorderColor),
+                    modifier = Modifier
+                        .size(44.dp)
+                        .clickable {
+                            isPlaying = false
+                            stepIndex = -1
+                        }
+                ) {
+                    Box(contentAlignment = Alignment.Center) {
+                        Text(
+                            text = "↻",
+                            color = TextPrimary,
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                }
+
+                // Previous (‹)
+                Surface(
+                    color = DarkCardBgColor,
+                    shape = RoundedCornerShape(12.dp),
+                    border = BorderStroke(1.dp, CardBorderColor),
+                    modifier = Modifier
+                        .size(44.dp)
+                        .clickable(enabled = stepIndex >= 0) {
+                            isPlaying = false
+                            stepIndex--
+                        }
+                ) {
+                    Box(contentAlignment = Alignment.Center) {
+                        Text(
+                            text = "‹",
+                            color = if (stepIndex >= 0) TextPrimary else TextSecondary.copy(alpha = 0.3f),
+                            fontSize = 20.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                }
+
+                // Play / Pause (▶ Play / ⏸ Pause)
+                Surface(
+                    color = if (isCompleted) Color(0xFF22222E) else OrangeAccent,
+                    shape = RoundedCornerShape(12.dp),
+                    modifier = Modifier
+                        .weight(1f)
+                        .height(44.dp)
+                        .clickable(enabled = !isCompleted) {
+                            if (!isCompleted) {
+                                if (stepIndex < 0) {
+                                    stepIndex = 0
+                                }
+                                isPlaying = !isPlaying
+                            }
+                        }
+                ) {
+                    Box(contentAlignment = Alignment.Center) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(6.dp)
+                        ) {
+                            Text(
+                                text = if (isPlaying) "⏸" else "▶",
+                                color = if (isCompleted) TextSecondary else Color(0xFF111115),
+                                fontSize = 14.sp
+                            )
+                            Text(
+                                text = if (isPlaying) "Pause" else "Play",
+                                color = if (isCompleted) TextSecondary else Color(0xFF111115),
+                                fontSize = 15.sp,
                                 fontWeight = FontWeight.Bold
                             )
                         }
                     }
                 }
-            }
 
-            // Status and Control
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(12.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = if (stepIndex == 0) {
-                        "Mid=3 (val 7) < 11 → Eliminate left half [1, 3, 5, 7]"
-                    } else {
-                        "Mid=5 (val 11) == 11 → Found 11 at index 5! ✓"
-                    },
-                    color = if (isFound) GreenAccent else TextSecondary,
-                    fontSize = 12.sp,
-                    fontWeight = if (isFound) FontWeight.Bold else FontWeight.Normal,
-                    modifier = Modifier.weight(1f, fill = false),
-                    maxLines = 2,
-                    overflow = TextOverflow.Ellipsis
-                )
-
+                // Next (›)
                 Surface(
-                    color = if (isFound) Color(0xFF22222E) else OrangeAccent,
-                    shape = RoundedCornerShape(8.dp),
-                    modifier = Modifier.clickable {
-                        if (isFound) {
-                            stepIndex = 0
-                        } else {
-                            stepIndex++
+                    color = DarkCardBgColor,
+                    shape = RoundedCornerShape(12.dp),
+                    border = BorderStroke(1.dp, CardBorderColor),
+                    modifier = Modifier
+                        .size(44.dp)
+                        .clickable(enabled = !isCompleted) {
+                            isPlaying = false
+                            if (stepIndex < 0) {
+                                stepIndex = 0
+                            } else if (!isCompleted) {
+                                stepIndex++
+                            }
                         }
-                    }
                 ) {
-                    Text(
-                        text = if (isFound) "Restart ↻" else "Next Step →",
-                        color = if (isFound) TextPrimary else DarkBgColor,
-                        fontSize = 12.sp,
-                        fontWeight = FontWeight.Bold,
-                        modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp)
-                    )
+                    Box(contentAlignment = Alignment.Center) {
+                        Text(
+                            text = "›",
+                            color = if (!isCompleted) TextPrimary else TextSecondary.copy(alpha = 0.3f),
+                            fontSize = 20.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
                 }
             }
         }
