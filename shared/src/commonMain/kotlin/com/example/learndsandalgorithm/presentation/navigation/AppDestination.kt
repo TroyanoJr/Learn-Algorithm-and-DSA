@@ -1,10 +1,9 @@
 package com.example.learndsandalgorithm.presentation.navigation
 
 enum class AppDestination(
-    val title: String,
-    val icon: String
+    val title: String
 ) {
-    HOME(title = "Home", icon = "⌂"),
-    LEARN(title = "Learn", icon = "📖"),
-    PRACTICE(title = "Practice", icon = "🎯")
+    HOME(title = "Home"),
+    LEARN(title = "Learn"),
+    PRACTICE(title = "Practice")
 }

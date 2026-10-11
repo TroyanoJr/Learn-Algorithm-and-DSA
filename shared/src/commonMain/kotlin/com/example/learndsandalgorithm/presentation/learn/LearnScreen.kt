@@ -20,6 +20,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -32,6 +33,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.graphics.vector.PathBuilder
+import androidx.compose.ui.graphics.vector.path
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -53,6 +58,50 @@ private val PurpleAccent = Color(0xFF9E66FF)
 private val GreenAccent = Color(0xFF10B981)
 private val TextPrimary = Color(0xFFFFFFFF)
 private val TextSecondary = Color(0xFF9CA3AF)
+
+private fun buildVectorIcon(name: String, block: PathBuilder.() -> Unit): ImageVector {
+    return ImageVector.Builder(
+        name = name,
+        defaultWidth = 24.dp,
+        defaultHeight = 24.dp,
+        viewportWidth = 24f,
+        viewportHeight = 24f
+    ).path(
+        fill = SolidColor(Color.White),
+        pathBuilder = block
+    ).build()
+}
+
+private val IconLock = buildVectorIcon("Lock") {
+    moveTo(18f, 8f)
+    horizontalLineTo(17f)
+    verticalLineTo(6f)
+    curveTo(17f, 3.24f, 14.76f, 1f, 12f, 1f)
+    curveTo(9.24f, 1f, 7f, 3.24f, 7f, 6f)
+    verticalLineTo(8f)
+    horizontalLineTo(6f)
+    curveTo(4.9f, 8f, 4f, 8.9f, 4f, 10f)
+    verticalLineTo(20f)
+    curveTo(4f, 21.1f, 4.9f, 22f, 6f, 22f)
+    horizontalLineTo(18f)
+    curveTo(19.1f, 22f, 20f, 21.1f, 20f, 20f)
+    verticalLineTo(10f)
+    curveTo(20f, 8.9f, 19.1f, 8f, 18f, 8f)
+    close()
+    moveTo(9f, 6f)
+    curveTo(9f, 4.34f, 10.34f, 3f, 12f, 3f)
+    curveTo(13.66f, 3f, 15f, 4.34f, 15f, 6f)
+    verticalLineTo(8f)
+    horizontalLineTo(9f)
+    verticalLineTo(6f)
+    close()
+    moveTo(12f, 17f)
+    curveTo(10.9f, 17f, 10f, 16.1f, 10f, 15f)
+    curveTo(10f, 13.9f, 10.9f, 13f, 12f, 13f)
+    curveTo(13.1f, 13f, 14f, 13.9f, 14f, 15f)
+    curveTo(14f, 16.1f, 13.1f, 17f, 12f, 17f)
+    close()
+}
 
 private enum class TopicStatus {
     COMPLETED, IN_PROGRESS, NOT_STARTED
@@ -590,9 +639,11 @@ private fun TopicItemRow(
                     .background(Color(0xFF1E1E28)),
                 contentAlignment = Alignment.Center
             ) {
-                Text(
-                    text = "🔒",
-                    fontSize = 12.sp
+                Icon(
+                    imageVector = IconLock,
+                    contentDescription = "Locked",
+                    tint = TextSecondary,
+                    modifier = Modifier.size(14.dp)
                 )
             }
         } else {

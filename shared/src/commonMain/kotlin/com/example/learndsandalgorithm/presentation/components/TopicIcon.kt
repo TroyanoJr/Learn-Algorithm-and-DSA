@@ -46,27 +46,6 @@ private fun buildVectorIcon(name: String, block: PathBuilder.() -> Unit): ImageV
 }
 
 // Self-contained custom ImageVector paths for all 20 topics
-private val IconInfo = buildVectorIcon("Info") {
-    moveTo(12f, 2f)
-    curveTo(6.48f, 2f, 2f, 6.48f, 2f, 12f)
-    curveTo(2f, 17.52f, 6.48f, 22f, 12f, 22f)
-    curveTo(17.52f, 22f, 22f, 17.52f, 22f, 12f)
-    curveTo(22f, 6.48f, 17.52f, 2f, 12f, 2f)
-    close()
-    moveTo(13f, 17f)
-    horizontalLineTo(11f)
-    verticalLineTo(11f)
-    horizontalLineTo(13f)
-    verticalLineTo(17f)
-    close()
-    moveTo(13f, 9f)
-    horizontalLineTo(11f)
-    verticalLineTo(7f)
-    horizontalLineTo(13f)
-    verticalLineTo(9f)
-    close()
-}
-
 private val IconGrid = buildVectorIcon("Grid") {
     moveTo(4f, 4f)
     horizontalLineTo(10f)
@@ -284,23 +263,6 @@ private val IconBarChart = buildVectorIcon("BarChart") {
     close()
 }
 
-private val IconBuild = buildVectorIcon("Build") {
-    moveTo(22.7f, 19f)
-    lineTo(13.6f, 9.9f)
-    curveTo(14.5f, 8.2f, 14.2f, 6.1f, 12.8f, 4.7f)
-    curveTo(11.2f, 3.1f, 8.8f, 2.8f, 6.9f, 3.8f)
-    lineTo(10.6f, 7.5f)
-    lineTo(8.5f, 9.6f)
-    lineTo(4.8f, 5.9f)
-    curveTo(3.8f, 7.8f, 4.1f, 10.2f, 5.7f, 11.8f)
-    curveTo(7.1f, 13.2f, 9.2f, 13.5f, 10.9f, 12.6f)
-    lineTo(20f, 21.7f)
-    curveTo(20.4f, 22.1f, 21f, 22.1f, 21.4f, 21.7f)
-    lineTo(22.7f, 20.4f)
-    curveTo(23.1f, 20f, 23.1f, 19.4f, 22.7f, 19f)
-    close()
-}
-
 private val IconLoop = buildVectorIcon("Loop") {
     moveTo(12f, 4f)
     verticalLineTo(1f)
@@ -346,20 +308,6 @@ private val IconDivide = buildVectorIcon("Divide") {
     close()
 }
 
-private val IconStar = buildVectorIcon("Star") {
-    moveTo(12f, 17.27f)
-    lineTo(18.18f, 21f)
-    lineTo(16.54f, 13.97f)
-    lineTo(22f, 9.24f)
-    lineTo(14.81f, 8.63f)
-    lineTo(12f, 2f)
-    lineTo(9.19f, 8.63f)
-    lineTo(2f, 9.24f)
-    lineTo(7.46f, 13.97f)
-    lineTo(5.82f, 21f)
-    close()
-}
-
 private val IconRefresh = buildVectorIcon("Refresh") {
     moveTo(17.65f, 6.35f)
     curveTo(16.2f, 4.9f, 14.21f, 4f, 12f, 4f)
@@ -378,46 +326,92 @@ private val IconRefresh = buildVectorIcon("Refresh") {
     close()
 }
 
-private val IconAwesome = buildVectorIcon("Awesome") {
-    moveTo(19f, 9f)
-    lineTo(20.25f, 6.25f)
-    lineTo(23f, 5f)
-    lineTo(20.25f, 3.75f)
-    lineTo(19f, 1f)
-    lineTo(17.75f, 3.75f)
-    lineTo(15f, 5f)
-    lineTo(17.75f, 6.25f)
-    close()
-    moveTo(11.5f, 9.5f)
-    lineTo(9f, 4f)
-    lineTo(6.5f, 9.5f)
-    lineTo(1f, 12f)
-    lineTo(6.5f, 14.5f)
-    lineTo(9f, 20f)
-    lineTo(11.5f, 14.5f)
-    lineTo(17f, 12f)
-    close()
+// Custom semantic ImageVector definitions for optimized topics
+private val IconMemoTable = buildVectorIcon("MemoTable") {
+    // 3x3 memoization results grid
+    moveTo(4f, 4f); horizontalLineTo(8f); verticalLineTo(8f); horizontalLineTo(4f); close()
+    moveTo(10f, 4f); horizontalLineTo(14f); verticalLineTo(8f); horizontalLineTo(10f); close()
+    moveTo(16f, 4f); horizontalLineTo(20f); verticalLineTo(8f); horizontalLineTo(16f); close()
+
+    moveTo(4f, 10f); horizontalLineTo(8f); verticalLineTo(14f); horizontalLineTo(4f); close()
+    moveTo(10f, 10f); horizontalLineTo(14f); verticalLineTo(14f); horizontalLineTo(10f); close()
+    moveTo(16f, 10f); horizontalLineTo(20f); verticalLineTo(14f); horizontalLineTo(16f); close()
+
+    moveTo(4f, 16f); horizontalLineTo(8f); verticalLineTo(20f); horizontalLineTo(4f); close()
+    moveTo(10f, 16f); horizontalLineTo(14f); verticalLineTo(20f); horizontalLineTo(10f); close()
+    moveTo(16f, 16f); horizontalLineTo(20f); verticalLineTo(20f); horizontalLineTo(16f); close()
 }
 
-private val IconBrain = buildVectorIcon("Brain") {
-    moveTo(12f, 3f)
-    curveTo(7.03f, 3f, 3f, 7.03f, 3f, 12f)
-    curveTo(3f, 16.97f, 7.03f, 21f, 12f, 21f)
-    curveTo(16.97f, 21f, 21f, 16.97f, 21f, 12f)
-    curveTo(21f, 7.03f, 16.97f, 3f, 12f, 3f)
-    close()
-    moveTo(12f, 18f)
-    curveTo(8.69f, 18f, 6f, 15.31f, 6f, 12f)
-    curveTo(6f, 8.69f, 8.69f, 6f, 12f, 6f)
-    curveTo(15.31f, 6f, 18f, 8.69f, 18f, 12f)
-    curveTo(18f, 15.31f, 15.31f, 18f, 12f, 18f)
-    close()
+private val IconPrunedTree = buildVectorIcon("PrunedTree") {
+    // Root node
+    moveTo(10f, 3f); horizontalLineTo(14f); verticalLineTo(7f); horizontalLineTo(10f); close()
+    // Left child node
+    moveTo(5f, 11f); horizontalLineTo(9f); verticalLineTo(15f); horizontalLineTo(5f); close()
+    // Right child node (bound)
+    moveTo(15f, 11f); horizontalLineTo(19f); verticalLineTo(15f); horizontalLineTo(15f); close()
+    // Left leaf node
+    moveTo(2f, 18f); horizontalLineTo(6f); verticalLineTo(22f); horizontalLineTo(2f); close()
+
+    // Connectors
+    moveTo(11f, 7f); lineTo(8f, 11f); lineTo(9.5f, 11f); lineTo(12.5f, 7f); close()
+    moveTo(13f, 7f); lineTo(16f, 11f); lineTo(14.5f, 11f); lineTo(11.5f, 7f); close()
+    moveTo(6f, 15f); lineTo(4f, 18f); lineTo(5.5f, 18f); lineTo(7.5f, 15f); close()
+
+    // Pruned X mark on right branch
+    moveTo(14.5f, 18f); lineTo(18f, 21.5f); lineTo(19.5f, 20f); lineTo(16f, 16.5f); close()
+    moveTo(18f, 16.5f); lineTo(19.5f, 18f); lineTo(16f, 21.5f); lineTo(14.5f, 20f); close()
+}
+
+private val IconChoice = buildVectorIcon("Choice") {
+    // Top origin node
+    moveTo(10f, 3f); horizontalLineTo(14f); verticalLineTo(7f); horizontalLineTo(10f); close()
+
+    // Branch connectors
+    moveTo(11f, 7f); lineTo(5f, 13f); lineTo(6.5f, 13f); lineTo(12.5f, 7f); close()
+    moveTo(11.2f, 7f); lineTo(11.2f, 13f); horizontalLineTo(12.8f); verticalLineTo(7f); close()
+    moveTo(13f, 7f); lineTo(19f, 13f); lineTo(17.5f, 13f); lineTo(11.5f, 7f); close()
+
+    // Unselected left/right option nodes
+    moveTo(3f, 13f); horizontalLineTo(7f); verticalLineTo(17f); horizontalLineTo(3f); close()
+    moveTo(17f, 13f); horizontalLineTo(21f); verticalLineTo(17f); horizontalLineTo(17f); close()
+
+    // Selected center choice node
+    moveTo(10f, 12f); horizontalLineTo(14f); verticalLineTo(16f); horizontalLineTo(10f); close()
+
+    // Selected choice checkmark below center
+    moveTo(9f, 18.5f); lineTo(11f, 21f); lineTo(16f, 15.5f); lineTo(14.5f, 14f); lineTo(11f, 18f); lineTo(10.5f, 17f); close()
+}
+
+private val IconExhaustive = buildVectorIcon("Exhaustive") {
+    // Center target / combination lock box
+    moveTo(9f, 9f); horizontalLineTo(15f); verticalLineTo(15f); horizontalLineTo(9f); close()
+
+    // 4 directional trial arrows exploring all angles
+    // Top arrow (down)
+    moveTo(11f, 2f); horizontalLineTo(13f); verticalLineTo(6f); lineTo(15f, 6f); lineTo(12f, 9f); lineTo(9f, 6f); horizontalLineTo(11f); close()
+    // Bottom arrow (up)
+    moveTo(11f, 22f); horizontalLineTo(13f); verticalLineTo(18f); lineTo(15f, 18f); lineTo(12f, 15f); lineTo(9f, 18f); horizontalLineTo(11f); close()
+    // Left arrow (right)
+    moveTo(2f, 11f); verticalLineTo(13f); horizontalLineTo(6f); verticalLineTo(15f); lineTo(9f, 12f); lineTo(6f, 9f); verticalLineTo(11f); close()
+    // Right arrow (left)
+    moveTo(22f, 11f); verticalLineTo(13f); horizontalLineTo(18f); verticalLineTo(15f); lineTo(15f, 12f); lineTo(18f, 9f); verticalLineTo(11f); close()
+}
+
+private val IconBlocks = buildVectorIcon("Blocks") {
+    // Top block
+    moveTo(7f, 3f); horizontalLineTo(17f); verticalLineTo(9f); horizontalLineTo(7f); close()
+    // Bottom-left block
+    moveTo(3f, 11f); horizontalLineTo(11f); verticalLineTo(17f); horizontalLineTo(3f); close()
+    // Bottom-right block
+    moveTo(13f, 11f); horizontalLineTo(21f); verticalLineTo(17f); horizontalLineTo(13f); close()
+    // Foundation base bar
+    moveTo(3f, 19f); horizontalLineTo(21f); verticalLineTo(21f); horizontalLineTo(3f); close()
 }
 
 fun getTopicIconSpec(topicId: String): TopicIconSpec {
     return when (topicId) {
         // Data Structures (Blue Accents)
-        "introduction_ds" -> TopicIconSpec(IconInfo, isDataStructure = true)
+        "introduction_ds" -> TopicIconSpec(IconBlocks, isDataStructure = true)
         "arrays" -> TopicIconSpec(IconGrid, isDataStructure = true)
         "structures" -> TopicIconSpec(IconSchema, isDataStructure = true)
         "linked_list" -> TopicIconSpec(IconLink, isDataStructure = true)
@@ -432,13 +426,13 @@ fun getTopicIconSpec(topicId: String): TopicIconSpec {
         "introduction_algo" -> TopicIconSpec(IconCode, isDataStructure = false)
         "linear_search" -> TopicIconSpec(IconSearch, isDataStructure = false)
         "sorting" -> TopicIconSpec(IconBarChart, isDataStructure = false)
-        "brute_force" -> TopicIconSpec(IconBuild, isDataStructure = false)
+        "brute_force" -> TopicIconSpec(IconExhaustive, isDataStructure = false)
         "iteration_recursion" -> TopicIconSpec(IconLoop, isDataStructure = false)
         "divide_conquer" -> TopicIconSpec(IconDivide, isDataStructure = false)
-        "greedy" -> TopicIconSpec(IconStar, isDataStructure = false)
+        "greedy" -> TopicIconSpec(IconChoice, isDataStructure = false)
         "backtracking" -> TopicIconSpec(IconRefresh, isDataStructure = false)
-        "dynamic_programming" -> TopicIconSpec(IconAwesome, isDataStructure = false)
-        "branch_bound" -> TopicIconSpec(IconBrain, isDataStructure = false)
+        "dynamic_programming" -> TopicIconSpec(IconMemoTable, isDataStructure = false)
+        "branch_bound" -> TopicIconSpec(IconPrunedTree, isDataStructure = false)
 
         // Fallback for unknown topic IDs
         else -> TopicIconSpec(IconCode, isDataStructure = false)

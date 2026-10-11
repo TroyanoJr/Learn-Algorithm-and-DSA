@@ -9,7 +9,9 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -21,6 +23,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.graphics.vector.PathBuilder
+import androidx.compose.ui.graphics.vector.path
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -40,6 +46,82 @@ private val DarkCardBgColor = Color(0xFF1A1A22)
 private val OrangeAccent = Color(0xFFFA6E13)
 private val TextSecondary = Color(0xFF9CA3AF)
 private val SubtleBorderColor = Color(0xFF262632)
+
+private fun buildVectorIcon(name: String, block: PathBuilder.() -> Unit): ImageVector {
+    return ImageVector.Builder(
+        name = name,
+        defaultWidth = 24.dp,
+        defaultHeight = 24.dp,
+        viewportWidth = 24f,
+        viewportHeight = 24f
+    ).path(
+        fill = SolidColor(Color.White),
+        pathBuilder = block
+    ).build()
+}
+
+private val IconHome = buildVectorIcon("Home") {
+    moveTo(10f, 20f)
+    verticalLineTo(14f)
+    horizontalLineTo(14f)
+    verticalLineTo(20f)
+    horizontalLineTo(19f)
+    verticalLineTo(11f)
+    horizontalLineTo(22f)
+    lineTo(12f, 3f)
+    lineTo(2f, 11f)
+    horizontalLineTo(5f)
+    verticalLineTo(20f)
+    horizontalLineTo(10f)
+    close()
+}
+
+private val IconBook = buildVectorIcon("Book") {
+    moveTo(18f, 2f)
+    horizontalLineTo(6f)
+    curveTo(4.9f, 2f, 4f, 2.9f, 4f, 4f)
+    verticalLineTo(20f)
+    curveTo(4f, 21.1f, 4.9f, 22f, 6f, 22f)
+    horizontalLineTo(18f)
+    curveTo(19.1f, 22f, 20f, 21.1f, 20f, 20f)
+    verticalLineTo(4f)
+    curveTo(20f, 2.9f, 19.1f, 2f, 18f, 2f)
+    close()
+    moveTo(6f, 4f)
+    horizontalLineTo(11f)
+    verticalLineTo(12f)
+    lineTo(8.5f, 10.5f)
+    lineTo(6f, 12f)
+    verticalLineTo(4f)
+    close()
+}
+
+private val IconTarget = buildVectorIcon("Target") {
+    moveTo(12f, 2f)
+    curveTo(6.48f, 2f, 2f, 6.48f, 2f, 12f)
+    curveTo(2f, 17.52f, 6.48f, 22f, 12f, 22f)
+    curveTo(17.52f, 22f, 22f, 17.52f, 22f, 12f)
+    curveTo(22f, 6.48f, 17.52f, 2f, 12f, 2f)
+    close()
+    moveTo(12f, 18f)
+    curveTo(8.69f, 18f, 6f, 15.31f, 6f, 12f)
+    curveTo(6f, 8.69f, 8.69f, 6f, 12f, 6f)
+    curveTo(15.31f, 6f, 18f, 8.69f, 18f, 12f)
+    curveTo(18f, 15.31f, 15.31f, 18f, 12f, 18f)
+    close()
+    moveTo(12f, 8f)
+    curveTo(9.79f, 8f, 8f, 9.79f, 8f, 12f)
+    curveTo(8f, 14.21f, 9.79f, 16f, 12f, 16f)
+    curveTo(14.21f, 16f, 16f, 14.21f, 16f, 12f)
+    curveTo(16f, 9.79f, 14.21f, 8f, 12f, 8f)
+    close()
+}
+
+private fun getDestinationIcon(destination: AppDestination): ImageVector = when (destination) {
+    AppDestination.HOME -> IconHome
+    AppDestination.LEARN -> IconBook
+    AppDestination.PRACTICE -> IconTarget
+}
 
 @Composable
 fun AppNavigation(
@@ -172,7 +254,7 @@ fun AppBottomNavigation(
             AppDestination.entries.forEach { destination ->
                 BottomNavItem(
                     text = destination.title,
-                    iconStr = destination.icon,
+                    icon = getDestinationIcon(destination),
                     isSelected = destination == currentDestination,
                     onClick = { onNavigate(destination) }
                 )
@@ -184,7 +266,7 @@ fun AppBottomNavigation(
 @Composable
 fun BottomNavItem(
     text: String,
-    iconStr: String,
+    icon: ImageVector,
     isSelected: Boolean,
     onClick: () -> Unit
 ) {
@@ -195,11 +277,11 @@ fun BottomNavItem(
             .clickable(onClick = onClick)
             .padding(horizontal = 12.dp, vertical = 2.dp)
     ) {
-        Text(
-            text = iconStr,
-            color = if (isSelected) OrangeAccent else TextSecondary,
-            fontSize = 18.sp,
-            fontWeight = FontWeight.Bold
+        Icon(
+            imageVector = icon,
+            contentDescription = text,
+            tint = if (isSelected) OrangeAccent else TextSecondary,
+            modifier = Modifier.size(20.dp)
         )
         Text(
             text = text,

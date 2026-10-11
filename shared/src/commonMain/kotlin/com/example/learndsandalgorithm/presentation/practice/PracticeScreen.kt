@@ -206,7 +206,7 @@ fun PracticeScreen(
                 isAvailable = false,
                 icon = IconBolt,
                 iconBgColor = Color(0xFF2A1A10),
-                iconBorderColor = OrangeAccent.copy(alpha = 0.4f),
+                iconBorderColor = OrangeAccent,
                 iconTextColor = OrangeAccent,
                 featuredHeader = "QUICK QUIZ",
                 featuredBadge = "Coming Soon",
@@ -225,7 +225,7 @@ fun PracticeScreen(
                 isAvailable = false,
                 icon = IconMedal,
                 iconBgColor = Color(0xFF122038),
-                iconBorderColor = BlueAccent.copy(alpha = 0.4f),
+                iconBorderColor = BlueAccent,
                 iconTextColor = BlueAccent,
                 featuredHeader = "EXAMS",
                 featuredBadge = "Coming Soon",
@@ -244,7 +244,7 @@ fun PracticeScreen(
                 isAvailable = false,
                 icon = IconCode,
                 iconBgColor = Color(0xFF0E281E),
-                iconBorderColor = GreenAccent.copy(alpha = 0.4f),
+                iconBorderColor = GreenAccent,
                 iconTextColor = GreenAccent,
                 featuredHeader = "CHALLENGES",
                 featuredBadge = "Coming Soon",
@@ -514,7 +514,7 @@ private fun PracticeModeCard(
                         .size(48.dp)
                         .clip(RoundedCornerShape(12.dp))
                         .background(mode.iconBgColor)
-                        .border(1.dp, mode.iconBorderColor.copy(alpha = 0.5f), RoundedCornerShape(12.dp)),
+                        .border(1.dp, mode.iconBorderColor.copy(alpha = 0.35f), RoundedCornerShape(12.dp)),
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(

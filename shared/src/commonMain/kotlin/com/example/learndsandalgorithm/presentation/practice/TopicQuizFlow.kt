@@ -407,7 +407,7 @@ private fun TopicQuizSelectionScreen(
                     ) {
                         TopicIcon(
                             topicId = topic.id,
-                            containerSize = 42.dp,
+                            containerSize = 40.dp,
                             iconSize = 20.dp
                         )
 
