@@ -6,8 +6,8 @@ Imagine opening a dictionary in the middle. If the target word comes alphabetica
 
 ## Key Concepts
 
-- **Prerequisite: Sorted Input**: Binary search **requires** input elements to be pre-sorted in ascending or descending order to eliminate half the search space at each comparison.
-- **Divide and Conquer**: Maintains search boundaries `left` and `right`. In each step, calculates the midpoint `mid` and compares `arr[mid]` with `target`.
+- **Prerequisite: Sorted Input**: This algorithm requires input elements to be sorted in **ascending order**. The comparisons below rely on that order.
+- **Divide and Conquer**: `left` and `right` are the inclusive indices of the current search interval. `mid` is an index halfway between them. If `arr[mid]` is smaller than the target, every index through `mid` can be discarded, so set `left = mid + 1`. If it is larger, discard `mid` and everything after it by setting `right = mid - 1`. Equality means the target is found.
 - **Integer Overflow Protection**: Rather than calculating `mid = (left + right) / 2` (which can cause integer overflow in fixed-precision types like C++ and Java when `left + right` exceeds maximum integer value), we calculate:
   `mid = left + (right - left) / 2`
 - **Time Complexity O(log N)**: Halves remaining elements in each step, taking at most log₂(N) comparisons.
