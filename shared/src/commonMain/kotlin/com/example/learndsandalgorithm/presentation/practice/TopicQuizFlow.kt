@@ -20,6 +20,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -32,6 +33,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.graphics.vector.PathBuilder
+import androidx.compose.ui.graphics.vector.path
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -50,6 +55,65 @@ private val GreenAccent = Color(0xFF10B981)
 private val RedAccent = Color(0xFFEF4444)
 private val TextPrimary = Color(0xFFFFFFFF)
 private val TextSecondary = Color(0xFF9CA3AF)
+
+private fun buildVectorIcon(name: String, block: PathBuilder.() -> Unit): ImageVector {
+    return ImageVector.Builder(
+        name = name,
+        defaultWidth = 24.dp,
+        defaultHeight = 24.dp,
+        viewportWidth = 24f,
+        viewportHeight = 24f
+    ).path(
+        fill = SolidColor(Color.White),
+        pathBuilder = block
+    ).build()
+}
+
+private val IconChevronLeft = buildVectorIcon("ChevronLeft") {
+    moveTo(15.41f, 7.41f)
+    lineTo(14f, 6f)
+    lineTo(8f, 12f)
+    lineTo(14f, 18f)
+    lineTo(15.41f, 16.59f)
+    lineTo(10.83f, 12f)
+    close()
+}
+
+private val IconChevronRight = buildVectorIcon("ChevronRight") {
+    moveTo(10f, 6f)
+    lineTo(8.59f, 7.41f)
+    lineTo(13.17f, 12f)
+    lineTo(8.59f, 16.59f)
+    lineTo(10f, 18f)
+    lineTo(16f, 12f)
+    close()
+}
+
+private val IconCheck = buildVectorIcon("Check") {
+    moveTo(9f, 16.17f)
+    lineTo(4.83f, 12f)
+    lineTo(3.41f, 13.41f)
+    lineTo(9f, 19f)
+    lineTo(21f, 7f)
+    lineTo(19.59f, 5.59f)
+    close()
+}
+
+private val IconClose = buildVectorIcon("Close") {
+    moveTo(19f, 6.41f)
+    lineTo(17.59f, 5f)
+    lineTo(12f, 10.59f)
+    lineTo(6.41f, 5f)
+    lineTo(5f, 6.41f)
+    lineTo(10.59f, 12f)
+    lineTo(5f, 17.59f)
+    lineTo(6.41f, 19f)
+    lineTo(12f, 13.41f)
+    lineTo(17.59f, 19f)
+    lineTo(19f, 17.59f)
+    lineTo(13.41f, 12f)
+    close()
+}
 
 private data class QuizQuestionState(
     val statement: String,
@@ -325,7 +389,7 @@ private fun TopicQuizSelectionScreen(
                     .clickable { onBack() },
                 contentAlignment = Alignment.Center
             ) {
-                Text(text = "‹", color = TextPrimary, fontSize = 20.sp, fontWeight = FontWeight.Bold)
+                Icon(imageVector = IconChevronLeft, contentDescription = "Back", tint = TextPrimary, modifier = Modifier.size(16.dp))
             }
             Text(
                 text = "TOPIC QUIZ",
@@ -441,11 +505,11 @@ private fun TopicQuizSelectionScreen(
                             .clickable { onStartQuizForTopic(topic) },
                         contentAlignment = Alignment.Center
                     ) {
-                        Text(
-                            text = "›",
-                            color = TextPrimary,
-                            fontSize = 18.sp,
-                            fontWeight = FontWeight.Bold
+                        Icon(
+                            imageVector = IconChevronRight,
+                            contentDescription = "Start topic quiz",
+                            tint = TextPrimary,
+                            modifier = Modifier.size(16.dp)
                         )
                     }
                 }
@@ -528,7 +592,7 @@ private fun QuizQuestionScreen(
                         .clickable { onBack() },
                     contentAlignment = Alignment.Center
                 ) {
-                    Text(text = "‹", color = TextPrimary, fontSize = 20.sp, fontWeight = FontWeight.Bold)
+                    Icon(imageVector = IconChevronLeft, contentDescription = "Back", tint = TextPrimary, modifier = Modifier.size(16.dp))
                 }
 
                 Column {
@@ -599,7 +663,7 @@ private fun QuizQuestionScreen(
             val isCorrectIndex = index == question.correctOptionIndex
             val isAnswered = selectedOptionIndex != null
 
-            val (borderColor, bgColor, letterBgColor, letterTextColor, iconStr, iconColor) = when {
+            val (borderColor, bgColor, letterBgColor, letterTextColor, iconVector, iconColor) = when {
                 !isAnswered -> {
                     Tuple6(
                         CardBorderColor,
@@ -616,7 +680,7 @@ private fun QuizQuestionScreen(
                         Color(0xFF092317),
                         GreenAccent,
                         Color(0xFF111115),
-                        "✓",
+                        IconCheck,
                         GreenAccent
                     )
                 }
@@ -626,7 +690,7 @@ private fun QuizQuestionScreen(
                         Color(0xFF210C0D),
                         RedAccent,
                         TextPrimary,
-                        "×",
+                        IconClose,
                         RedAccent
                     )
                 }
@@ -685,12 +749,12 @@ private fun QuizQuestionScreen(
                         )
                     }
 
-                    if (iconStr != null) {
-                        Text(
-                            text = iconStr,
-                            color = iconColor,
-                            fontSize = 18.sp,
-                            fontWeight = FontWeight.Bold
+                    if (iconVector != null) {
+                        Icon(
+                            imageVector = iconVector,
+                            contentDescription = null,
+                            tint = iconColor,
+                            modifier = Modifier.size(18.dp)
                         )
                     }
                 }
@@ -779,7 +843,7 @@ private fun QuizCompleteScreen(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(6.dp)
         ) {
-            Text(text = "‹", color = TextSecondary, fontSize = 20.sp, fontWeight = FontWeight.Bold)
+            Icon(imageVector = IconChevronLeft, contentDescription = "Back", tint = TextSecondary, modifier = Modifier.size(16.dp))
             Text(text = "Back", color = TextSecondary, fontSize = 14.sp)
         }
 
@@ -902,7 +966,7 @@ private fun QuizResultScreen(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(6.dp)
             ) {
-                Text(text = "‹", color = TextSecondary, fontSize = 20.sp, fontWeight = FontWeight.Bold)
+                Icon(imageVector = IconChevronLeft, contentDescription = "Back", tint = TextSecondary, modifier = Modifier.size(16.dp))
                 Text(text = "Back", color = TextSecondary, fontSize = 14.sp)
             }
 

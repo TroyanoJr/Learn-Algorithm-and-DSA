@@ -119,25 +119,7 @@ private val IconCheckCircle = buildVectorIcon("CheckCircle") {
     close()
 }
 
-private val IconBook = buildVectorIcon("Book") {
-    moveTo(18f, 2f)
-    horizontalLineTo(6f)
-    curveTo(4.9f, 2f, 4f, 2.9f, 4f, 4f)
-    verticalLineTo(20f)
-    curveTo(4f, 21.1f, 4.9f, 22f, 6f, 22f)
-    horizontalLineTo(18f)
-    curveTo(19.1f, 22f, 20f, 21.1f, 20f, 20f)
-    verticalLineTo(4f)
-    curveTo(20f, 2.9f, 19.1f, 2f, 18f, 2f)
-    close()
-    moveTo(6f, 4f)
-    horizontalLineTo(11f)
-    verticalLineTo(12f)
-    lineTo(8.5f, 10.5f)
-    lineTo(6f, 12f)
-    verticalLineTo(4f)
-    close()
-}
+
 
 @Composable
 fun HomeScreen(
@@ -365,18 +347,26 @@ fun ContinueLearningSection(
                     modifier = Modifier.weight(1f),
                     horizontalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
-                    Box(
-                        modifier = Modifier
-                            .size(48.dp)
-                            .clip(RoundedCornerShape(14.dp))
-                            .background(OrangeAccent.copy(alpha = 0.1f)),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Icon(
-                            imageVector = if (info.isAllComplete) IconCheckCircle else IconBook,
-                            contentDescription = null,
-                            tint = OrangeAccent,
-                            modifier = Modifier.size(24.dp)
+                    if (info.isAllComplete) {
+                        Box(
+                            modifier = Modifier
+                                .size(48.dp)
+                                .clip(RoundedCornerShape(14.dp))
+                                .background(OrangeAccent.copy(alpha = 0.1f)),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                imageVector = IconCheckCircle,
+                                contentDescription = null,
+                                tint = OrangeAccent,
+                                modifier = Modifier.size(24.dp)
+                            )
+                        }
+                    } else {
+                        TopicIcon(
+                            topicId = info.topicId,
+                            containerSize = 48.dp,
+                            iconSize = 24.dp
                         )
                     }
                     Column {

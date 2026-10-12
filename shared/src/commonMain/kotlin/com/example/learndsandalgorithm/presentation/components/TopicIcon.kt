@@ -86,35 +86,63 @@ private val IconSchema = buildVectorIcon("Schema") {
 }
 
 private val IconLink = buildVectorIcon("Link") {
-    moveTo(3.9f, 12f)
-    curveTo(3.9f, 10.29f, 5.29f, 8.9f, 7f, 8.9f)
-    horizontalLineTo(11f)
-    verticalLineTo(7f)
-    horizontalLineTo(7f)
-    curveTo(4.24f, 7f, 2f, 9.24f, 2f, 12f)
-    curveTo(2f, 14.76f, 4.24f, 17f, 7f, 17f)
-    horizontalLineTo(11f)
-    verticalLineTo(15.1f)
-    horizontalLineTo(7f)
-    curveTo(5.29f, 15.1f, 3.9f, 13.71f, 3.9f, 12f)
+    // Left node outer circle (center 5, 12, r=3)
+    moveTo(5f, 9f)
+    curveTo(6.66f, 9f, 8f, 10.34f, 8f, 12f)
+    curveTo(8f, 13.66f, 6.66f, 15f, 5f, 15f)
+    curveTo(3.34f, 15f, 2f, 13.66f, 2f, 12f)
+    curveTo(2f, 10.34f, 3.34f, 9f, 5f, 9f)
     close()
-    moveTo(8f, 13f)
-    horizontalLineTo(16f)
-    verticalLineTo(11f)
-    horizontalLineTo(8f)
-    verticalLineTo(13f)
+    // Left node inner circle hole (center 5, 12, r=1.5)
+    moveTo(5f, 10.5f)
+    curveTo(4.17f, 10.5f, 3.5f, 11.17f, 3.5f, 12f)
+    curveTo(3.5f, 12.83f, 4.17f, 13.5f, 5f, 13.5f)
+    curveTo(5.83f, 13.5f, 6.5f, 12.83f, 6.5f, 12f)
+    curveTo(6.5f, 11.17f, 5.83f, 10.5f, 5f, 10.5f)
     close()
-    moveTo(17f, 7f)
-    horizontalLineTo(13f)
-    verticalLineTo(8.9f)
-    horizontalLineTo(17f)
-    curveTo(18.71f, 8.9f, 20.1f, 10.29f, 20.1f, 12f)
-    curveTo(20.1f, 13.71f, 18.71f, 15.1f, 17f, 15.1f)
-    horizontalLineTo(13f)
-    verticalLineTo(17f)
-    horizontalLineTo(17f)
-    curveTo(19.76f, 17f, 22f, 14.76f, 22f, 12f)
-    curveTo(22f, 9.24f, 19.76f, 7f, 17f, 7f)
+
+    // Center node outer circle (center 12, 12, r=3)
+    moveTo(12f, 9f)
+    curveTo(13.66f, 9f, 15f, 10.34f, 15f, 12f)
+    curveTo(15f, 13.66f, 13.66f, 15f, 12f, 15f)
+    curveTo(10.34f, 15f, 9f, 13.66f, 9f, 12f)
+    curveTo(9f, 10.34f, 10.34f, 9f, 12f, 9f)
+    close()
+    // Center node inner circle hole (center 12, 12, r=1.5)
+    moveTo(12f, 10.5f)
+    curveTo(11.17f, 10.5f, 10.5f, 11.17f, 10.5f, 12f)
+    curveTo(10.5f, 12.83f, 11.17f, 13.5f, 12f, 13.5f)
+    curveTo(12.83f, 13.5f, 13.5f, 12.83f, 13.5f, 12f)
+    curveTo(13.5f, 11.17f, 12.83f, 10.5f, 12f, 10.5f)
+    close()
+
+    // Right node outer circle (center 19, 12, r=3)
+    moveTo(19f, 9f)
+    curveTo(20.66f, 9f, 22f, 10.34f, 22f, 12f)
+    curveTo(22f, 13.66f, 20.66f, 15f, 19f, 15f)
+    curveTo(17.34f, 15f, 16f, 13.66f, 16f, 12f)
+    curveTo(16f, 10.34f, 17.34f, 9f, 19f, 9f)
+    close()
+    // Right node inner circle hole (center 19, 12, r=1.5)
+    moveTo(19f, 10.5f)
+    curveTo(18.17f, 10.5f, 17.5f, 11.17f, 17.5f, 12f)
+    curveTo(17.5f, 12.83f, 18.17f, 13.5f, 19f, 13.5f)
+    curveTo(19.83f, 13.5f, 20.5f, 12.83f, 20.5f, 12f)
+    curveTo(20.5f, 11.17f, 19.83f, 10.5f, 19f, 10.5f)
+    close()
+
+    // Connecting segment 1 (between node 1 and 2)
+    moveTo(7.5f, 11.2f)
+    horizontalLineTo(9.5f)
+    verticalLineTo(12.8f)
+    horizontalLineTo(7.5f)
+    close()
+
+    // Connecting segment 2 (between node 2 and 3)
+    moveTo(14.5f, 11.2f)
+    horizontalLineTo(16.5f)
+    verticalLineTo(12.8f)
+    horizontalLineTo(14.5f)
     close()
 }
 
@@ -444,12 +472,13 @@ fun TopicIcon(
     topicId: String,
     modifier: Modifier = Modifier,
     containerSize: Dp = 40.dp,
-    iconSize: Dp = 20.dp
+    iconSize: Dp = 20.dp,
+    isLocked: Boolean = false
 ) {
     val spec = getTopicIconSpec(topicId)
-    val bgColor = if (spec.isDataStructure) BlueBgColor else OrangeBgColor
-    val borderColor = if (spec.isDataStructure) BlueBorderColor else OrangeBorderColor
-    val tintColor = if (spec.isDataStructure) BlueAccent else OrangeAccent
+    val bgColor = if (isLocked) Color(0xFF1E1E28) else if (spec.isDataStructure) BlueBgColor else OrangeBgColor
+    val borderColor = if (isLocked) Color(0xFF262634) else if (spec.isDataStructure) BlueBorderColor else OrangeBorderColor
+    val tintColor = if (isLocked) Color(0xFF9CA3AF) else if (spec.isDataStructure) BlueAccent else OrangeAccent
 
     Box(
         modifier = modifier

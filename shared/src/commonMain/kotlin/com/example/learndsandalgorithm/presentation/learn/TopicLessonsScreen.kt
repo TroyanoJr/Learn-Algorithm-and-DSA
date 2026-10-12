@@ -19,6 +19,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -31,6 +32,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.graphics.vector.PathBuilder
+import androidx.compose.ui.graphics.vector.path
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -45,6 +50,52 @@ private val OrangeAccent = Color(0xFFFA6E13)
 private val GreenAccent = Color(0xFF10B981)
 private val TextPrimary = Color(0xFFFFFFFF)
 private val TextSecondary = Color(0xFF9CA3AF)
+
+private fun buildVectorIcon(name: String, block: PathBuilder.() -> Unit): ImageVector {
+    return ImageVector.Builder(
+        name = name,
+        defaultWidth = 24.dp,
+        defaultHeight = 24.dp,
+        viewportWidth = 24f,
+        viewportHeight = 24f
+    ).path(
+        fill = SolidColor(Color.White),
+        pathBuilder = block
+    ).build()
+}
+
+private val IconArrowBack = buildVectorIcon("ArrowBack") {
+    moveTo(20f, 11f)
+    horizontalLineTo(7.83f)
+    lineTo(13.42f, 5.41f)
+    lineTo(12f, 4f)
+    lineTo(4f, 12f)
+    lineTo(12f, 20f)
+    lineTo(13.41f, 18.59f)
+    lineTo(7.83f, 13f)
+    horizontalLineTo(20f)
+    close()
+}
+
+private val IconChevronRight = buildVectorIcon("ChevronRight") {
+    moveTo(10f, 6f)
+    lineTo(8.59f, 7.41f)
+    lineTo(13.17f, 12f)
+    lineTo(8.59f, 16.59f)
+    lineTo(10f, 18f)
+    lineTo(16f, 12f)
+    close()
+}
+
+private val IconCheck = buildVectorIcon("Check") {
+    moveTo(9f, 16.17f)
+    lineTo(4.83f, 12f)
+    lineTo(3.41f, 13.41f)
+    lineTo(9f, 19f)
+    lineTo(21f, 7f)
+    lineTo(19.59f, 5.59f)
+    close()
+}
 
 @Composable
 fun TopicLessonsScreen(
@@ -92,11 +143,11 @@ fun TopicLessonsScreen(
                     .clickable { onBack() },
                 contentAlignment = Alignment.Center
             ) {
-                Text(
-                    text = "←",
-                    color = TextPrimary,
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.Bold
+                Icon(
+                    imageVector = IconArrowBack,
+                    contentDescription = "Back",
+                    tint = TextPrimary,
+                    modifier = Modifier.size(18.dp)
                 )
             }
 
@@ -242,11 +293,11 @@ private fun LessonCardRow(
                     .border(width = if (isCompleted) 1.dp else 0.dp, color = if (isCompleted) GreenAccent else Color.Transparent, shape = CircleShape),
                 contentAlignment = Alignment.Center
             ) {
-                Text(
-                    text = if (isCompleted) "✓" else "›",
-                    color = if (isCompleted) GreenAccent else OrangeAccent,
-                    fontSize = if (isCompleted) 14.sp else 20.sp,
-                    fontWeight = FontWeight.Bold
+                Icon(
+                    imageVector = if (isCompleted) IconCheck else IconChevronRight,
+                    contentDescription = if (isCompleted) "Completed" else "Open lesson",
+                    tint = if (isCompleted) GreenAccent else OrangeAccent,
+                    modifier = Modifier.size(if (isCompleted) 16.dp else 18.dp)
                 )
             }
         }

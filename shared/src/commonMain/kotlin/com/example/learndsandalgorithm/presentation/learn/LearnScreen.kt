@@ -103,6 +103,46 @@ private val IconLock = buildVectorIcon("Lock") {
     close()
 }
 
+private val IconChevronUp = buildVectorIcon("ChevronUp") {
+    moveTo(7.41f, 15.41f)
+    lineTo(12f, 10.83f)
+    lineTo(16.59f, 15.41f)
+    lineTo(18f, 14f)
+    lineTo(12f, 8f)
+    lineTo(6f, 14f)
+    close()
+}
+
+private val IconChevronDown = buildVectorIcon("ChevronDown") {
+    moveTo(7.41f, 8.59f)
+    lineTo(12f, 13.17f)
+    lineTo(16.59f, 8.59f)
+    lineTo(18f, 10f)
+    lineTo(12f, 16f)
+    lineTo(6f, 10f)
+    close()
+}
+
+private val IconChevronRight = buildVectorIcon("ChevronRight") {
+    moveTo(10f, 6f)
+    lineTo(8.59f, 7.41f)
+    lineTo(13.17f, 12f)
+    lineTo(8.59f, 16.59f)
+    lineTo(10f, 18f)
+    lineTo(16f, 12f)
+    close()
+}
+
+private val IconCheck = buildVectorIcon("Check") {
+    moveTo(9f, 16.17f)
+    lineTo(4.83f, 12f)
+    lineTo(3.41f, 13.41f)
+    lineTo(9f, 19f)
+    lineTo(21f, 7f)
+    lineTo(19.59f, 5.59f)
+    close()
+}
+
 private enum class TopicStatus {
     COMPLETED, IN_PROGRESS, NOT_STARTED
 }
@@ -497,10 +537,11 @@ private fun CourseCategoryCard(
                     )
 
                     // Expand/Collapse Chevron
-                    Text(
-                        text = if (isExpanded) "▲" else "▼",
-                        color = BlueAccent,
-                        fontSize = 12.sp
+                    Icon(
+                        imageVector = if (isExpanded) IconChevronUp else IconChevronDown,
+                        contentDescription = if (isExpanded) "Collapse" else "Expand",
+                        tint = BlueAccent,
+                        modifier = Modifier.size(16.dp)
                     )
                 }
             }
@@ -600,7 +641,8 @@ private fun TopicItemRow(
             TopicIcon(
                 topicId = topic.topicId,
                 containerSize = 36.dp,
-                iconSize = 18.dp
+                iconSize = 18.dp,
+                isLocked = topic.isLocked
             )
 
             Column(
@@ -654,11 +696,11 @@ private fun TopicItemRow(
                     .background(Color(0xFF2A1C12)),
                 contentAlignment = Alignment.Center
             ) {
-                Text(
-                    text = "›",
-                    color = OrangeAccent,
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.Bold
+                Icon(
+                    imageVector = IconChevronRight,
+                    contentDescription = null,
+                    tint = OrangeAccent,
+                    modifier = Modifier.size(16.dp)
                 )
             }
         }
@@ -677,11 +719,11 @@ private fun TopicStatusIcon(status: TopicStatus) {
                     .border(1.dp, GreenAccent, CircleShape),
                 contentAlignment = Alignment.Center
             ) {
-                Text(
-                    text = "✓",
-                    color = GreenAccent,
-                    fontSize = 12.sp,
-                    fontWeight = FontWeight.Bold
+                Icon(
+                    imageVector = IconCheck,
+                    contentDescription = "Completed",
+                    tint = GreenAccent,
+                    modifier = Modifier.size(14.dp)
                 )
             }
         }

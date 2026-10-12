@@ -151,6 +151,36 @@ private val IconLock = buildVectorIcon("Lock") {
     close()
 }
 
+private val IconPlayArrow = buildVectorIcon("PlayArrow") {
+    moveTo(8f, 5f)
+    verticalLineTo(19f)
+    lineTo(19f, 12f)
+    close()
+}
+
+private val IconArrowForward = buildVectorIcon("ArrowForward") {
+    moveTo(12f, 4f)
+    lineTo(10.59f, 5.41f)
+    lineTo(16.17f, 11f)
+    horizontalLineTo(4f)
+    verticalLineTo(13f)
+    horizontalLineTo(16.17f)
+    lineTo(10.59f, 18.59f)
+    lineTo(12f, 20f)
+    lineTo(20f, 12f)
+    close()
+}
+
+private val IconChevronRight = buildVectorIcon("ChevronRight") {
+    moveTo(10f, 6f)
+    lineTo(8.59f, 7.41f)
+    lineTo(13.17f, 12f)
+    lineTo(8.59f, 16.59f)
+    lineTo(10f, 18f)
+    lineTo(16f, 12f)
+    close()
+}
+
 private data class PracticeMode(
     val id: String,
     val title: String,
@@ -369,10 +399,11 @@ private fun RecommendedCard(onOpenTopicQuiz: () -> Unit) {
                         .background(Color(0xFF2A180E)),
                     contentAlignment = Alignment.Center
                 ) {
-                    Text(
-                        text = "▶",
-                        color = OrangeAccent,
-                        fontSize = 18.sp
+                    Icon(
+                        imageVector = IconPlayArrow,
+                        contentDescription = null,
+                        tint = OrangeAccent,
+                        modifier = Modifier.size(20.dp)
                     )
                 }
 
@@ -410,11 +441,11 @@ private fun RecommendedCard(onOpenTopicQuiz: () -> Unit) {
                     .background(OrangeAccent),
                 contentAlignment = Alignment.Center
             ) {
-                Text(
-                    text = "➔",
-                    color = Color(0xFF111115),
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.Bold
+                Icon(
+                    imageVector = IconArrowForward,
+                    contentDescription = null,
+                    tint = Color(0xFF111115),
+                    modifier = Modifier.size(20.dp)
                 )
             }
         }
@@ -575,11 +606,11 @@ private fun PracticeModeCard(
                     .clickable(enabled = mode.isAvailable) { onClickArrow() }
             ) {
                 if (mode.isAvailable) {
-                    Text(
-                        text = "›",
-                        color = OrangeAccent,
-                        fontSize = 22.sp,
-                        fontWeight = FontWeight.Bold
+                    Icon(
+                        imageVector = IconChevronRight,
+                        contentDescription = null,
+                        tint = OrangeAccent,
+                        modifier = Modifier.size(18.dp)
                     )
                 } else {
                     Icon(
