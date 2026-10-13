@@ -14,9 +14,11 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Surface
@@ -33,6 +35,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -251,6 +254,8 @@ fun LessonDetailScreen(
                             "lesson_arrays_3" -> ArrayTraversalVisualizationCard()
                             "lesson_arrays_4" -> ArrayInsertDeleteVisualizationCard()
                             "lesson_arrays_5" -> ArrayComplexityComparisonCard()
+                            "lesson_linked_list_1" -> LinkedListIntroductionVisualizationCard()
+                            "lesson_linked_list_2" -> LinkedListTraversalSearchAccessVisualizationCard()
                             "searching_2" -> LinearSearchVisualizationCard()
                             "searching_3" -> BinarySearchVisualizationCard()
                             "searching_4" -> SearchComparisonCard()
@@ -623,6 +628,14 @@ private fun BubbleSortVisualizationCard() {
         SortingStep(listOf(3, 5, 8, 4, 2), listOf(2, 3), emptyList(), "Compare 8 & 4 → 8 > 4, swap needed"),
         SortingStep(listOf(3, 5, 4, 8, 2), listOf(3, 4), emptyList(), "Compare 8 & 2 → 8 > 2, swap needed"),
         SortingStep(listOf(3, 5, 4, 2, 8), emptyList(), listOf(4), "8 bubbled to the end! Pass 1 complete"),
+        SortingStep(listOf(3, 5, 4, 2, 8), listOf(0, 1), listOf(4), "Pass 2: Compare 3 & 5 → 3 < 5, no swap"),
+        SortingStep(listOf(3, 5, 4, 2, 8), listOf(1, 2), listOf(4), "Compare 5 & 4 → 5 > 4, swap needed"),
+        SortingStep(listOf(3, 4, 5, 2, 8), listOf(2, 3), listOf(4), "Compare 5 & 2 → 5 > 2, swap needed"),
+        SortingStep(listOf(3, 4, 2, 5, 8), emptyList(), listOf(3, 4), "Pass 2 complete: 5 joins 8 at the end"),
+        SortingStep(listOf(3, 4, 2, 5, 8), listOf(0, 1), listOf(3, 4), "Pass 3: Compare 3 & 4 → 3 < 4, no swap"),
+        SortingStep(listOf(3, 4, 2, 5, 8), listOf(1, 2), listOf(3, 4), "Compare 4 & 2 → 4 > 2, swap needed"),
+        SortingStep(listOf(3, 2, 4, 5, 8), emptyList(), listOf(2, 3, 4), "Pass 3 complete: 4, 5, and 8 are in place"),
+        SortingStep(listOf(3, 2, 4, 5, 8), listOf(0, 1), listOf(2, 3, 4), "Pass 4: Compare 3 & 2 → 3 > 2, swap needed"),
         SortingStep(listOf(2, 3, 4, 5, 8), emptyList(), listOf(0, 1, 2, 3, 4), "Array is fully sorted! ✓")
     )
 
@@ -655,8 +668,8 @@ private fun InsertionSortVisualizationCard() {
     val steps = listOf(
         SortingStep(listOf(5, 3, 8, 4, 2), listOf(1), listOf(0), "Take key 3 → Compare with 5 in sorted region"),
         SortingStep(listOf(3, 5, 8, 4, 2), emptyList(), listOf(0, 1), "Shift 5 right & insert 3 → Sorted: [3, 5]"),
-        SortingStep(listOf(3, 5, 8, 4, 2), listOf(2), listOf(0, 1, 2), "Take key 8 → 8 > 5, already in place"),
-        SortingStep(listOf(3, 5, 4, 8, 2), listOf(3), listOf(0, 1, 2), "Take key 4 → Shift 8 right, shift 5 right"),
+        SortingStep(listOf(3, 5, 8, 4, 2), listOf(2), listOf(0, 1), "Take key 8 → 8 > 5, already in place"),
+        SortingStep(listOf(3, 5, 4, 8, 2), listOf(2), listOf(0, 1), "Take key 4 → 8 has shifted right; shift 5 right, then insert 4"),
         SortingStep(listOf(3, 4, 5, 8, 2), emptyList(), listOf(0, 1, 2, 3), "Insert 4 at index 1 → Sorted: [3, 4, 5, 8]"),
         SortingStep(listOf(2, 3, 4, 5, 8), emptyList(), listOf(0, 1, 2, 3, 4), "Insert 2 at index 0 → Array is fully sorted! ✓")
     )
@@ -1563,6 +1576,818 @@ private fun ArrayComplexityComparisonCard() {
                             )
                         }
                     }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun LinkedListIntroductionVisualizationCard() {
+    val nodeValues = listOf("12", "7", "19")
+    var stepIndex by remember { mutableStateOf(0) } // 0: Start at head, 1: Follow next, 2: Reach the end
+    var isPlaying by remember { mutableStateOf(false) }
+
+    val totalSteps = 3
+    val isCompleted = stepIndex >= totalSteps - 1
+
+    // Auto-play timer mechanism
+    LaunchedEffect(isPlaying, stepIndex) {
+        if (isPlaying && stepIndex < totalSteps - 1) {
+            delay(1000L)
+            if (stepIndex < totalSteps - 1) {
+                stepIndex++
+            } else {
+                isPlaying = false
+            }
+        } else if (stepIndex >= totalSteps - 1) {
+            isPlaying = false
+        }
+    }
+
+    Surface(
+        color = DarkCardBgColor,
+        shape = RoundedCornerShape(16.dp),
+        border = BorderStroke(1.dp, CardBorderColor),
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(14.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            // Header Row
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "LINKED LIST INTRODUCTION",
+                    color = OrangeAccent,
+                    fontSize = 11.sp,
+                    fontWeight = FontWeight.Bold,
+                    letterSpacing = 1.2.sp
+                )
+
+                val badgeText = when (stepIndex) {
+                    0 -> "START AT HEAD"
+                    1 -> "FOLLOW NEXT"
+                    else -> "REACH END"
+                }
+
+                val badgeColor = when {
+                    isCompleted -> GreenAccent
+                    else -> BlueAccent
+                }
+
+                Box(
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(4.dp))
+                        .background(if (isCompleted) Color(0xFF092317) else Color(0xFF13233A))
+                        .padding(horizontal = 8.dp, vertical = 3.dp)
+                ) {
+                    Text(
+                        text = badgeText,
+                        color = badgeColor,
+                        fontSize = 10.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+            }
+
+            // Node Diagram Row (Horizontally Scrollable for Narrow Screens & Head Anchored directly to Node 12)
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .horizontalScroll(rememberScrollState())
+                    .padding(vertical = 4.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                // Head Pointer Indicator
+                val isHeadHighlighted = stepIndex == 0 || stepIndex == 1
+                val headBorderColor = if (isHeadHighlighted) OrangeAccent else CardBorderColor
+                val headBgColor = if (isHeadHighlighted) Color(0xFF2A1C12) else Color(0xFF13131C)
+                val headTextColor = if (isHeadHighlighted) OrangeAccent else TextSecondary
+
+                Box(
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(8.dp))
+                        .background(headBgColor)
+                        .border(1.dp, headBorderColor, RoundedCornerShape(8.dp))
+                        .padding(horizontal = 10.dp, vertical = 8.dp)
+                ) {
+                    Text(
+                        text = "head •",
+                        color = headTextColor,
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+
+                Text(
+                    text = "──►",
+                    color = if (isHeadHighlighted) OrangeAccent else TextSecondary,
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.Bold
+                )
+
+                // Horizontal Node Chain Row: Node(12) -> Node(7) -> Node(19) -> null
+                nodeValues.forEachIndexed { index, value ->
+                    val isNodeHighlighted = when (stepIndex) {
+                        0 -> index == 0
+                        1 -> true
+                        2 -> index == 2
+                        else -> false
+                    }
+
+                    val nodeBg = when {
+                        isNodeHighlighted && stepIndex == 2 -> Color(0xFF092317)
+                        isNodeHighlighted -> Color(0xFF2A1C12)
+                        else -> Color(0xFF13131C)
+                    }
+
+                    val nodeBorder = when {
+                        isNodeHighlighted && stepIndex == 2 -> GreenAccent
+                        isNodeHighlighted -> OrangeAccent
+                        else -> CardBorderColor
+                    }
+
+                    // Node Box with Data and Next sections
+                    Surface(
+                        color = nodeBg,
+                        shape = RoundedCornerShape(10.dp),
+                        border = BorderStroke(if (isNodeHighlighted) 1.5.dp else 1.dp, nodeBorder),
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 6.dp)
+                        ) {
+                            // Data Part
+                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                Text(
+                                    text = "DATA",
+                                    color = TextSecondary,
+                                    fontSize = 8.sp,
+                                    fontWeight = FontWeight.Bold
+                                )
+                                Text(
+                                    text = value,
+                                    color = if (isNodeHighlighted) TextPrimary else TextSecondary,
+                                    fontSize = 15.sp,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
+
+                            Spacer(modifier = Modifier.size(6.dp))
+                            Box(
+                                modifier = Modifier
+                                    .size(1.dp, 24.dp)
+                                    .background(CardBorderColor)
+                            )
+                            Spacer(modifier = Modifier.size(6.dp))
+
+                            // Next Pointer Part
+                            val nextTextColor = when {
+                                isNodeHighlighted && stepIndex == 2 -> GreenAccent
+                                isNodeHighlighted -> OrangeAccent
+                                else -> TextSecondary
+                            }
+
+                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                Text(
+                                    text = "NEXT",
+                                    color = TextSecondary,
+                                    fontSize = 8.sp,
+                                    fontWeight = FontWeight.Bold
+                                )
+                                Text(
+                                    text = "•",
+                                    color = nextTextColor,
+                                    fontSize = 15.sp,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
+                        }
+                    }
+
+                    // Connecting Arrow
+                    val isArrowHighlighted = when (stepIndex) {
+                        0 -> index == 0
+                        1 -> index < nodeValues.size - 1
+                        2 -> index == nodeValues.size - 1
+                        else -> false
+                    }
+
+                    Text(
+                        text = "─►",
+                        color = if (isArrowHighlighted && stepIndex == 2) GreenAccent else if (isArrowHighlighted) OrangeAccent else TextSecondary,
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+
+                // Null Terminator Box
+                val isNullHighlighted = stepIndex == 2
+                Box(
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(8.dp))
+                        .background(if (isNullHighlighted) Color(0xFF092317) else Color(0xFF13131C))
+                        .border(
+                            1.dp,
+                            if (isNullHighlighted) GreenAccent else CardBorderColor,
+                            RoundedCornerShape(8.dp)
+                        )
+                        .padding(horizontal = 10.dp, vertical = 10.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "null",
+                        color = if (isNullHighlighted) GreenAccent else TextSecondary,
+                        fontSize = 13.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+            }
+
+            // Explanation Panel
+            Surface(
+                color = Color(0xFF13131C),
+                shape = RoundedCornerShape(12.dp),
+                border = BorderStroke(1.dp, CardBorderColor),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(12.dp),
+                    verticalArrangement = Arrangement.spacedBy(10.dp)
+                ) {
+                    val explanationText = when (stepIndex) {
+                        0 -> "Step 1 — Start at head: head references the first node (12). It is a pointer variable storing the memory address of node 12, not a data node itself."
+                        1 -> "Step 2 — Follow next: Each node contains a data value and a next reference that points to the next node in sequence (12 → 7 → 19)."
+                        else -> "Step 3 — Reach the end: Node 19's next reference points to null (nullptr in C++, None in Python), marking the end of the list."
+                    }
+
+                    Text(
+                        text = explanationText,
+                        color = if (isCompleted) GreenAccent else TextPrimary,
+                        fontSize = 13.sp,
+                        lineHeight = 18.sp
+                    )
+
+                    // Track & Step Indicator Row
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .weight(1f)
+                                .height(3.dp)
+                                .clip(RoundedCornerShape(2.dp))
+                                .background(Color(0xFF262634))
+                        ) {
+                            val progressFloat = (stepIndex + 1).toFloat() / totalSteps
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth(progressFloat.coerceIn(0f, 1f))
+                                    .height(3.dp)
+                                    .background(if (isCompleted) GreenAccent else OrangeAccent, RoundedCornerShape(2.dp))
+                            )
+                        }
+
+                        Text(
+                            text = "STEP ${stepIndex + 1} / $totalSteps",
+                            color = TextSecondary,
+                            fontSize = 10.sp,
+                            fontWeight = FontWeight.Bold,
+                            letterSpacing = 1.sp
+                        )
+                    }
+                }
+            }
+
+            // Controls Row (Reset, Previous, Play/Pause, Next)
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                // Reset (↻)
+                Surface(
+                    color = DarkCardBgColor,
+                    shape = RoundedCornerShape(12.dp),
+                    border = BorderStroke(1.dp, CardBorderColor),
+                    modifier = Modifier
+                        .size(44.dp)
+                        .clickable {
+                            isPlaying = false
+                            stepIndex = 0
+                        }
+                ) {
+                    Box(contentAlignment = Alignment.Center) {
+                        Text(
+                            text = "↻",
+                            color = TextPrimary,
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                }
+
+                // Previous (‹)
+                Surface(
+                    color = DarkCardBgColor,
+                    shape = RoundedCornerShape(12.dp),
+                    border = BorderStroke(1.dp, CardBorderColor),
+                    modifier = Modifier
+                        .size(44.dp)
+                        .clickable(enabled = stepIndex > 0) {
+                            isPlaying = false
+                            if (stepIndex > 0) {
+                                stepIndex--
+                            }
+                        }
+                ) {
+                    Box(contentAlignment = Alignment.Center) {
+                        Text(
+                            text = "‹",
+                            color = if (stepIndex > 0) TextPrimary else TextSecondary.copy(alpha = 0.3f),
+                            fontSize = 20.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                }
+
+                // Play / Pause (▶ Play / ⏸ Pause)
+                Surface(
+                    color = if (isCompleted) Color(0xFF22222E) else OrangeAccent,
+                    shape = RoundedCornerShape(12.dp),
+                    modifier = Modifier
+                        .weight(1f)
+                        .height(44.dp)
+                        .clickable(enabled = !isCompleted) {
+                            if (!isCompleted) {
+                                isPlaying = !isPlaying
+                            }
+                        }
+                ) {
+                    Box(contentAlignment = Alignment.Center) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(6.dp)
+                        ) {
+                            Text(
+                                text = if (isPlaying) "⏸" else "▶",
+                                color = if (isCompleted) TextSecondary else Color(0xFF111115),
+                                fontSize = 14.sp
+                            )
+                            Text(
+                                text = if (isPlaying) "Pause" else "Play",
+                                color = if (isCompleted) TextSecondary else Color(0xFF111115),
+                                fontSize = 15.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
+                    }
+                }
+
+                // Next (›)
+                Surface(
+                    color = DarkCardBgColor,
+                    shape = RoundedCornerShape(12.dp),
+                    border = BorderStroke(1.dp, CardBorderColor),
+                    modifier = Modifier
+                        .size(44.dp)
+                        .clickable(enabled = !isCompleted) {
+                            isPlaying = false
+                            if (stepIndex < totalSteps - 1) {
+                                stepIndex++
+                            }
+                        }
+                ) {
+                    Box(contentAlignment = Alignment.Center) {
+                        Text(
+                            text = "›",
+                            color = if (!isCompleted) TextPrimary else TextSecondary.copy(alpha = 0.3f),
+                            fontSize = 20.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun LinkedListTraversalSearchAccessVisualizationCard() {
+    data class Step(
+        val currentNode: Int?,
+        val currentPosition: Int?,
+        val focusedNode: Int?,
+        val visitedNodes: Set<Int>,
+        val explanation: String
+    )
+
+    val nodeValues = listOf("12", "7", "19", "5", "25")
+    var operation by remember { mutableStateOf("TRAVERSE") }
+    var searchForExisting by remember { mutableStateOf(true) }
+    var accessValidIndex by remember { mutableStateOf(true) }
+    val searchTarget = if (searchForExisting) "19" else "99"
+    val requestedIndex = if (accessValidIndex) 3 else 7
+
+    fun createSteps(): List<Step> {
+        val result = mutableListOf<Step>()
+        when (operation) {
+            "TRAVERSE" -> {
+                result += Step(0, 0, null, emptySet(), "Initialize current = head. The pointer starts at index 0.")
+                nodeValues.forEachIndexed { index, value ->
+                    val visited = (0..index).toSet()
+                    result += Step(index, index, index, visited, "Visit index $index and process value $value.")
+                    val nextIndex = index + 1
+                    result += Step(
+                        if (nextIndex < nodeValues.size) nextIndex else null,
+                        nextIndex,
+                        null,
+                        visited,
+                        if (nextIndex < nodeValues.size) {
+                            "Advance current = current.next to index $nextIndex."
+                        } else {
+                            "Advance current = current.next. Now current is null, so traversal stops."
+                        }
+                    )
+                }
+            }
+            "SEARCH" -> {
+                result += Step(0, 0, null, emptySet(), "Initialize current = head to search for $searchTarget.")
+                for (index in nodeValues.indices) {
+                    val value = nodeValues[index]
+                    val visited = (0..index).toSet()
+                    val found = value == searchTarget
+                    result += Step(
+                        index,
+                        index,
+                        index,
+                        visited,
+                        if (found) {
+                            "Compare $value with $searchTarget: match at index $index. Return $index."
+                        } else {
+                            "Compare $value with $searchTarget: no match."
+                        }
+                    )
+                    if (!found) {
+                        val nextIndex = index + 1
+                        result += Step(
+                            if (nextIndex < nodeValues.size) nextIndex else null,
+                            nextIndex,
+                            null,
+                            visited,
+                            if (nextIndex < nodeValues.size) {
+                                "Advance current = current.next to index $nextIndex."
+                            } else {
+                                "Advance to null after checking every node. $searchTarget was not found; return -1."
+                            }
+                        )
+                    }
+                    if (found) break
+                }
+            }
+            else -> {
+                result += Step(0, 0, null, emptySet(), "Initialize current = head at index 0 to access index $requestedIndex.")
+                for (index in nodeValues.indices) {
+                    val value = nodeValues[index]
+                    val visited = (0..index).toSet()
+                    val reached = index == requestedIndex
+                    result += Step(
+                        index,
+                        index,
+                        index,
+                        visited,
+                        if (reached) {
+                            "currentIndex == $requestedIndex. Return value $value at index $index."
+                        } else {
+                            "Check index $index: it is before the requested index $requestedIndex."
+                        }
+                    )
+                    if (reached) break
+                    val nextIndex = index + 1
+                    result += Step(
+                        if (nextIndex < nodeValues.size) nextIndex else null,
+                        nextIndex,
+                        null,
+                        visited,
+                        if (nextIndex < nodeValues.size) {
+                            "Move current = current.next to index $nextIndex; currentIndex becomes $nextIndex."
+                        } else {
+                            "Advance to null at currentIndex $nextIndex. Index $requestedIndex is out of bounds."
+                        }
+                    )
+                }
+            }
+        }
+        return result
+    }
+
+    val steps = remember(operation, searchForExisting, accessValidIndex) { createSteps() }
+    var stepIndex by remember(operation, searchForExisting, accessValidIndex) { mutableStateOf(0) }
+    var isPlaying by remember(operation, searchForExisting, accessValidIndex) { mutableStateOf(false) }
+    val currentStep = steps[stepIndex]
+    val isCompleted = stepIndex == steps.lastIndex
+
+    LaunchedEffect(isPlaying, stepIndex, steps) {
+        if (isPlaying) {
+            if (stepIndex < steps.lastIndex) {
+                delay(1000L)
+                if (stepIndex < steps.lastIndex) stepIndex++ else isPlaying = false
+            } else {
+                isPlaying = false
+            }
+        }
+    }
+
+    Surface(
+        color = DarkCardBgColor,
+        shape = RoundedCornerShape(16.dp),
+        border = BorderStroke(1.dp, CardBorderColor),
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Column(
+            modifier = Modifier.fillMaxWidth().padding(14.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text("TRAVERSE · SEARCH · ACCESS", color = OrangeAccent, fontSize = 11.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp)
+                Box(
+                    modifier = Modifier.clip(RoundedCornerShape(4.dp))
+                        .background(if (isCompleted) Color(0xFF092317) else Color(0xFF13233A))
+                        .padding(horizontal = 8.dp, vertical = 3.dp)
+                ) {
+                    Text(
+                        text = if (isCompleted) "COMPLETED" else "STEP ${stepIndex + 1} OF ${steps.size}",
+                        color = if (isCompleted) GreenAccent else BlueAccent,
+                        fontSize = 9.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+            }
+
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                listOf("TRAVERSE" to "Traverse", "SEARCH" to "Search", "ACCESS" to "By index").forEach { (value, label) ->
+                    Surface(
+                        color = if (operation == value) OrangeAccent else Color(0xFF22222E),
+                        shape = RoundedCornerShape(8.dp),
+                        modifier = Modifier.weight(1f).clickable { operation = value }
+                    ) {
+                        Box(Modifier.padding(vertical = 8.dp), contentAlignment = Alignment.Center) {
+                            Text(label, color = if (operation == value) DarkBgColor else TextSecondary, fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                        }
+                    }
+                }
+            }
+
+            when (operation) {
+                "SEARCH" -> Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    listOf(true to "Find 19", false to "Find 99").forEach { (existing, label) ->
+                        Surface(
+                            color = if (searchForExisting == existing) Color(0xFF2A1C12) else Color(0xFF13131C),
+                            shape = RoundedCornerShape(8.dp),
+                            border = BorderStroke(1.dp, if (searchForExisting == existing) OrangeAccent else CardBorderColor),
+                            modifier = Modifier.weight(1f).clickable { searchForExisting = existing }
+                        ) {
+                            Box(Modifier.padding(vertical = 7.dp), contentAlignment = Alignment.Center) {
+                                Text(label, color = if (searchForExisting == existing) OrangeAccent else TextSecondary, fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                            }
+                        }
+                    }
+                }
+                "ACCESS" -> Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    listOf(true to "Valid index · 3", false to "Invalid index · 7").forEach { (valid, label) ->
+                        Surface(
+                            color = if (accessValidIndex == valid) Color(0xFF2A1C12) else Color(0xFF13131C),
+                            shape = RoundedCornerShape(8.dp),
+                            border = BorderStroke(1.dp, if (accessValidIndex == valid) OrangeAccent else CardBorderColor),
+                            modifier = Modifier.weight(1f).clickable { accessValidIndex = valid }
+                        ) {
+                            Box(Modifier.padding(vertical = 7.dp), contentAlignment = Alignment.Center) {
+                                Text(label, color = if (accessValidIndex == valid) OrangeAccent else TextSecondary, fontSize = 10.sp, fontWeight = FontWeight.Bold)
+                            }
+                        }
+                    }
+                }
+            }
+
+            Surface(
+                color = Color(0xFF13131C),
+                shape = RoundedCornerShape(12.dp),
+                border = BorderStroke(1.dp, CardBorderColor),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .horizontalScroll(rememberScrollState())
+                        .padding(horizontal = 12.dp, vertical = 12.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    // Head Pointer Indicator
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.spacedBy(2.dp)
+                    ) {
+                        Text(
+                            text = "HEAD",
+                            color = OrangeAccent,
+                            fontSize = 8.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                        Box(
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(8.dp))
+                                .background(Color(0xFF2A1C12))
+                                .border(1.dp, OrangeAccent, RoundedCornerShape(8.dp))
+                                .padding(horizontal = 8.dp, vertical = 6.dp)
+                        ) {
+                            Text(
+                                text = "head •",
+                                color = OrangeAccent,
+                                fontSize = 11.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
+                    }
+
+                    Text(
+                        text = "──►",
+                        color = OrangeAccent,
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+
+                    // Node Chain: 0..4
+                    nodeValues.forEachIndexed { index, value ->
+                        val isCurrent = currentStep.currentNode == index
+                        val isFocused = currentStep.focusedNode == index
+                        val isVisited = currentStep.visitedNodes.contains(index)
+
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.spacedBy(2.dp)
+                        ) {
+                            // Top Indicator Stack
+                            Box(modifier = Modifier.height(14.dp), contentAlignment = Alignment.Center) {
+                                when {
+                                    isCurrent -> Text("CURRENT", color = BlueAccent, fontSize = 8.sp, fontWeight = FontWeight.Bold)
+                                    isFocused -> Text("CHECK", color = OrangeAccent, fontSize = 8.sp, fontWeight = FontWeight.Bold)
+                                    else -> {}
+                                }
+                            }
+
+                            // Node Card Box
+                            Surface(
+                                color = when {
+                                    isFocused -> Color(0xFF2A1C12)
+                                    isVisited -> Color(0xFF172238)
+                                    else -> DarkCardBgColor
+                                },
+                                shape = RoundedCornerShape(9.dp),
+                                border = BorderStroke(
+                                    if (isFocused || isCurrent) 1.5.dp else 1.dp,
+                                    when {
+                                        isFocused -> OrangeAccent
+                                        isCurrent -> BlueAccent
+                                        else -> CardBorderColor
+                                    }
+                                )
+                            ) {
+                                Row(
+                                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 6.dp),
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                                ) {
+                                    // DATA
+                                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                        Text("DATA", color = TextSecondary, fontSize = 8.sp, fontWeight = FontWeight.Bold)
+                                        Text(
+                                            value,
+                                            color = if (isFocused || isCurrent) TextPrimary else TextSecondary,
+                                            fontSize = 14.sp,
+                                            fontWeight = FontWeight.Bold
+                                        )
+                                    }
+
+                                    Box(Modifier.width(1.dp).height(24.dp).background(CardBorderColor))
+
+                                    // NEXT
+                                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                        Text("NEXT", color = TextSecondary, fontSize = 8.sp, fontWeight = FontWeight.Bold)
+                                        Text(
+                                            "•",
+                                            color = if (isCurrent) BlueAccent else TextSecondary,
+                                            fontSize = 13.sp,
+                                            fontWeight = FontWeight.Bold
+                                        )
+                                    }
+                                }
+                            }
+
+                            // Bottom Index Label
+                            Text(
+                                text = if (operation == "ACCESS") "idx $index" else "i:$index",
+                                color = TextSecondary,
+                                fontSize = 9.sp
+                            )
+                        }
+
+                        // Connecting Arrow
+                        val isArrowActive = isCurrent && index < nodeValues.lastIndex
+                        Text(
+                            text = "─►",
+                            color = if (isArrowActive) BlueAccent else TextSecondary,
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+
+                    // Null Terminator Box
+                    val isNullActive = currentStep.currentNode == null
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.spacedBy(2.dp)
+                    ) {
+                        Box(modifier = Modifier.height(14.dp), contentAlignment = Alignment.Center) {
+                            if (isNullActive) {
+                                Text("CURRENT", color = BlueAccent, fontSize = 8.sp, fontWeight = FontWeight.Bold)
+                            }
+                        }
+
+                        Box(
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(8.dp))
+                                .background(if (isNullActive) Color(0xFF092317) else DarkCardBgColor)
+                                .border(
+                                    1.dp,
+                                    if (isNullActive) GreenAccent else CardBorderColor,
+                                    RoundedCornerShape(8.dp)
+                                )
+                                .padding(horizontal = 10.dp, vertical = 10.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = "null",
+                                color = if (isNullActive) GreenAccent else TextSecondary,
+                                fontSize = 12.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
+
+                        Text(
+                            text = if (operation == "ACCESS") "idx ${currentStep.currentPosition ?: nodeValues.size}" else "",
+                            color = TextSecondary,
+                            fontSize = 9.sp
+                        )
+                    }
+                }
+            }
+
+            Surface(color = Color(0xFF13131C), shape = RoundedCornerShape(12.dp), border = BorderStroke(1.dp, CardBorderColor), modifier = Modifier.fillMaxWidth()) {
+                Column(modifier = Modifier.fillMaxWidth().padding(12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Text(currentStep.explanation, color = TextPrimary, fontSize = 13.sp, lineHeight = 18.sp)
+                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp), verticalAlignment = Alignment.CenterVertically) {
+                        Box(Modifier.weight(1f).height(3.dp).clip(RoundedCornerShape(2.dp)).background(Color(0xFF262634))) {
+                            Box(Modifier.fillMaxWidth(if (steps.lastIndex == 0) 1f else stepIndex.toFloat() / steps.lastIndex).height(3.dp).background(if (isCompleted) GreenAccent else OrangeAccent, RoundedCornerShape(2.dp)))
+                        }
+                        Text("STEP ${stepIndex + 1} / ${steps.size}", color = TextSecondary, fontSize = 9.sp, fontWeight = FontWeight.Bold)
+                    }
+                }
+            }
+
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
+                Surface(color = DarkCardBgColor, shape = RoundedCornerShape(12.dp), border = BorderStroke(1.dp, CardBorderColor), modifier = Modifier.size(44.dp).clickable { isPlaying = false; stepIndex = 0 }) {
+                    Box(contentAlignment = Alignment.Center) { Text("↻", color = TextPrimary, fontSize = 16.sp, fontWeight = FontWeight.Bold) }
+                }
+                Surface(color = DarkCardBgColor, shape = RoundedCornerShape(12.dp), border = BorderStroke(1.dp, CardBorderColor), modifier = Modifier.size(44.dp).clickable(enabled = stepIndex > 0) { isPlaying = false; if (stepIndex > 0) stepIndex-- }) {
+                    Box(contentAlignment = Alignment.Center) { Text("‹", color = if (stepIndex > 0) TextPrimary else TextSecondary.copy(alpha = 0.3f), fontSize = 20.sp, fontWeight = FontWeight.Bold) }
+                }
+                Surface(color = if (isCompleted) Color(0xFF22222E) else OrangeAccent, shape = RoundedCornerShape(12.dp), modifier = Modifier.weight(1f).height(44.dp).clickable(enabled = !isCompleted) { if (!isCompleted) isPlaying = !isPlaying }) {
+                    Box(contentAlignment = Alignment.Center) {
+                        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                            Text(if (isPlaying) "⏸" else "▶", color = if (isCompleted) TextSecondary else Color(0xFF111115), fontSize = 14.sp)
+                            Text(if (isPlaying) "Pause" else "Play", color = if (isCompleted) TextSecondary else Color(0xFF111115), fontSize = 15.sp, fontWeight = FontWeight.Bold)
+                        }
+                    }
+                }
+                Surface(color = DarkCardBgColor, shape = RoundedCornerShape(12.dp), border = BorderStroke(1.dp, CardBorderColor), modifier = Modifier.size(44.dp).clickable(enabled = !isCompleted) { isPlaying = false; if (stepIndex < steps.lastIndex) stepIndex++ }) {
+                    Box(contentAlignment = Alignment.Center) { Text("›", color = if (!isCompleted) TextPrimary else TextSecondary.copy(alpha = 0.3f), fontSize = 20.sp, fontWeight = FontWeight.Bold) }
                 }
             }
         }

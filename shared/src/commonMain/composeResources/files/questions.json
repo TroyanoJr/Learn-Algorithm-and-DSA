@@ -16,7 +16,7 @@
   {
     "id": "q_arrays_2",
     "topicId": "arrays",
-    "statement": "When capacity is available, what is the worst-case time complexity of inserting an element at the beginning of an array?",
+    "statement": "Assuming a fixed-size array has available capacity, what is the worst-case time complexity of inserting an element at the beginning?",
     "options": [
       "O(1)",
       "O(n)",
@@ -24,7 +24,7 @@
       "O(n log n)"
     ],
     "correctOptionIndex": 1,
-    "explanation": "Inserting at the beginning requires shifting all existing n elements one position to the right, taking O(n) time.",
+    "explanation": "With capacity available, inserting at the beginning may require shifting existing elements one position to the right. In the worst case, this shifts n elements and takes O(n) time.",
     "difficulty": "EASY"
   },
   {

@@ -13,6 +13,13 @@ Imagine opening a dictionary in the middle. If the target word comes alphabetica
 - **Time Complexity O(log N)**: Halves the remaining search range at each step, taking roughly log₂(N) comparisons in the worst case.
 - **Auxiliary Space `O(1)`**: Operates iteratively using only boundary variables.
 
+### Worked Example
+
+The sorted array is `[1, 3, 5, 7, 9, 11, 13]`, and the target is `11`. Indices start at `0`, so the values are at indices `0` through `6`.
+
+1. `left = 0`, `right = 6`; `mid = 3`, where the value is `7`. Since `7 < 11`, continue in the right half by setting `left = 4`.
+2. `left = 4`, `right = 6`; `mid = 5`, where the value is `11`. The target is found at index `5`.
+
 ### Code Example: Iterative Binary Search
 
 ```pseudocode
@@ -36,11 +43,9 @@ function binarySearch(arr, target):
     return -1 // Target not found
 ```
 ```cpp
-#include <vector>
-
-int binarySearch(const std::vector<int>& arr, int target) {
+int binarySearch(const int arr[], int size, int target) {
     int left = 0;
-    int right = arr.size() - 1;
+    int right = size - 1;
 
     while (left <= right) {
         // Overflow-safe midpoint calculation
@@ -59,26 +64,24 @@ int binarySearch(const std::vector<int>& arr, int target) {
 }
 ```
 ```java
-public class BinarySearch {
-    public static int binarySearch(int[] arr, int target) {
-        int left = 0;
-        int right = arr.length - 1;
+static int binarySearch(int[] arr, int target) {
+    int left = 0;
+    int right = arr.length - 1;
 
-        while (left <= right) {
-            // Overflow-safe midpoint calculation
-            int mid = left + (right - left) / 2;
+    while (left <= right) {
+        // Overflow-safe midpoint calculation
+        int mid = left + (right - left) / 2;
 
-            if (arr[mid] == target) {
-                return mid; // Target found
-            } else if (arr[mid] < target) {
-                left = mid + 1; // Search right half
-            } else {
-                right = mid - 1; // Search left half
-            }
+        if (arr[mid] == target) {
+            return mid; // Target found
+        } else if (arr[mid] < target) {
+            left = mid + 1; // Search right half
+        } else {
+            right = mid - 1; // Search left half
         }
-
-        return -1; // Target not found
     }
+
+    return -1; // Target not found
 }
 ```
 ```python
