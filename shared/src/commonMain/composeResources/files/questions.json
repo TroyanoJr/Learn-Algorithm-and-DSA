@@ -604,5 +604,150 @@
     "correctOptionIndex": 1,
     "explanation": "A search for an absent value must check every item. With 4 items it makes 4 comparisons, and with 8 items it makes 8, so the comparisons double when the input size doubles in this example.",
     "difficulty": "MEDIUM"
+  },
+  {
+    "id": "q_lesson_linked_list_1",
+    "topicId": "linked_list",
+    "lessonId": "lesson_linked_list_1",
+    "statement": "In a singly linked list, what does the next reference of the final (tail) node point to?",
+    "options": [
+      "The head node of the list",
+      "null (or nullptr / None), indicating the end of the list",
+      "The previous node in the list",
+      "Index 0 in memory"
+    ],
+    "correctOptionIndex": 1,
+    "explanation": "The tail node is the last element in a singly linked list, so its next reference is set to null (or nullptr / None) to signal that there are no further nodes.",
+    "difficulty": "EASY"
+  },
+  {
+    "id": "q_lesson_linked_list_2",
+    "topicId": "linked_list",
+    "lessonId": "lesson_linked_list_2",
+    "statement": "Why does accessing an element at position k in a singly linked list take O(n) worst-case time instead of O(1)?",
+    "options": [
+      "The list must follow k sequential pointer references starting from the head node",
+      "All nodes must be re-sorted in memory before accessing position k",
+      "Linked lists automatically double their memory size during position access",
+      "Elements in a linked list are accessed using a binary search tree"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "Unlike arrays, linked lists do not store elements in contiguous memory slots, so direct index calculation is impossible. To reach position k, the list must traverse nodes sequentially starting from head.",
+    "difficulty": "EASY"
+  },
+  {
+    "id": "q_lesson_linked_list_3",
+    "topicId": "linked_list",
+    "lessonId": "lesson_linked_list_3",
+    "statement": "When inserting a new node after an existing node prev, why must you set newNode.next = prev.next BEFORE setting prev.next = newNode?",
+    "options": [
+      "Updating prev.next first overwrites the only reference to the rest of the list, losing those nodes",
+      "Setting prev.next first triggers an automatic array memory reallocation error",
+      "Assigning newNode.next first sorts the list elements in ascending order",
+      "The next pointer of newNode must always point to the head node first"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "In a singly linked list, prev.next is the only pointer referencing the subsequent nodes. Overwriting prev.next before connecting newNode.next causes you to permanently lose access to the remaining nodes.",
+    "difficulty": "EASY"
+  },
+  {
+    "id": "q_lesson_linked_list_4",
+    "topicId": "linked_list",
+    "lessonId": "lesson_linked_list_4",
+    "statement": "Why does removing an interior node from a singly linked list require finding its predecessor node?",
+    "options": [
+      "The predecessor's next pointer must be updated to point past the removed node to the subsequent node",
+      "The predecessor node stores the total size and capacity of the entire list",
+      "The predecessor node automatically shifts all subsequent array elements to the left",
+      "Singly linked lists can only delete nodes starting from the tail node"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "Because pointers flow only forward in a singly linked list, unlinking an interior node requires modifying the predecessor's next reference (prev.next = target.next) so it bypasses the deleted node.",
+    "difficulty": "EASY"
+  },
+  {
+    "id": "q_lesson_linked_list_5",
+    "topicId": "linked_list",
+    "lessonId": "lesson_linked_list_5",
+    "statement": "What is a key memory trade-off of a doubly linked list compared to a singly linked list?",
+    "options": [
+      "Every node must store two pointer addresses (next and prev), increasing per-node memory overhead",
+      "Doubly linked lists store elements in contiguous memory slots like arrays",
+      "Doubly linked lists cannot perform O(1) head insertion",
+      "Nodes in a doubly linked list cannot store integer data values"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "Because each node in a doubly linked list contains both next and prev pointer references, it requires more memory per node than a singly linked list node which stores only a next pointer.",
+    "difficulty": "EASY"
+  },
+  {
+    "id": "q_linked_list_1",
+    "topicId": "linked_list",
+    "statement": "In a singly linked list, how does a traversal algorithm determine that it has reached the end of the list?",
+    "options": [
+      "The index variable reaches the fixed capacity limit N",
+      "The current node's next pointer equals null (or nullptr / None)",
+      "The node data value equals zero",
+      "The head reference is automatically set to null"
+    ],
+    "correctOptionIndex": 1,
+    "explanation": "In a singly linked list, the tail node's next pointer points to null (or nullptr / None), which signals that no further nodes exist in the chain.",
+    "difficulty": "EASY"
+  },
+  {
+    "id": "q_linked_list_2",
+    "topicId": "linked_list",
+    "statement": "Why does accessing position k in a singly linked list take O(n) worst-case time?",
+    "options": [
+      "The list must copy all n nodes into an array before reading position k",
+      "Position access requires sorting the entire list in ascending order",
+      "The list has no direct array-style index access, so reaching position k requires following links from head",
+      "The head pointer automatically doubles its memory size during position lookup"
+    ],
+    "correctOptionIndex": 2,
+    "explanation": "A singly linked list does not provide direct, array-style index access. To reach position k, you must follow links sequentially from head; in the worst case, reaching a position near the end requires traversing O(n) nodes.",
+    "difficulty": "EASY"
+  },
+  {
+    "id": "q_linked_list_3",
+    "topicId": "linked_list",
+    "statement": "When inserting a new node after an existing node prevNode, why must you set newNode.next = prevNode.next BEFORE updating prevNode.next = newNode?",
+    "options": [
+      "Assigning prevNode.next first causes an automatic memory allocation error in Java and Python",
+      "Setting newNode.next first automatically sorts the list elements",
+      "The newNode pointer must always point to the head node",
+      "Updating prevNode.next first overwrites the pointer referencing the rest of the list, losing access to subsequent nodes"
+    ],
+    "correctOptionIndex": 3,
+    "explanation": "In a singly linked list, prevNode.next is the only reference pointing to the rest of the list. Overwriting it first severs access to all remaining nodes.",
+    "difficulty": "MEDIUM"
+  },
+  {
+    "id": "q_linked_list_4",
+    "topicId": "linked_list",
+    "statement": "Why is locating the predecessor node (prev) necessary to remove an interior node target from a singly linked list?",
+    "options": [
+      "The predecessor's next pointer must be updated (prev.next = target.next) to bypass the target node",
+      "The predecessor node stores the list's total capacity and element count",
+      "Singly linked lists can only delete nodes if they are located at index 0",
+      "The predecessor node automatically shifts remaining array items left"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "Singly linked list pointers flow forward only. Unlinking target requires finding prev so prev.next can be pointed past target to target.next.",
+    "difficulty": "MEDIUM"
+  },
+  {
+    "id": "q_linked_list_5",
+    "topicId": "linked_list",
+    "statement": "Which scenario represents a primary advantage of a singly linked list over a dynamic array?",
+    "options": [
+      "Accessing an element at an arbitrary index k takes O(1) constant time",
+      "Inserting an element at the beginning (head) takes O(1) constant time without shifting existing elements",
+      "Elements occupy less memory per element because no pointers are needed",
+      "Binary search can be performed in O(log n) time without extra traversal"
+    ],
+    "correctOptionIndex": 1,
+    "explanation": "Inserting at the head of a linked list updates two pointer references in O(1) time, whereas prepending to an array requires shifting all n elements right in O(n) time.",
+    "difficulty": "HARD"
   }
 ]
