@@ -100,4 +100,4 @@ def bubble_sort(arr):
 
 ## Summary
 
-Bubble Sort provides a simple comparison baseline with `O(N)` best-case performance on sorted data, but scales quadratically in `O(N²)` time for unsorted inputs.
+Bubble Sort provides a simple comparison baseline with `O(N)` best-case performance on sorted data, but has a worst-case time complexity of `O(N²)`, though early exit can finish sooner on nearly sorted inputs.

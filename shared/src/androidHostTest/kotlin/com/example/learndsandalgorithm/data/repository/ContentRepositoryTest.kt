@@ -25,7 +25,7 @@ class ContentRepositoryTest {
     )
 
     private val allLessonIds = listOf(
-        "lesson_introduction_ds_1", "lesson_introduction_algo_1",
+        "lesson_introduction_ds_1", "lesson_introduction_ds_2", "lesson_introduction_algo_1", "lesson_introduction_algo_2",
         "lesson_arrays_1", "lesson_arrays_2", "lesson_arrays_3", "lesson_arrays_4", "lesson_arrays_5",
         "searching_1", "searching_2", "searching_3", "searching_4",
         "sorting_1", "sorting_2", "sorting_3", "sorting_4", "sorting_5"
@@ -45,9 +45,9 @@ class ContentRepositoryTest {
         val searchLessons = repository.getLessonsByTopic("linear_search")
         val sortingLessons = repository.getLessonsByTopic("sorting")
         val totalLessons = dsIntroLessons.size + algoIntroLessons.size + arraysLessons.size + searchLessons.size + sortingLessons.size
-        assertEquals(16, totalLessons, "Should load exactly 16 lessons total")
-        assertEquals(1, dsIntroLessons.size, "DS Intro should have 1 lesson")
-        assertEquals(1, algoIntroLessons.size, "Algo Intro should have 1 lesson")
+        assertEquals(18, totalLessons, "Should load exactly 18 lessons total")
+        assertEquals(2, dsIntroLessons.size, "DS Intro should have 2 lessons")
+        assertEquals(2, algoIntroLessons.size, "Algo Intro should have 2 lessons")
         assertEquals(5, arraysLessons.size, "Arrays should have 5 lessons")
         assertEquals(4, searchLessons.size, "Searching should have 4 lessons")
         assertEquals(5, sortingLessons.size, "Sorting should have 5 lessons")
@@ -63,6 +63,59 @@ class ContentRepositoryTest {
     }
 
     @Test
+    fun testDataStructureChoiceLessonAndQuestion() = runBlocking {
+        val lesson = repository.getLessonById("lesson_introduction_ds_2")
+        assertNotNull(lesson, "The data structure choice lesson should exist")
+        assertEquals("introduction_ds", lesson.topicId)
+        assertEquals("Choosing How to Organize Data", lesson.title)
+        assertEquals(2, lesson.order)
+        assertEquals(20, lesson.xp)
+        assertEquals("files/lessons/lesson_introduction_ds_2.md", lesson.contentPath)
+
+        val content = repository.getLessonContent(lesson)
+        assertTrue(content.contains("Choosing How to Organize Data"), "The lesson resource should load")
+        assertTrue(content.contains("first in, first out"), "The lesson should explain queue ordering")
+
+        val questions = repository.getQuestionsByLessonId(lesson.id)
+        assertEquals(1, questions.size, "The lesson should have exactly one linked question")
+        val question = questions.single()
+        assertEquals("q_lesson_introduction_ds_2", question.id)
+        assertEquals("introduction_ds", question.topicId)
+        assertEquals(lesson.id, question.lessonId)
+        assertEquals(4, question.options.size)
+        assertEquals(1, question.correctOptionIndex)
+        assertEquals(QuestionDifficulty.MEDIUM, question.difficulty)
+        assertTrue(question.explanation.isNotBlank())
+    }
+
+    @Test
+    fun testAlgorithmWorkGrowthLessonAndQuestion() = runBlocking {
+        val lesson = repository.getLessonById("lesson_introduction_algo_2")
+        assertNotNull(lesson, "The algorithm work growth lesson should exist")
+        assertEquals("introduction_algo", lesson.topicId)
+        assertEquals("How Work Grows", lesson.title)
+        assertEquals(2, lesson.order)
+        assertEquals(20, lesson.xp)
+        assertEquals("files/lessons/lesson_introduction_algo_2.md", lesson.contentPath)
+
+        val content = repository.getLessonContent(lesson)
+        assertTrue(content.contains("How Work Grows"), "The lesson resource should load")
+        assertTrue(content.contains("input size"), "The lesson should explain input size")
+        assertTrue(content.contains("informal"), "The lesson should keep the comparison informal")
+
+        val questions = repository.getQuestionsByLessonId(lesson.id)
+        assertEquals(1, questions.size, "The lesson should have exactly one linked question")
+        val question = questions.single()
+        assertEquals("q_lesson_introduction_algo_2", question.id)
+        assertEquals("introduction_algo", question.topicId)
+        assertEquals(lesson.id, question.lessonId)
+        assertEquals(4, question.options.size)
+        assertEquals(1, question.correctOptionIndex)
+        assertEquals(QuestionDifficulty.MEDIUM, question.difficulty)
+        assertTrue(question.explanation.isNotBlank())
+    }
+
+    @Test
     fun testLoadAllQuestions() = runBlocking {
         val arraysQuizQuestions = repository.getQuestionsByTopic("arrays")
         val searchQuizQuestions = repository.getQuestionsByTopic("linear_search")
@@ -75,8 +128,8 @@ class ContentRepositoryTest {
             val lessonQs = repository.getQuestionsByLessonId(lessonId)
             lessonQuestionsTotal += lessonQs.size
         }
-        assertEquals(16, lessonQuestionsTotal, "Should load 16 lesson-specific questions")
-        assertEquals(40, quizTotal + lessonQuestionsTotal, "Total questions across quizzes and lessons must be 40")
+        assertEquals(18, lessonQuestionsTotal, "Should load 18 lesson-specific questions")
+        assertEquals(42, quizTotal + lessonQuestionsTotal, "Total questions across quizzes and lessons must be 42")
     }
 
     @Test
@@ -85,9 +138,9 @@ class ContentRepositoryTest {
         val lessonQuestions = allLessonIds.flatMap { repository.getQuestionsByLessonId(it) }
         val allQuestions = quizQuestions + lessonQuestions
 
-        assertEquals(40, allQuestions.size, "Total collected questions must be 40")
+        assertEquals(42, allQuestions.size, "Total collected questions must be 42")
         val uniqueIds = allQuestions.map { it.id }.toSet()
-        assertEquals(40, uniqueIds.size, "All 40 question IDs must be unique")
+        assertEquals(42, uniqueIds.size, "All 42 question IDs must be unique")
     }
 
     @Test
@@ -149,7 +202,7 @@ class ContentRepositoryTest {
         assertEquals("q_arrays_2", q2.id)
         assertEquals("arrays", q2.topicId)
         assertNull(q2.lessonId)
-        assertEquals("What is the worst-case time complexity of inserting an element at the beginning of a fixed-size array?", q2.statement)
+        assertEquals("When capacity is available, what is the worst-case time complexity of inserting an element at the beginning of an array?", q2.statement)
         assertEquals(listOf("O(1)", "O(n)", "O(log n)", "O(n log n)"), q2.options)
         assertEquals(1, q2.correctOptionIndex)
         assertEquals("Inserting at the beginning requires shifting all existing n elements one position to the right, taking O(n) time.", q2.explanation)
@@ -274,10 +327,10 @@ class ContentRepositoryTest {
         assertEquals("q_searching_4", q9.id)
         assertEquals("linear_search", q9.topicId)
         assertEquals("searching_4", q9.lessonId)
-        assertEquals("When searching for target 44 in an 11-element sorted array, how many steps does Binary Search take compared to Linear Search?", q9.statement)
-        assertEquals(listOf("3 steps for Binary Search vs 10 steps for Linear Search", "11 steps for Binary Search vs 1 step for Linear Search", "5 steps for Binary Search vs 5 steps for Linear Search", "1 step for Binary Search vs 11 steps for Linear Search"), q9.options)
+        assertEquals("When searching for target 72 in the sorted array [4, 12, 19, 27, 33, 44, 51, 60, 72, 81, 95], how many comparisons does Binary Search take compared to Linear Search?", q9.statement)
+        assertEquals(listOf("2 comparisons for Binary Search vs 9 comparisons for Linear Search", "11 comparisons for Binary Search vs 1 comparison for Linear Search", "5 comparisons for Binary Search vs 5 comparisons for Linear Search", "1 comparison for Binary Search vs 11 comparisons for Linear Search"), q9.options)
         assertEquals(0, q9.correctOptionIndex)
-        assertEquals("Binary Search eliminates half the remaining items at each comparison, finding 44 in 3 steps versus 10 steps for Linear Search.", q9.explanation)
+        assertEquals("Binary Search inspects midpoint 44 and then midpoint 72 (2 comparisons), while Linear Search checks each item sequentially from 4 up to 72 (9 comparisons).", q9.explanation)
 
         val q10 = repository.getQuestionsByLessonId("sorting_1").first()
         assertEquals("q_sorting_1", q10.id)

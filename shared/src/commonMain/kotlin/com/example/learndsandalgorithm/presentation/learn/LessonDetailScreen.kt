@@ -2284,7 +2284,7 @@ private fun SearchComparisonCard() {
                         .padding(horizontal = 8.dp, vertical = 3.dp)
                 ) {
                     Text(
-                        text = "Target: 44 (11 items)",
+                        text = "Target: 72 (11 items)",
                         color = BlueAccent,
                         fontSize = 10.sp,
                         fontWeight = FontWeight.Bold
@@ -2312,7 +2312,7 @@ private fun SearchComparisonCard() {
                             fontWeight = FontWeight.Bold
                         )
                         Text(
-                            text = "Inspects items 2 → 5 → 8 → ... → 44",
+                            text = "Checks 4 → 12 → 19 → ... → 72",
                             color = TextSecondary,
                             fontSize = 11.sp
                         )
@@ -2324,7 +2324,7 @@ private fun SearchComparisonCard() {
                             .padding(horizontal = 10.dp, vertical = 4.dp)
                     ) {
                         Text(
-                            text = "10 Steps  O(n)",
+                            text = "9 Comparisons  O(n)",
                             color = OrangeAccent,
                             fontSize = 12.sp,
                             fontWeight = FontWeight.Bold
@@ -2350,7 +2350,7 @@ private fun SearchComparisonCard() {
                             fontWeight = FontWeight.Bold
                         )
                         Text(
-                            text = "Halves search space: Mid 21 → Mid 38 → Mid 44",
+                            text = "Checks midpoint 44 → midpoint 72",
                             color = TextSecondary,
                             fontSize = 11.sp
                         )
@@ -2362,7 +2362,7 @@ private fun SearchComparisonCard() {
                             .padding(horizontal = 10.dp, vertical = 4.dp)
                     ) {
                         Text(
-                            text = "3 Steps  O(log n)",
+                            text = "2 Comparisons  O(log n)",
                             color = GreenAccent,
                             fontSize = 12.sp,
                             fontWeight = FontWeight.Bold

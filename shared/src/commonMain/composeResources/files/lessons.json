@@ -120,11 +120,27 @@
     "contentPath": "files/lessons/lesson_introduction_ds_1.md"
   },
   {
+    "id": "lesson_introduction_ds_2",
+    "topicId": "introduction_ds",
+    "title": "Choosing How to Organize Data",
+    "order": 2,
+    "xp": 20,
+    "contentPath": "files/lessons/lesson_introduction_ds_2.md"
+  },
+  {
     "id": "lesson_introduction_algo_1",
     "topicId": "introduction_algo",
     "title": "What Are Algorithms?",
     "order": 1,
     "xp": 20,
     "contentPath": "files/lessons/lesson_introduction_algo_1.md"
+  },
+  {
+    "id": "lesson_introduction_algo_2",
+    "topicId": "introduction_algo",
+    "title": "How Work Grows",
+    "order": 2,
+    "xp": 20,
+    "contentPath": "files/lessons/lesson_introduction_algo_2.md"
   }
 ]

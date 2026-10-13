@@ -10,7 +10,7 @@ Imagine opening a dictionary in the middle. If the target word comes alphabetica
 - **Divide and Conquer**: `left` and `right` are the inclusive indices of the current search interval. `mid` is an index halfway between them. If `arr[mid]` is smaller than the target, every index through `mid` can be discarded, so set `left = mid + 1`. If it is larger, discard `mid` and everything after it by setting `right = mid - 1`. Equality means the target is found.
 - **Integer Overflow Protection**: Rather than calculating `mid = (left + right) / 2` (which can cause integer overflow in fixed-precision types like C++ and Java when `left + right` exceeds maximum integer value), we calculate:
   `mid = left + (right - left) / 2`
-- **Time Complexity O(log N)**: Halves remaining elements in each step, taking at most log₂(N) comparisons.
+- **Time Complexity O(log N)**: Halves the remaining search range at each step, taking roughly log₂(N) comparisons in the worst case.
 - **Auxiliary Space `O(1)`**: Operates iteratively using only boundary variables.
 
 ### Code Example: Iterative Binary Search
