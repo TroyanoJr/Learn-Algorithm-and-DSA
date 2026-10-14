@@ -1,7 +1,9 @@
 package com.example.learndsandalgorithm.data.repository
 
 import com.example.learndsandalgorithm.domain.model.QuestionDifficulty
+import com.example.learndsandalgorithm.domain.model.QuestionType
 import com.example.learndsandalgorithm.domain.repository.ContentRepository
+import com.example.learndsandalgorithm.presentation.learn.shuffleQuestionOptions
 import kotlinx.coroutines.runBlocking
 import java.io.File
 import kotlin.test.Test
@@ -272,8 +274,8 @@ class ContentRepositoryTest {
             val lessonQs = repository.getQuestionsByLessonId(lessonId)
             lessonQuestionsTotal += lessonQs.size
         }
-        assertEquals(23, lessonQuestionsTotal, "Should load 23 lesson-specific questions")
-        assertEquals(52, quizTotal + lessonQuestionsTotal, "Total questions across quizzes and lessons must be 52")
+        assertEquals(25, lessonQuestionsTotal, "Should load 25 lesson-specific questions")
+        assertEquals(54, quizTotal + lessonQuestionsTotal, "Total questions across quizzes and lessons must be 54")
     }
 
     @Test
@@ -282,9 +284,9 @@ class ContentRepositoryTest {
         val lessonQuestions = allLessonIds.flatMap { repository.getQuestionsByLessonId(it) }
         val allQuestions = quizQuestions + lessonQuestions
 
-        assertEquals(52, allQuestions.size, "Total collected questions must be 52")
+        assertEquals(54, allQuestions.size, "Total collected questions must be 54")
         val uniqueIds = allQuestions.map { it.id }.toSet()
-        assertEquals(52, uniqueIds.size, "All 52 question IDs must be unique")
+        assertEquals(54, uniqueIds.size, "All 54 question IDs must be unique")
     }
 
     @Test
@@ -295,9 +297,62 @@ class ContentRepositoryTest {
         allLessonIds.forEach { lessonId ->
             assertTrue(allLessonIdsInRepo.contains(lessonId), "Lesson ID '$lessonId' must exist in lessons.json")
             val questions = repository.getQuestionsByLessonId(lessonId)
-            assertEquals(1, questions.size, "Lesson '$lessonId' must have exactly 1 question")
+            val expectedCount = if (lessonId == "lesson_arrays_1") 3 else 1
+            assertEquals(expectedCount, questions.size, "Lesson '$lessonId' must have $expectedCount question(s)")
             assertEquals(lessonId, questions.first().lessonId, "Question lessonId must match")
         }
+    }
+
+    @Test
+    fun testArrayIntroductionQuestionTypesAndAnswerMapping() = runBlocking {
+        val questions = repository.getQuestionsByLessonId("lesson_arrays_1")
+        assertEquals(3, questions.size)
+
+        val original = questions[0]
+        assertEquals("q_lesson_arrays_1", original.id)
+        assertEquals("What is the index of the first element in a typical array?", original.statement)
+        assertEquals(listOf("0", "1", "-1", "2"), original.options)
+        assertEquals(0, original.correctOptionIndex)
+        assertEquals("Arrays use zero-based indexing, so the first element is always stored at index 0.", original.explanation)
+        assertEquals(QuestionType.MULTIPLE_CHOICE, original.type)
+
+        val formulaQuestion = questions[1]
+        assertEquals("q_lesson_arrays_1_2", formulaQuestion.id)
+        assertEquals(QuestionType.MULTIPLE_CHOICE, formulaQuestion.type)
+        assertEquals(
+            "In the lesson's address formula, what does i represent in Address(A[i]) = Base Address + (i × Element Size)?",
+            formulaQuestion.statement
+        )
+        assertEquals(
+            listOf("The requested zero-based index", "The memory location of A[0]", "The size of each element in bytes", "The value stored at A[i]"),
+            formulaQuestion.options
+        )
+        assertEquals(0, formulaQuestion.correctOptionIndex)
+        assertEquals("The requested zero-based index", formulaQuestion.options[formulaQuestion.correctOptionIndex])
+        assertEquals(
+            "The lesson defines i as the requested zero-based index. The base address identifies A[0], and element size determines the offset between elements.",
+            formulaQuestion.explanation
+        )
+        val shuffledFormulaQuestion = shuffleQuestionOptions(formulaQuestion)
+        assertEquals(
+            formulaQuestion.options[formulaQuestion.correctOptionIndex],
+            shuffledFormulaQuestion.options[shuffledFormulaQuestion.correctOptionIndex]
+        )
+
+        val directAccessQuestion = questions[2]
+        assertEquals("q_lesson_arrays_1_3", directAccessQuestion.id)
+        assertEquals(QuestionType.TRUE_FALSE, directAccessQuestion.type)
+        assertEquals("To access A[i], the computer must inspect each earlier element one by one.", directAccessQuestion.statement)
+        assertEquals(listOf("True", "False"), directAccessQuestion.options)
+        assertEquals(1, directAccessQuestion.correctOptionIndex)
+        assertEquals("False", directAccessQuestion.options[directAccessQuestion.correctOptionIndex])
+        assertEquals(
+            "Because array elements are contiguous and equal in size, the address can be calculated directly from the base address, index, and element size. The lesson describes this as O(1) access.",
+            directAccessQuestion.explanation
+        )
+        val shuffledDirectAccessQuestion = shuffleQuestionOptions(directAccessQuestion)
+        assertEquals(directAccessQuestion.options, shuffledDirectAccessQuestion.options)
+        assertEquals(directAccessQuestion.correctOptionIndex, shuffledDirectAccessQuestion.correctOptionIndex)
     }
 
     @Test

@@ -8,5 +8,11 @@ data class Question(
     val correctOptionIndex: Int,
     val explanation: String,
     val difficulty: QuestionDifficulty,
-    val lessonId: String? = null
+    val lessonId: String? = null,
+    val type: QuestionType = QuestionType.MULTIPLE_CHOICE
 )
+
+enum class QuestionType {
+    MULTIPLE_CHOICE,
+    TRUE_FALSE
+}

@@ -3,6 +3,7 @@ package com.example.learndsandalgorithm.data.dto
 import com.example.learndsandalgorithm.domain.model.Lesson
 import com.example.learndsandalgorithm.domain.model.Question
 import com.example.learndsandalgorithm.domain.model.QuestionDifficulty
+import com.example.learndsandalgorithm.domain.model.QuestionType
 import com.example.learndsandalgorithm.domain.model.Topic
 import com.example.learndsandalgorithm.domain.model.TopicCategory
 import com.example.learndsandalgorithm.domain.model.TopicLevel
@@ -53,7 +54,8 @@ internal data class QuestionDto(
     val correctOptionIndex: Int,
     val explanation: String,
     val difficulty: String,
-    val lessonId: String? = null
+    val lessonId: String? = null,
+    val type: String = QuestionType.MULTIPLE_CHOICE.name
 ) {
     fun toDomain(): Question = Question(
         id = id,
@@ -63,6 +65,7 @@ internal data class QuestionDto(
         correctOptionIndex = correctOptionIndex,
         explanation = explanation,
         difficulty = runCatching { QuestionDifficulty.valueOf(difficulty) }.getOrDefault(QuestionDifficulty.EASY),
-        lessonId = lessonId
+        lessonId = lessonId,
+        type = runCatching { QuestionType.valueOf(type) }.getOrDefault(QuestionType.MULTIPLE_CHOICE)
     )
 }

@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.learndsandalgorithm.data.repository.ProgressRepository
 import com.example.learndsandalgorithm.domain.model.Lesson
 import com.example.learndsandalgorithm.domain.model.Question
+import com.example.learndsandalgorithm.domain.model.QuestionType
 import com.example.learndsandalgorithm.domain.repository.ContentRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -47,16 +48,7 @@ class LessonViewModel(
                 val isCompleted = lesson.id in progressRepository.getCompletedLessonIds()
 
                 // Shuffle options once in memory and remap correctOptionIndex
-                val shuffledQuestions = rawQuestions.map { q ->
-                    val indexedOptions = q.options.mapIndexed { index, text -> index to text }
-                    val shuffled = indexedOptions.shuffled()
-                    val newCorrectIndex = shuffled.indexOfFirst { it.first == q.correctOptionIndex }
-
-                    q.copy(
-                        options = shuffled.map { it.second },
-                        correctOptionIndex = if (newCorrectIndex != -1) newCorrectIndex else q.correctOptionIndex
-                    )
-                }
+                val shuffledQuestions = rawQuestions.map(::shuffleQuestionOptions)
 
                 _uiState.value = LessonUiState.Success(
                     lesson = lesson,
@@ -78,4 +70,16 @@ class LessonViewModel(
             _uiState.value = state.copy(isCompleted = true)
         }
     }
+}
+
+internal fun shuffleQuestionOptions(question: Question): Question {
+    if (question.type == QuestionType.TRUE_FALSE) return question
+
+    val indexedOptions = question.options.mapIndexed { index, text -> index to text }
+    val shuffled = indexedOptions.shuffled()
+    val newCorrectIndex = shuffled.indexOfFirst { it.first == question.correctOptionIndex }
+    return question.copy(
+        options = shuffled.map { it.second },
+        correctOptionIndex = if (newCorrectIndex != -1) newCorrectIndex else question.correctOptionIndex
+    )
 }

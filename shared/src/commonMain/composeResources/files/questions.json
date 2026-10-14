@@ -351,6 +351,36 @@
     "difficulty": "EASY"
   },
   {
+    "id": "q_lesson_arrays_1_2",
+    "topicId": "arrays",
+    "lessonId": "lesson_arrays_1",
+    "type": "MULTIPLE_CHOICE",
+    "statement": "In the lesson's address formula, what does i represent in Address(A[i]) = Base Address + (i × Element Size)?",
+    "options": [
+      "The requested zero-based index",
+      "The memory location of A[0]",
+      "The size of each element in bytes",
+      "The value stored at A[i]"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "The lesson defines i as the requested zero-based index. The base address identifies A[0], and element size determines the offset between elements.",
+    "difficulty": "EASY"
+  },
+  {
+    "id": "q_lesson_arrays_1_3",
+    "topicId": "arrays",
+    "lessonId": "lesson_arrays_1",
+    "type": "TRUE_FALSE",
+    "statement": "To access A[i], the computer must inspect each earlier element one by one.",
+    "options": [
+      "True",
+      "False"
+    ],
+    "correctOptionIndex": 1,
+    "explanation": "Because array elements are contiguous and equal in size, the address can be calculated directly from the base address, index, and element size. The lesson describes this as O(1) access.",
+    "difficulty": "EASY"
+  },
+  {
     "id": "q_lesson_arrays_2",
     "topicId": "arrays",
     "lessonId": "lesson_arrays_2",

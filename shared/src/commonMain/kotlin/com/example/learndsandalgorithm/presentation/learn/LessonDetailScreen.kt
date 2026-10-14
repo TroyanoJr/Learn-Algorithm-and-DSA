@@ -29,6 +29,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -41,6 +42,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.learndsandalgorithm.domain.model.QuestionType
 import com.example.learndsandalgorithm.presentation.components.MarkdownContent
 import kotlinx.coroutines.delay
 
@@ -78,12 +80,13 @@ fun LessonDetailScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
 
-    var selectedQuestionOption by remember { mutableStateOf<Int?>(null) }
+    val selectedQuestionAnswers = remember(lessonId) { mutableStateMapOf<String, Int>() }
+    var lessonQuestionIndex by remember(lessonId) { mutableStateOf(0) }
     var isLessonCompleted by remember { mutableStateOf(false) }
 
     LaunchedEffect(lessonId) {
         viewModel.loadLesson(lessonId)
-        selectedQuestionOption = null
+        lessonQuestionIndex = 0
     }
 
     LaunchedEffect(uiState) {
@@ -277,14 +280,30 @@ fun LessonDetailScreen(
 
                         // Check Your Understanding Quiz Section
                         if (state.questions.isNotEmpty()) {
-                            val question = state.questions.first()
+                            val hasQuestionSequence = state.lesson.id == "lesson_arrays_1"
+                            val questionIndex = if (hasQuestionSequence) {
+                                lessonQuestionIndex.coerceIn(0, state.questions.lastIndex)
+                            } else {
+                                0
+                            }
+                            val question = state.questions[questionIndex]
                             CheckYourUnderstandingSection(
                                 statement = question.statement,
                                 options = question.options,
                                 correctIndex = question.correctOptionIndex,
                                 explanation = question.explanation,
-                                selectedOption = selectedQuestionOption,
-                                onSelectOption = { selectedQuestionOption = it }
+                                selectedOption = selectedQuestionAnswers[question.id],
+                                onSelectOption = { selectedQuestionAnswers[question.id] = it },
+                                questionType = question.type,
+                                questionNumber = questionIndex + 1,
+                                questionCount = if (hasQuestionSequence) state.questions.size else 1,
+                                showProgress = hasQuestionSequence,
+                                onPreviousQuestion = if (hasQuestionSequence) {
+                                    { lessonQuestionIndex = (questionIndex - 1).coerceAtLeast(0) }
+                                } else null,
+                                onNextQuestion = if (hasQuestionSequence) {
+                                    { lessonQuestionIndex = (questionIndex + 1).coerceAtMost(state.questions.lastIndex) }
+                                } else null
                             )
                         }
 
@@ -3972,7 +3991,13 @@ private fun CheckYourUnderstandingSection(
     correctIndex: Int = 0,
     explanation: String = "Arrays use zero-based indexing, so the first element is always stored at index 0.",
     selectedOption: Int?,
-    onSelectOption: (Int) -> Unit
+    onSelectOption: (Int) -> Unit,
+    questionType: QuestionType = QuestionType.MULTIPLE_CHOICE,
+    questionNumber: Int = 1,
+    questionCount: Int = 1,
+    showProgress: Boolean = false,
+    onPreviousQuestion: (() -> Unit)? = null,
+    onNextQuestion: (() -> Unit)? = null
 ) {
     Surface(
         color = DarkCardBgColor,
@@ -3993,6 +4018,32 @@ private fun CheckYourUnderstandingSection(
                 fontWeight = FontWeight.Bold,
                 letterSpacing = 1.2.sp
             )
+
+            if (showProgress) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    QuestionNavigationArrow(
+                        symbol = "‹",
+                        enabled = questionNumber > 1,
+                        onClick = { onPreviousQuestion?.invoke() }
+                    )
+                    Text(
+                        text = "Question $questionNumber of $questionCount · ${if (questionType == QuestionType.TRUE_FALSE) "TRUE / FALSE" else "MULTIPLE CHOICE"}",
+                        color = TextSecondary,
+                        fontSize = 9.sp,
+                        fontWeight = FontWeight.Bold,
+                        textAlign = TextAlign.Center
+                    )
+                    QuestionNavigationArrow(
+                        symbol = "›",
+                        enabled = questionNumber < questionCount,
+                        onClick = { onNextQuestion?.invoke() }
+                    )
+                }
+            }
 
             Text(
                 text = statement,
@@ -4022,7 +4073,7 @@ private fun CheckYourUnderstandingSection(
                         border = BorderStroke(1.dp, style.borderColor),
                         modifier = Modifier
                             .fillMaxWidth()
-                            .clickable(enabled = !isAnswered) { onSelectOption(index) }
+                            .clickable { onSelectOption(index) }
                     ) {
                         Row(
                             modifier = Modifier
@@ -4080,6 +4131,33 @@ private fun CheckYourUnderstandingSection(
                     }
                 }
             }
+
+        }
+    }
+}
+
+@Composable
+private fun QuestionNavigationArrow(
+    symbol: String,
+    enabled: Boolean,
+    onClick: () -> Unit
+) {
+    Surface(
+        color = if (enabled) Color(0xFF22222C) else Color(0xFF13131C),
+        shape = RoundedCornerShape(8.dp),
+        border = BorderStroke(1.dp, if (enabled) CardBorderColor else Color(0xFF202027)),
+        modifier = Modifier
+            .size(32.dp)
+            .clickable(enabled = enabled, onClick = onClick)
+    ) {
+        Box(contentAlignment = Alignment.Center) {
+            Text(
+                text = symbol,
+                color = if (enabled) TextPrimary else TextSecondary.copy(alpha = 0.45f),
+                fontSize = 22.sp,
+                fontWeight = FontWeight.Medium,
+                lineHeight = 22.sp
+            )
         }
     }
 }
