@@ -2545,8 +2545,18 @@ private fun LinkedListInsertionVisualizationCard() {
     val steps = remember(scenario) { createSteps() }
     var stepIndex by remember(scenario) { mutableStateOf(0) }
     var isPlaying by remember(scenario) { mutableStateOf(false) }
+    var visibilityResetKey by remember(scenario) { mutableStateOf(0) }
     val currentStep = steps[stepIndex]
     val isCompleted = stepIndex == steps.lastIndex
+    val visibilityTargets = buildList {
+        currentStep.badges.filterValues { it == "PREV" || it == "NEXT" }.keys.forEach(::add)
+        currentStep.links.firstOrNull { it.first == currentStep.activeNode }?.second
+            ?.takeIf { it != "null" }
+            ?.let(::add)
+        if (isEmpty()) {
+            currentStep.order.getOrNull(currentStep.order.indexOf(currentStep.activeNode) + 1)?.let(::add)
+        }
+    }.distinct().filter { it != currentStep.activeNode }
 
     LaunchedEffect(isPlaying, stepIndex, steps) {
         if (isPlaying && stepIndex < steps.lastIndex) {
@@ -2579,15 +2589,16 @@ private fun LinkedListInsertionVisualizationCard() {
                 headValue = currentStep.head,
                 highlightedNodes = currentStep.highlighted,
                 activeNode = currentStep.activeNode,
+                visibilityTargets = visibilityTargets,
                 nodeBadges = currentStep.badges,
-                stepKey = scenario to stepIndex
+                stepKey = scenario to (stepIndex to visibilityResetKey)
             )
             LinkedListStepExplanation(currentStep.title, currentStep.explanation, stepIndex, steps.size)
             LinkedListPlaybackControls(
                 stepIndex = stepIndex,
                 stepCount = steps.size,
                 isPlaying = isPlaying,
-                onReset = { isPlaying = false; stepIndex = 0 },
+                onReset = { isPlaying = false; stepIndex = 0; visibilityResetKey++ },
                 onPrevious = { isPlaying = false; if (stepIndex > 0) stepIndex-- },
                 onTogglePlayback = { isPlaying = !isPlaying },
                 onNext = { isPlaying = false; if (stepIndex < steps.lastIndex) stepIndex++ }
@@ -2955,6 +2966,7 @@ private fun LinkedListOperationDiagram(
     headValue: String,
     highlightedNodes: Set<String>,
     activeNode: String,
+    visibilityTargets: List<String> = emptyList(),
     detachedNodes: List<String> = emptyList(),
     nodeBadges: Map<String, String> = emptyMap(),
     stepKey: Any
@@ -2972,6 +2984,7 @@ private fun LinkedListOperationDiagram(
             skipInitialVisibilityRequest = false
             return@LaunchedEffect
         }
+        visibilityTargets.forEach { value -> requesters[value]?.bringIntoView() }
         requesters[activeNode]?.bringIntoView()
     }
 
