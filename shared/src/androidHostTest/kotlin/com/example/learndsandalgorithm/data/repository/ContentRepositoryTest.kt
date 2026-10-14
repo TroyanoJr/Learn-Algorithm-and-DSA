@@ -104,7 +104,8 @@ class ContentRepositoryTest {
         val content = repository.getLessonContent(lesson)
         assertTrue(content.contains("How Work Grows"), "The lesson resource should load")
         assertTrue(content.contains("input size"), "The lesson should explain input size")
-        assertTrue(content.contains("informal"), "The lesson should keep the comparison informal")
+        assertTrue(content.contains("operation counts are a simplified way to reason about growth", ignoreCase = true))
+        assertTrue(content.contains("not measurements of elapsed time", ignoreCase = true))
 
         val questions = repository.getQuestionsByLessonId(lesson.id)
         assertEquals(1, questions.size, "The lesson should have exactly one linked question")
@@ -347,10 +348,10 @@ class ContentRepositoryTest {
         assertEquals("q_arrays_2", q2.id)
         assertEquals("arrays", q2.topicId)
         assertNull(q2.lessonId)
-        assertEquals("When capacity is available, what is the worst-case time complexity of inserting an element at the beginning of an array?", q2.statement)
+        assertEquals("Assuming a fixed-size array has available capacity, what is the worst-case time complexity of inserting an element at the beginning?", q2.statement)
         assertEquals(listOf("O(1)", "O(n)", "O(log n)", "O(n log n)"), q2.options)
         assertEquals(1, q2.correctOptionIndex)
-        assertEquals("Inserting at the beginning requires shifting all existing n elements one position to the right, taking O(n) time.", q2.explanation)
+        assertEquals("With capacity available, inserting at the beginning may require shifting existing elements one position to the right. In the worst case, this shifts n elements and takes O(n) time.", q2.explanation)
         assertEquals(QuestionDifficulty.EASY, q2.difficulty)
 
         val q3 = arraysQuiz[2]

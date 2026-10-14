@@ -258,6 +258,9 @@ fun LessonDetailScreen(
                             "lesson_arrays_5" -> ArrayComplexityComparisonCard()
                             "lesson_linked_list_1" -> LinkedListIntroductionVisualizationCard()
                             "lesson_linked_list_2" -> LinkedListTraversalSearchAccessVisualizationCard()
+                            "lesson_linked_list_3" -> LinkedListInsertionVisualizationCard()
+                            "lesson_linked_list_4" -> LinkedListRemovalVisualizationCard()
+                            "lesson_linked_list_5" -> LinkedListPerformanceComparisonVisualizationCard()
                             "searching_2" -> LinearSearchVisualizationCard()
                             "searching_3" -> BinarySearchVisualizationCard()
                             "searching_4" -> SearchComparisonCard()
@@ -1592,6 +1595,11 @@ private fun LinkedListIntroductionVisualizationCard() {
 
     val totalSteps = 3
     val isCompleted = stepIndex >= totalSteps - 1
+    val nodeBringIntoViewRequesters = remember(nodeValues.size) {
+        List(nodeValues.size) { BringIntoViewRequester() }
+    }
+    val nullBringIntoViewRequester = remember { BringIntoViewRequester() }
+    var skipInitialBringIntoView by remember { mutableStateOf(true) }
 
     // Auto-play timer mechanism
     LaunchedEffect(isPlaying, stepIndex) {
@@ -1604,6 +1612,20 @@ private fun LinkedListIntroductionVisualizationCard() {
             }
         } else if (stepIndex >= totalSteps - 1) {
             isPlaying = false
+        }
+    }
+
+    LaunchedEffect(stepIndex) {
+        if (skipInitialBringIntoView) {
+            skipInitialBringIntoView = false
+            return@LaunchedEffect
+        }
+
+        if (stepIndex == totalSteps - 1) {
+            nullBringIntoViewRequester.bringIntoView()
+        } else {
+            val activeNodeIndex = stepIndex.coerceAtMost(nodeValues.lastIndex)
+            nodeBringIntoViewRequesters[activeNodeIndex].bringIntoView()
         }
     }
 
@@ -1719,6 +1741,7 @@ private fun LinkedListIntroductionVisualizationCard() {
 
                     // Node Box with Data and Next sections
                     Surface(
+                        modifier = Modifier.bringIntoViewRequester(nodeBringIntoViewRequesters[index]),
                         color = nodeBg,
                         shape = RoundedCornerShape(10.dp),
                         border = BorderStroke(if (isNodeHighlighted) 1.5.dp else 1.dp, nodeBorder),
@@ -1795,6 +1818,7 @@ private fun LinkedListIntroductionVisualizationCard() {
                 val isNullHighlighted = stepIndex == 2
                 Box(
                     modifier = Modifier
+                        .bringIntoViewRequester(nullBringIntoViewRequester)
                         .clip(RoundedCornerShape(8.dp))
                         .background(if (isNullHighlighted) Color(0xFF092317) else Color(0xFF13131C))
                         .border(
@@ -2414,6 +2438,712 @@ private fun LinkedListTraversalSearchAccessVisualizationCard() {
                 }
             }
         }
+    }
+}
+
+@Composable
+private fun LinkedListInsertionVisualizationCard() {
+    data class Step(
+        val title: String,
+        val explanation: String,
+        val order: List<String>,
+        val links: Set<Pair<String, String>>,
+        val head: String,
+        val highlighted: Set<String>,
+        val activeNode: String,
+        val badges: Map<String, String> = emptyMap()
+    )
+
+    var scenario by remember { mutableStateOf("HEAD") }
+
+    fun createSteps(): List<Step> = when (scenario) {
+        "HEAD" -> listOf(
+            Step(
+                "Choose the insertion point",
+                "Insert 5 before the current head, 12. The existing links remain unchanged for now.",
+                listOf("12", "7", "19"),
+                setOf("12" to "7", "7" to "19", "19" to "null"),
+                "12",
+                setOf("12"),
+                "12"
+            ),
+            Step(
+                "Create the new node",
+                "Create node 5 at the head insertion point. Its NEXT link is not connected yet.",
+                listOf("5", "12", "7", "19"),
+                setOf("12" to "7", "7" to "19", "19" to "null"),
+                "12",
+                setOf("5", "12"),
+                "5",
+                mapOf("5" to "NEW")
+            ),
+            Step(
+                "Connect the new node to the old head",
+                "Set newNode.next = head. Node 5 now points to node 12; head still points to 12.",
+                listOf("5", "12", "7", "19"),
+                setOf("5" to "12", "12" to "7", "7" to "19", "19" to "null"),
+                "12",
+                setOf("5", "12"),
+                "5",
+                mapOf("5" to "NEW")
+            ),
+            Step(
+                "Move head to the new node",
+                "Set head = newNode only after newNode.next is connected. The result is 5 → 12 → 7 → 19 → null.",
+                listOf("5", "12", "7", "19"),
+                setOf("5" to "12", "12" to "7", "7" to "19", "19" to "null"),
+                "5",
+                setOf("5", "12"),
+                "5",
+                mapOf("5" to "NEW")
+            )
+        )
+        else -> listOf(
+            Step(
+                "Choose the predecessor",
+                "Insert 15 after node 7. Node 19 is its current successor; keep 7 → 19 until the new link is ready.",
+                listOf("12", "7", "19"),
+                setOf("12" to "7", "7" to "19", "19" to "null"),
+                "12",
+                setOf("7", "19"),
+                "7",
+                mapOf("7" to "PREV", "19" to "NEXT")
+            ),
+            Step(
+                "Create the new node",
+                "Create node 15 between predecessor 7 and successor 19. The old 7 → 19 link still preserves the list.",
+                listOf("12", "7", "15", "19"),
+                setOf("12" to "7", "7" to "19", "19" to "null"),
+                "12",
+                setOf("7", "15", "19"),
+                "15",
+                mapOf("7" to "PREV", "15" to "NEW", "19" to "NEXT")
+            ),
+            Step(
+                "Connect the new node to its successor",
+                "First set newNode.next = prevNode.next. Now 15 points to 19 while 7 still points to 19.",
+                listOf("12", "7", "15", "19"),
+                setOf("12" to "7", "7" to "19", "15" to "19", "19" to "null"),
+                "12",
+                setOf("7", "15", "19"),
+                "15",
+                mapOf("7" to "PREV", "15" to "NEW", "19" to "NEXT")
+            ),
+            Step(
+                "Point the predecessor to the new node",
+                "Then set prevNode.next = newNode. The final chain is 12 → 7 → 15 → 19 → null.",
+                listOf("12", "7", "15", "19"),
+                setOf("12" to "7", "7" to "15", "15" to "19", "19" to "null"),
+                "12",
+                setOf("7", "15", "19"),
+                "7",
+                mapOf("7" to "PREV", "15" to "NEW", "19" to "NEXT")
+            )
+        )
+    }
+
+    val steps = remember(scenario) { createSteps() }
+    var stepIndex by remember(scenario) { mutableStateOf(0) }
+    var isPlaying by remember(scenario) { mutableStateOf(false) }
+    val currentStep = steps[stepIndex]
+    val isCompleted = stepIndex == steps.lastIndex
+
+    LaunchedEffect(isPlaying, stepIndex, steps) {
+        if (isPlaying && stepIndex < steps.lastIndex) {
+            delay(1000L)
+            if (stepIndex < steps.lastIndex) stepIndex++ else isPlaying = false
+        } else if (isPlaying) {
+            isPlaying = false
+        }
+    }
+
+    Surface(
+        color = DarkCardBgColor,
+        shape = RoundedCornerShape(16.dp),
+        border = BorderStroke(1.dp, CardBorderColor),
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Column(
+            modifier = Modifier.fillMaxWidth().padding(14.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp)
+        ) {
+            LinkedListVisualizerHeader("LINKED LIST INSERTION", stepIndex, steps.size, isCompleted)
+            LinkedListScenarioSelector(
+                options = listOf("HEAD" to "At head", "AFTER" to "After node 7"),
+                selected = scenario,
+                onSelected = { scenario = it }
+            )
+            LinkedListOperationDiagram(
+                nodeOrder = currentStep.order,
+                links = currentStep.links,
+                headValue = currentStep.head,
+                highlightedNodes = currentStep.highlighted,
+                activeNode = currentStep.activeNode,
+                nodeBadges = currentStep.badges,
+                stepKey = scenario to stepIndex
+            )
+            LinkedListStepExplanation(currentStep.title, currentStep.explanation, stepIndex, steps.size)
+            LinkedListPlaybackControls(
+                stepIndex = stepIndex,
+                stepCount = steps.size,
+                isPlaying = isPlaying,
+                onReset = { isPlaying = false; stepIndex = 0 },
+                onPrevious = { isPlaying = false; if (stepIndex > 0) stepIndex-- },
+                onTogglePlayback = { isPlaying = !isPlaying },
+                onNext = { isPlaying = false; if (stepIndex < steps.lastIndex) stepIndex++ }
+            )
+        }
+    }
+}
+
+@Composable
+private fun LinkedListRemovalVisualizationCard() {
+    data class Step(
+        val title: String,
+        val explanation: String,
+        val order: List<String>,
+        val links: Set<Pair<String, String>>,
+        val head: String,
+        val highlighted: Set<String>,
+        val activeNode: String,
+        val detachedNodes: List<String> = emptyList(),
+        val badges: Map<String, String> = emptyMap()
+    )
+
+    var scenario by remember { mutableStateOf("INTERIOR") }
+
+    fun createSteps(): List<Step> = when (scenario) {
+        "HEAD" -> listOf(
+            Step(
+                "Identify the head target",
+                "The requested target is the first node, 12. No predecessor search is needed for head removal.",
+                listOf("12", "7", "19"),
+                setOf("12" to "7", "7" to "19", "19" to "null"),
+                "12",
+                setOf("12"),
+                "12",
+                badges = mapOf("12" to "TARGET")
+            ),
+            Step(
+                "Advance head",
+                "Set head = head.next. Head now points to 7; node 12 is detached from the list.",
+                listOf("7", "19"),
+                setOf("7" to "19", "19" to "null"),
+                "7",
+                setOf("7", "12"),
+                "7",
+                detachedNodes = listOf("12"),
+                badges = mapOf("12" to "REMOVED")
+            )
+        )
+        "MISSING" -> listOf(
+            Step(
+                "Start at head",
+                "Search for 99 from head. Set current = head before checking nodes.",
+                listOf("12", "7", "19"),
+                setOf("12" to "7", "7" to "19", "19" to "null"),
+                "12",
+                setOf("12"),
+                "12",
+                badges = mapOf("12" to "CURRENT")
+            ),
+            Step(
+                "Check node 12",
+                "12 does not match 99. Advance current to 7; the list links are unchanged.",
+                listOf("12", "7", "19"),
+                setOf("12" to "7", "7" to "19", "19" to "null"),
+                "12",
+                setOf("12", "7"),
+                "7",
+                badges = mapOf("7" to "CURRENT")
+            ),
+            Step(
+                "Check node 7",
+                "7 does not match 99. Advance current to 19; the list links are unchanged.",
+                listOf("12", "7", "19"),
+                setOf("12" to "7", "7" to "19", "19" to "null"),
+                "12",
+                setOf("7", "19"),
+                "19",
+                badges = mapOf("19" to "CURRENT")
+            ),
+            Step(
+                "Reach the end",
+                "19 does not match 99. Advance current to null after checking the last node.",
+                listOf("12", "7", "19"),
+                setOf("12" to "7", "7" to "19", "19" to "null"),
+                "12",
+                setOf("19", "null"),
+                "null",
+                badges = mapOf("19" to "CURRENT")
+            ),
+            Step(
+                "Leave the list unchanged",
+                "Current is null, so 99 was not found. No links change; the original chain remains intact.",
+                listOf("12", "7", "19"),
+                setOf("12" to "7", "7" to "19", "19" to "null"),
+                "12",
+                setOf("12", "7", "19"),
+                "null"
+            )
+        )
+        else -> listOf(
+            Step(
+                "Start at head",
+                "Search for 7 from head. Begin with current = 12 and no predecessor.",
+                listOf("12", "7", "19"),
+                setOf("12" to "7", "7" to "19", "19" to "null"),
+                "12",
+                setOf("12"),
+                "12",
+                badges = mapOf("12" to "CURRENT")
+            ),
+            Step(
+                "Advance predecessor and current",
+                "12 is not the target. Set prev = 12 and advance current to 7.",
+                listOf("12", "7", "19"),
+                setOf("12" to "7", "7" to "19", "19" to "null"),
+                "12",
+                setOf("12", "7"),
+                "7",
+                badges = mapOf("12" to "PREV", "7" to "CURRENT")
+            ),
+            Step(
+                "Find the target and its predecessor",
+                "Current matches 7. Its predecessor is 12, the node whose NEXT link must change.",
+                listOf("12", "7", "19"),
+                setOf("12" to "7", "7" to "19", "19" to "null"),
+                "12",
+                setOf("12", "7", "19"),
+                "7",
+                badges = mapOf("12" to "PREV", "7" to "TARGET")
+            ),
+            Step(
+                "Bypass the target",
+                "Set prev.next = target.next. Link 12 directly to 19, then show 7 outside the chain.",
+                listOf("12", "19"),
+                setOf("12" to "19", "19" to "null"),
+                "12",
+                setOf("12", "19"),
+                "12",
+                detachedNodes = listOf("7"),
+                badges = mapOf("7" to "REMOVED")
+            )
+        )
+    }
+
+    val steps = remember(scenario) { createSteps() }
+    var stepIndex by remember(scenario) { mutableStateOf(0) }
+    var isPlaying by remember(scenario) { mutableStateOf(false) }
+    val currentStep = steps[stepIndex]
+    val isCompleted = stepIndex == steps.lastIndex
+
+    LaunchedEffect(isPlaying, stepIndex, steps) {
+        if (isPlaying && stepIndex < steps.lastIndex) {
+            delay(1000L)
+            if (stepIndex < steps.lastIndex) stepIndex++ else isPlaying = false
+        } else if (isPlaying) {
+            isPlaying = false
+        }
+    }
+
+    Surface(
+        color = DarkCardBgColor,
+        shape = RoundedCornerShape(16.dp),
+        border = BorderStroke(1.dp, CardBorderColor),
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Column(
+            modifier = Modifier.fillMaxWidth().padding(14.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp)
+        ) {
+            LinkedListVisualizerHeader("LINKED LIST REMOVAL", stepIndex, steps.size, isCompleted)
+            LinkedListScenarioSelector(
+                options = listOf(
+                    "INTERIOR" to "Remove 7",
+                    "HEAD" to "Remove head",
+                    "MISSING" to "Missing 99"
+                ),
+                selected = scenario,
+                onSelected = { scenario = it }
+            )
+            LinkedListOperationDiagram(
+                nodeOrder = currentStep.order,
+                links = currentStep.links,
+                headValue = currentStep.head,
+                highlightedNodes = currentStep.highlighted,
+                activeNode = currentStep.activeNode,
+                detachedNodes = currentStep.detachedNodes,
+                nodeBadges = currentStep.badges,
+                stepKey = scenario to stepIndex
+            )
+            LinkedListStepExplanation(currentStep.title, currentStep.explanation, stepIndex, steps.size)
+            LinkedListPlaybackControls(
+                stepIndex = stepIndex,
+                stepCount = steps.size,
+                isPlaying = isPlaying,
+                onReset = { isPlaying = false; stepIndex = 0 },
+                onPrevious = { isPlaying = false; if (stepIndex > 0) stepIndex-- },
+                onTogglePlayback = { isPlaying = !isPlaying },
+                onNext = { isPlaying = false; if (stepIndex < steps.lastIndex) stepIndex++ }
+            )
+        }
+    }
+}
+
+@Composable
+private fun LinkedListPerformanceComparisonVisualizationCard() {
+    Surface(
+        color = DarkCardBgColor,
+        shape = RoundedCornerShape(16.dp),
+        border = BorderStroke(1.dp, CardBorderColor),
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Column(
+            modifier = Modifier.fillMaxWidth().padding(14.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp)
+        ) {
+            Text(
+                "SINGLY VS. DOUBLY LINKED LISTS",
+                color = OrangeAccent,
+                fontSize = 11.sp,
+                fontWeight = FontWeight.Bold,
+                letterSpacing = 1.sp
+            )
+            LinkedListTypeCard(
+                title = "SINGLY LINKED NODE",
+                description = "DATA + NEXT · forward traversal",
+                doubly = false
+            )
+            LinkedListTypeCard(
+                title = "DOUBLY LINKED NODE",
+                description = "PREV + DATA + NEXT · traverse both directions",
+                doubly = true
+            )
+            Surface(
+                color = Color(0xFF13131C),
+                shape = RoundedCornerShape(12.dp),
+                border = BorderStroke(1.dp, CardBorderColor),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Column(
+                    modifier = Modifier.fillMaxWidth().padding(12.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Text("TIME COMPLEXITY", color = TextPrimary, fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                    LinkedListComplexityRow("Index access", "Array O(1)", "List O(n)")
+                    LinkedListComplexityRow("Linear search", "Array O(n)", "List O(n)")
+                    LinkedListComplexityRow("Insert/remove at head", "Array O(n)", "List O(1)")
+                    LinkedListComplexityRow("After a known node", "Array O(n)", "List O(1)")
+                    LinkedListComplexityRow("Tail append, singly + head only", "—", "O(n)")
+                    Text(
+                        "A maintained list tail makes singly linked append O(1). Doubly linked nodes use extra memory for each PREV reference.",
+                        color = TextSecondary,
+                        fontSize = 10.sp,
+                        lineHeight = 14.sp
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun LinkedListTypeCard(title: String, description: String, doubly: Boolean) {
+    Surface(
+        color = Color(0xFF13131C),
+        shape = RoundedCornerShape(12.dp),
+        border = BorderStroke(1.dp, CardBorderColor),
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Column(
+            modifier = Modifier.fillMaxWidth().padding(12.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            Text(title, color = TextPrimary, fontSize = 10.sp, fontWeight = FontWeight.Bold)
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(5.dp)) {
+                if (doubly) Text("←", color = BlueAccent, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                Surface(color = DarkCardBgColor, shape = RoundedCornerShape(8.dp), border = BorderStroke(1.dp, CardBorderColor)) {
+                    Row(
+                        modifier = Modifier.padding(horizontal = 7.dp, vertical = 6.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(5.dp)
+                    ) {
+                        if (doubly) LinkedListNodeField("PREV", "•")
+                        LinkedListNodeField("DATA", "12")
+                        LinkedListNodeField("NEXT", "•")
+                    }
+                }
+                Text("→", color = OrangeAccent, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                Text(if (doubly) "tail" else "null", color = TextSecondary, fontSize = 10.sp)
+            }
+            Text(description, color = TextSecondary, fontSize = 11.sp, lineHeight = 15.sp)
+        }
+    }
+}
+
+@Composable
+private fun LinkedListNodeField(label: String, value: String) {
+    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        Text(label, color = TextSecondary, fontSize = 7.sp, fontWeight = FontWeight.Bold)
+        Text(value, color = BlueAccent, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+    }
+}
+
+@Composable
+private fun LinkedListComplexityRow(operation: String, arrayCost: String, listCost: String) {
+    Column(verticalArrangement = Arrangement.spacedBy(3.dp)) {
+        Text(operation, color = TextPrimary, fontSize = 11.sp, fontWeight = FontWeight.SemiBold)
+        Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+            Text(arrayCost, color = BlueAccent, fontSize = 10.sp)
+            Text("·", color = TextSecondary, fontSize = 10.sp)
+                Text("Singly linked $listCost", color = GreenAccent, fontSize = 10.sp)
+        }
+    }
+}
+
+@Composable
+private fun LinkedListVisualizerHeader(title: String, stepIndex: Int, stepCount: Int, completed: Boolean) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(title, color = OrangeAccent, fontSize = 11.sp, fontWeight = FontWeight.Bold, letterSpacing = 0.5.sp)
+        Text(
+            if (completed) "COMPLETE" else "STEP ${stepIndex + 1} / $stepCount",
+            color = if (completed) GreenAccent else BlueAccent,
+            fontSize = 9.sp,
+            fontWeight = FontWeight.Bold
+        )
+    }
+}
+
+@Composable
+private fun LinkedListScenarioSelector(
+    options: List<Pair<String, String>>,
+    selected: String,
+    onSelected: (String) -> Unit
+) {
+    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+        options.forEach { (value, label) ->
+            val isSelected = value == selected
+            Surface(
+                color = if (isSelected) Color(0xFF2A1C12) else Color(0xFF22222E),
+                shape = RoundedCornerShape(8.dp),
+                border = BorderStroke(1.dp, if (isSelected) OrangeAccent else CardBorderColor),
+                modifier = Modifier.weight(1f).clickable { onSelected(value) }
+            ) {
+                Box(Modifier.padding(horizontal = 4.dp, vertical = 7.dp), contentAlignment = Alignment.Center) {
+                    Text(
+                        label,
+                        color = if (isSelected) OrangeAccent else TextSecondary,
+                        fontSize = 10.sp,
+                        fontWeight = FontWeight.Bold,
+                        textAlign = TextAlign.Center
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun LinkedListOperationDiagram(
+    nodeOrder: List<String>,
+    links: Set<Pair<String, String>>,
+    headValue: String,
+    highlightedNodes: Set<String>,
+    activeNode: String,
+    detachedNodes: List<String> = emptyList(),
+    nodeBadges: Map<String, String> = emptyMap(),
+    stepKey: Any
+) {
+    val diagramItems = remember(nodeOrder, detachedNodes) {
+        (nodeOrder + "null" + detachedNodes).distinct()
+    }
+    val requesters = remember(diagramItems) {
+        diagramItems.associateWith { BringIntoViewRequester() }
+    }
+    var skipInitialVisibilityRequest by remember { mutableStateOf(true) }
+
+    LaunchedEffect(stepKey, activeNode, diagramItems) {
+        if (skipInitialVisibilityRequest) {
+            skipInitialVisibilityRequest = false
+            return@LaunchedEffect
+        }
+        requesters[activeNode]?.bringIntoView()
+    }
+
+    Surface(
+        color = Color(0xFF13131C),
+        shape = RoundedCornerShape(12.dp),
+        border = BorderStroke(1.dp, CardBorderColor),
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Row(
+            modifier = Modifier
+                .padding(horizontal = 8.dp, vertical = 8.dp)
+                .fillMaxWidth()
+                .horizontalScroll(rememberScrollState()),
+            horizontalArrangement = Arrangement.spacedBy(4.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Surface(
+                color = Color(0xFF2A1C12),
+                shape = RoundedCornerShape(8.dp),
+                border = BorderStroke(1.dp, OrangeAccent)
+            ) {
+                Column(
+                    modifier = Modifier.padding(horizontal = 7.dp, vertical = 5.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text("HEAD", color = OrangeAccent, fontSize = 8.sp, fontWeight = FontWeight.Bold)
+                    Text(headValue, color = TextPrimary, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                }
+            }
+
+            nodeOrder.forEachIndexed { index, value ->
+                LinkedListOperationNode(
+                    value = value,
+                    nextTarget = links.firstOrNull { it.first == value }?.second ?: "—",
+                    badge = nodeBadges[value],
+                    highlighted = value in highlightedNodes,
+                    requester = requesters.getValue(value)
+                )
+                val nextValue = nodeOrder.getOrNull(index + 1) ?: "null"
+                val isLinked = (value to nextValue) in links
+                Text(
+                    if (isLinked) "─►" else "···",
+                    color = if (isLinked && (value in highlightedNodes || nextValue in highlightedNodes)) BlueAccent else TextSecondary,
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.Bold
+                )
+            }
+
+            Box(
+                modifier = Modifier
+                    .bringIntoViewRequester(requesters.getValue("null"))
+                    .clip(RoundedCornerShape(8.dp))
+                    .background(if ("null" in highlightedNodes) Color(0xFF092317) else DarkCardBgColor)
+                    .border(1.dp, if ("null" in highlightedNodes) GreenAccent else CardBorderColor, RoundedCornerShape(8.dp))
+                    .padding(horizontal = 9.dp, vertical = 9.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Text("null", color = if ("null" in highlightedNodes) GreenAccent else TextSecondary, fontSize = 11.sp, fontWeight = FontWeight.Bold)
+            }
+
+            detachedNodes.forEach { value ->
+                LinkedListOperationNode(
+                    value = value,
+                    nextTarget = links.firstOrNull { it.first == value }?.second ?: "—",
+                    badge = nodeBadges[value] ?: "DETACHED",
+                    highlighted = value in highlightedNodes,
+                    requester = requesters.getValue(value)
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun LinkedListOperationNode(
+    value: String,
+    nextTarget: String,
+    badge: String?,
+    highlighted: Boolean,
+    requester: BringIntoViewRequester
+) {
+    Column(
+        modifier = Modifier.bringIntoViewRequester(requester),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(1.dp)
+    ) {
+        Box(modifier = Modifier.height(13.dp), contentAlignment = Alignment.Center) {
+            if (badge != null) Text(badge, color = if (badge == "REMOVED") RedAccent else OrangeAccent, fontSize = 7.sp, fontWeight = FontWeight.Bold)
+        }
+        Surface(
+            color = if (highlighted) Color(0xFF2A1C12) else DarkCardBgColor,
+            shape = RoundedCornerShape(8.dp),
+            border = BorderStroke(if (highlighted) 1.5.dp else 1.dp, if (highlighted) OrangeAccent else CardBorderColor)
+        ) {
+            Row(
+                modifier = Modifier.padding(horizontal = 6.dp, vertical = 5.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(4.dp)
+            ) {
+                LinkedListNodeField("DATA", value)
+                Box(Modifier.width(1.dp).height(22.dp).background(CardBorderColor))
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Text("NEXT", color = TextSecondary, fontSize = 7.sp, fontWeight = FontWeight.Bold)
+                    Text(nextTarget, color = if (nextTarget == "—") TextSecondary else BlueAccent, fontSize = 10.sp, fontWeight = FontWeight.Bold)
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun LinkedListStepExplanation(title: String, explanation: String, stepIndex: Int, stepCount: Int) {
+    Surface(
+        color = Color(0xFF13131C),
+        shape = RoundedCornerShape(12.dp),
+        border = BorderStroke(1.dp, CardBorderColor),
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Column(
+            modifier = Modifier.fillMaxWidth().padding(11.dp),
+            verticalArrangement = Arrangement.spacedBy(5.dp)
+        ) {
+            Text(title, color = OrangeAccent, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+            Text(explanation, color = TextPrimary, fontSize = 12.sp, lineHeight = 17.sp)
+            Text("STEP ${stepIndex + 1} / $stepCount", color = TextSecondary, fontSize = 9.sp, fontWeight = FontWeight.Bold)
+        }
+    }
+}
+
+@Composable
+private fun LinkedListPlaybackControls(
+    stepIndex: Int,
+    stepCount: Int,
+    isPlaying: Boolean,
+    onReset: () -> Unit,
+    onPrevious: () -> Unit,
+    onTogglePlayback: () -> Unit,
+    onNext: () -> Unit
+) {
+    val isCompleted = stepIndex == stepCount - 1
+    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(7.dp), verticalAlignment = Alignment.CenterVertically) {
+        Surface(
+            color = DarkCardBgColor,
+            shape = RoundedCornerShape(10.dp),
+            border = BorderStroke(1.dp, CardBorderColor),
+            modifier = Modifier.size(40.dp).clickable { onReset() }
+        ) { Box(contentAlignment = Alignment.Center) { Text("↻", color = TextPrimary, fontSize = 16.sp, fontWeight = FontWeight.Bold) } }
+        Surface(
+            color = DarkCardBgColor,
+            shape = RoundedCornerShape(10.dp),
+            border = BorderStroke(1.dp, CardBorderColor),
+            modifier = Modifier.size(40.dp).clickable(enabled = stepIndex > 0) { onPrevious() }
+        ) { Box(contentAlignment = Alignment.Center) { Text("‹", color = if (stepIndex > 0) TextPrimary else TextSecondary.copy(alpha = 0.3f), fontSize = 20.sp, fontWeight = FontWeight.Bold) } }
+        Surface(
+            color = if (isCompleted) Color(0xFF22222E) else OrangeAccent,
+            shape = RoundedCornerShape(10.dp),
+            modifier = Modifier.weight(1f).height(40.dp).clickable(enabled = !isCompleted) { onTogglePlayback() }
+        ) {
+            Box(contentAlignment = Alignment.Center) {
+                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(5.dp)) {
+                    Text(if (isPlaying) "⏸" else "▶", color = if (isCompleted) TextSecondary else Color(0xFF111115), fontSize = 12.sp)
+                    Text(if (isPlaying) "Pause" else "Play", color = if (isCompleted) TextSecondary else Color(0xFF111115), fontSize = 13.sp, fontWeight = FontWeight.Bold)
+                }
+            }
+        }
+        Surface(
+            color = DarkCardBgColor,
+            shape = RoundedCornerShape(10.dp),
+            border = BorderStroke(1.dp, CardBorderColor),
+            modifier = Modifier.size(40.dp).clickable(enabled = stepIndex < stepCount - 1) { onNext() }
+        ) { Box(contentAlignment = Alignment.Center) { Text("›", color = if (stepIndex < stepCount - 1) TextPrimary else TextSecondary.copy(alpha = 0.3f), fontSize = 20.sp, fontWeight = FontWeight.Bold) } }
     }
 }
 
