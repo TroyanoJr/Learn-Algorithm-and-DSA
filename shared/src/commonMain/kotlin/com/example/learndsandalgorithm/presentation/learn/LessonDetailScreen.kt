@@ -19,6 +19,8 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.relocation.BringIntoViewRequester
+import androidx.compose.foundation.relocation.bringIntoViewRequester
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Surface
@@ -2098,6 +2100,11 @@ private fun LinkedListTraversalSearchAccessVisualizationCard() {
     var isPlaying by remember(operation, searchForExisting, accessValidIndex) { mutableStateOf(false) }
     val currentStep = steps[stepIndex]
     val isCompleted = stepIndex == steps.lastIndex
+    val nodeBringIntoViewRequesters = remember(nodeValues.size) {
+        List(nodeValues.size) { BringIntoViewRequester() }
+    }
+    val nullBringIntoViewRequester = remember { BringIntoViewRequester() }
+    var skipInitialBringIntoView by remember { mutableStateOf(true) }
 
     LaunchedEffect(isPlaying, stepIndex, steps) {
         if (isPlaying) {
@@ -2107,6 +2114,20 @@ private fun LinkedListTraversalSearchAccessVisualizationCard() {
             } else {
                 isPlaying = false
             }
+        }
+    }
+
+    LaunchedEffect(currentStep.currentNode, currentStep.currentPosition) {
+        if (skipInitialBringIntoView) {
+            skipInitialBringIntoView = false
+            return@LaunchedEffect
+        }
+
+        val currentNode = currentStep.currentNode
+        if (currentNode != null) {
+            nodeBringIntoViewRequesters[currentNode].bringIntoView()
+        } else {
+            nullBringIntoViewRequester.bringIntoView()
         }
     }
 
@@ -2193,10 +2214,10 @@ private fun LinkedListTraversalSearchAccessVisualizationCard() {
             ) {
                 Row(
                     modifier = Modifier
+                        .padding(horizontal = 12.dp, vertical = 12.dp)
                         .fillMaxWidth()
-                        .horizontalScroll(rememberScrollState())
-                        .padding(horizontal = 12.dp, vertical = 12.dp),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        .horizontalScroll(rememberScrollState()),
+                    horizontalArrangement = Arrangement.spacedBy(4.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     // Head Pointer Indicator
@@ -2240,8 +2261,9 @@ private fun LinkedListTraversalSearchAccessVisualizationCard() {
                         val isVisited = currentStep.visitedNodes.contains(index)
 
                         Column(
+                            modifier = Modifier.bringIntoViewRequester(nodeBringIntoViewRequesters[index]),
                             horizontalAlignment = Alignment.CenterHorizontally,
-                            verticalArrangement = Arrangement.spacedBy(2.dp)
+                            verticalArrangement = Arrangement.spacedBy(1.dp)
                         ) {
                             // Top Indicator Stack
                             Box(modifier = Modifier.height(14.dp), contentAlignment = Alignment.Center) {
@@ -2270,9 +2292,9 @@ private fun LinkedListTraversalSearchAccessVisualizationCard() {
                                 )
                             ) {
                                 Row(
-                                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 6.dp),
+                                    modifier = Modifier.padding(horizontal = 6.dp, vertical = 5.dp),
                                     verticalAlignment = Alignment.CenterVertically,
-                                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                                    horizontalArrangement = Arrangement.spacedBy(4.dp)
                                 ) {
                                     // DATA
                                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
@@ -2321,8 +2343,9 @@ private fun LinkedListTraversalSearchAccessVisualizationCard() {
                     // Null Terminator Box
                     val isNullActive = currentStep.currentNode == null
                     Column(
+                        modifier = Modifier.bringIntoViewRequester(nullBringIntoViewRequester),
                         horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.spacedBy(2.dp)
+                        verticalArrangement = Arrangement.spacedBy(1.dp)
                     ) {
                         Box(modifier = Modifier.height(14.dp), contentAlignment = Alignment.Center) {
                             if (isNullActive) {
