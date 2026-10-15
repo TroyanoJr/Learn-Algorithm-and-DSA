@@ -58,16 +58,15 @@
   {
     "id": "q_arrays_5",
     "topicId": "arrays",
-    "statement": "In zero-based indexing, what is the index of the last element in an array of size N?",
+    "statement": "In zero-based indexing, an array of size N has its last element at index N.",
     "options": [
-      "N",
-      "N + 1",
-      "N - 1",
-      "0"
+      "True",
+      "False"
     ],
-    "correctOptionIndex": 2,
-    "explanation": "Since indexing starts at 0, the Nth element is located at index N - 1.",
-    "difficulty": "EASY"
+    "correctOptionIndex": 1,
+    "explanation": "There are N elements, but indices begin at 0, so the last valid index is N - 1.",
+    "difficulty": "EASY",
+    "type": "TRUE_FALSE"
   },
   {
     "id": "q_arrays_6",
@@ -86,16 +85,17 @@
   {
     "id": "q_arrays_7",
     "topicId": "arrays",
-    "statement": "What is the worst-case time complexity of traversing every element in a 1D array of size N?",
+    "statement": "What values does the traversal print, in order?\n\n```pseudocode\nvalues = [2, 5, 8]\nfor i from 0 to length(values) - 1 do\n    print(values[i])\nend for\n```",
     "options": [
-      "O(1)",
-      "O(log N)",
-      "O(N²)",
-      "O(N)"
+      "2, 5, 8",
+      "5, 8",
+      "2, 5",
+      "8, 5, 2"
     ],
-    "correctOptionIndex": 3,
-    "explanation": "Traversing requires visiting each of the N elements exactly once, taking linear O(N) time.",
-    "difficulty": "EASY"
+    "correctOptionIndex": 0,
+    "explanation": "The loop visits indices 0, 1, and 2, printing every element in order.",
+    "difficulty": "EASY",
+    "type": "CODE_OUTPUT"
   },
   {
     "id": "q_arrays_8",
@@ -128,16 +128,15 @@
   {
     "id": "q_linear_search_2",
     "topicId": "linear_search",
-    "statement": "Does Linear Search require the target array to be sorted before searching?",
+    "statement": "Linear Search requires the array to be sorted before it can search for a target.",
     "options": [
-      "Yes, always",
-      "No, it works on unsorted arrays",
-      "Only if array size > 100",
-      "Yes, but only in descending order"
+      "True",
+      "False"
     ],
     "correctOptionIndex": 1,
-    "explanation": "Linear search checks elements sequentially one by one, so array order or sorting is not required.",
-    "difficulty": "EASY"
+    "explanation": "Linear Search checks items in order and also works when values are unsorted.",
+    "difficulty": "EASY",
+    "type": "TRUE_FALSE"
   },
   {
     "id": "q_linear_search_3",
@@ -156,16 +155,17 @@
   {
     "id": "q_linear_search_4",
     "topicId": "linear_search",
-    "statement": "How many comparisons will Linear Search make if the target element is NOT present in an array of N items?",
+    "statement": "How many comparisons occur, and what result is printed?\n\n```pseudocode\nvalues = [3, 6, 9]\ntarget = 5\ncomparisons = 0\nresult = -1\nfor i from 0 to length(values) - 1 do\n    comparisons = comparisons + 1\n    if values[i] == target then\n        result = i\n        break\n    end if\nend for\nprint(comparisons, result)\n```",
     "options": [
-      "0 comparisons",
-      "N comparisons",
-      "N / 2 comparisons",
-      "log2(N) comparisons"
+      "3 comparisons, -1",
+      "2 comparisons, -1",
+      "3 comparisons, 2",
+      "1 comparison, -1"
     ],
-    "correctOptionIndex": 1,
-    "explanation": "If the target is missing, Linear Search must check every single one of the N items before concluding it is absent.",
-    "difficulty": "EASY"
+    "correctOptionIndex": 0,
+    "explanation": "The absent target is compared with all three elements, so the output is 3 comparisons and -1.",
+    "difficulty": "EASY",
+    "type": "CODE_OUTPUT"
   },
   {
     "id": "q_linear_search_5",
@@ -178,7 +178,7 @@
       "O(N²)"
     ],
     "correctOptionIndex": 2,
-    "explanation": "On average, Linear Search inspects roughly N / 2 elements, which simplifies to O(N) linear time in asymptotic analysis.",
+    "explanation": "Assuming the target is equally likely to be at any position (or absent), Linear Search inspects about half the array on average, which is O(N).",
     "difficulty": "MEDIUM"
   },
   {
@@ -282,16 +282,17 @@
   {
     "id": "q_sorting_quiz_5",
     "topicId": "sorting",
-    "statement": "After the first complete pass of Bubble Sort on an unsorted array, where is the largest element guaranteed to be located?",
+    "statement": "After one complete pass, what is the array?\n\n```pseudocode\narr = [3, 1, 2]\nfor j from 0 to 1 do\n    if arr[j] > arr[j + 1] then\n        temp = arr[j]\n        arr[j] = arr[j + 1]\n        arr[j + 1] = temp\n    end if\nend for\nprint(arr)\n```",
     "options": [
-      "At index 0",
-      "At the last index of the array",
-      "At the exact midpoint of the array",
-      "It remains in its original starting position"
+      "[1, 2, 3]",
+      "[1, 3, 2]",
+      "[3, 1, 2]",
+      "[2, 1, 3]"
     ],
-    "correctOptionIndex": 1,
-    "explanation": "In each pass of Bubble Sort, adjacent swaps cause the largest unsorted element to 'bubble up' to its final position at the end of the array.",
-    "difficulty": "EASY"
+    "correctOptionIndex": 0,
+    "explanation": "The first comparison swaps 3 and 1, giving [1, 3, 2]. The second comparison swaps 3 and 2, so the pass ends at [1, 2, 3].",
+    "difficulty": "EASY",
+    "type": "CODE_OUTPUT"
   },
   {
     "id": "q_sorting_quiz_6",
@@ -310,16 +311,15 @@
   {
     "id": "q_sorting_quiz_7",
     "topicId": "sorting",
-    "statement": "What does it mean for a sorting algorithm to be 'adaptive'?",
+    "statement": "Selection Sort makes fewer comparisons when the input is already partly sorted.",
     "options": [
-      "It changes its memory size dynamically at runtime",
-      "Its running time improves when given an input array that is already partially sorted",
-      "It converts between ascending and descending order automatically",
-      "It uses secondary storage when RAM is full"
+      "True",
+      "False"
     ],
     "correctOptionIndex": 1,
-    "explanation": "An adaptive algorithm like Insertion Sort takes advantage of existing order in the input, reducing comparisons/shifts to run near O(N) time.",
-    "difficulty": "HARD"
+    "explanation": "Selection Sort scans the unsorted region on every pass regardless of initial order.",
+    "difficulty": "HARD",
+    "type": "TRUE_FALSE"
   },
   {
     "id": "q_sorting_quiz_8",
@@ -354,16 +354,16 @@
     "id": "q_lesson_arrays_1_2",
     "topicId": "arrays",
     "lessonId": "lesson_arrays_1",
-    "type": "MULTIPLE_CHOICE",
-    "statement": "In the lesson's address formula, what does i represent in Address(A[i]) = Base Address + (i × Element Size)?",
+    "type": "CODE_OUTPUT",
+    "statement": "What value is printed when the array is accessed at index 2?\n\n```pseudocode\nnumbers = [10, 20, 30, 40]\nprint(numbers[2])\n```",
     "options": [
-      "The requested zero-based index",
-      "The memory location of A[0]",
-      "The size of each element in bytes",
-      "The value stored at A[i]"
+      "10",
+      "20",
+      "30",
+      "40"
     ],
-    "correctOptionIndex": 0,
-    "explanation": "The lesson defines i as the requested zero-based index. The base address identifies A[0], and element size determines the offset between elements.",
+    "correctOptionIndex": 2,
+    "explanation": "Array indices start at 0, so index 2 selects the third value, 30.",
     "difficulty": "EASY"
   },
   {
@@ -713,30 +713,30 @@
   {
     "id": "q_linked_list_1",
     "topicId": "linked_list",
-    "statement": "In a singly linked list, how does a traversal algorithm determine that it has reached the end of the list?",
+    "statement": "What values does the traversal print?\n\n```pseudocode\nhead = Node(4)\nhead.next = Node(9)\ncurrent = head\nwhile current != null do\n    print(current.data)\n    current = current.next\nend while\n```",
     "options": [
-      "The index variable reaches the fixed capacity limit N",
-      "The current node's next pointer equals null (or nullptr / None)",
-      "The node data value equals zero",
-      "The head reference is automatically set to null"
+      "4 then 9",
+      "9 then 4",
+      "4 only",
+      "It loops forever"
     ],
-    "correctOptionIndex": 1,
-    "explanation": "In a singly linked list, the tail node's next pointer points to null (or nullptr / None), which signals that no further nodes exist in the chain.",
-    "difficulty": "EASY"
+    "correctOptionIndex": 0,
+    "explanation": "It prints the current node, follows next from 4 to 9, then stops when current becomes null.",
+    "difficulty": "EASY",
+    "type": "CODE_OUTPUT"
   },
   {
     "id": "q_linked_list_2",
     "topicId": "linked_list",
-    "statement": "Why does accessing position k in a singly linked list take O(n) worst-case time?",
+    "statement": "Accessing a linked-list position by index may require following links from the head.",
     "options": [
-      "The list must copy all n nodes into an array before reading position k",
-      "Position access requires sorting the entire list in ascending order",
-      "The list has no direct array-style index access, so reaching position k requires following links from head",
-      "The head pointer automatically doubles its memory size during position lookup"
+      "True",
+      "False"
     ],
-    "correctOptionIndex": 2,
-    "explanation": "A singly linked list does not provide direct, array-style index access. To reach position k, you must follow links sequentially from head; in the worst case, reaching a position near the end requires traversing O(n) nodes.",
-    "difficulty": "EASY"
+    "correctOptionIndex": 0,
+    "explanation": "A linked list has no direct array-style index access, so reaching a later position requires following earlier links.",
+    "difficulty": "EASY",
+    "type": "TRUE_FALSE"
   },
   {
     "id": "q_linked_list_3",
@@ -779,5 +779,665 @@
     "correctOptionIndex": 1,
     "explanation": "Inserting at the head of a linked list updates two pointer references in O(1) time, whereas prepending to an array requires shifting all n elements right in O(n) time.",
     "difficulty": "HARD"
+  },
+  {
+    "id": "q_lesson_introduction_ds_1_2",
+    "topicId": "introduction_ds",
+    "lessonId": "lesson_introduction_ds_1",
+    "type": "MULTIPLE_CHOICE",
+    "statement": "In the lesson's roster example, what is the algorithm?",
+    "options": [
+      "The list of student records",
+      "The steps for finding a student's record and marking attendance",
+      "A student's name and number",
+      "The computer's memory address for the roster"
+    ],
+    "correctOptionIndex": 1,
+    "explanation": "The lesson uses the roster to show that an algorithm is a set of steps for solving a problem using data.",
+    "difficulty": "MEDIUM"
+  },
+  {
+    "id": "q_lesson_introduction_ds_1_3",
+    "topicId": "introduction_ds",
+    "lessonId": "lesson_introduction_ds_1",
+    "type": "TRUE_FALSE",
+    "statement": "A program combines data and instructions to carry out a task.",
+    "options": [
+      "True",
+      "False"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "The lesson describes a program as combining data and instructions to carry out the task.",
+    "difficulty": "EASY"
+  },
+  {
+    "id": "q_lesson_introduction_ds_2_2",
+    "topicId": "introduction_ds",
+    "lessonId": "lesson_introduction_ds_2",
+    "type": "CODE_OUTPUT",
+    "statement": "What are the output and queue state after this operation?\n\n```pseudocode\nline = [\"Mina\", \"Leo\"]\nline.addToBack(\"Ava\")\nnextStudent = line.removeFromFront()\nprint(nextStudent)\nprint(line)\n```",
+    "options": [
+      "Mina; [\"Leo\", \"Ava\"]",
+      "Ava; [\"Mina\", \"Leo\"]",
+      "Leo; [\"Mina\", \"Ava\"]",
+      "Mina; [\"Ava\", \"Leo\"]"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "Ava joins at the back. Removing from the front serves Mina first, leaving Leo followed by Ava.",
+    "difficulty": "MEDIUM"
+  },
+  {
+    "id": "q_lesson_introduction_ds_2_3",
+    "topicId": "introduction_ds",
+    "lessonId": "lesson_introduction_ds_2",
+    "type": "TRUE_FALSE",
+    "statement": "A stack serves the most recently added item first, while a queue serves the earliest added item first.",
+    "options": [
+      "True",
+      "False"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "A stack is LIFO, while a queue is FIFO; their next-item rules are opposite.",
+    "difficulty": "EASY"
+  },
+  {
+    "id": "q_lesson_arrays_2_2",
+    "topicId": "arrays",
+    "lessonId": "lesson_arrays_2",
+    "type": "CODE_OUTPUT",
+    "statement": "What is printed after these values are appended?\n\n```pseudocode\nitems = [10, 20]\nitems.append(30)\nprint(items)\n```",
+    "options": [
+      "[10, 20]",
+      "[10, 20, 30]",
+      "[30, 10, 20]",
+      "[10, 30]"
+    ],
+    "correctOptionIndex": 1,
+    "explanation": "Appending 30 adds it after the existing values, producing [10, 20, 30].",
+    "difficulty": "MEDIUM"
+  },
+  {
+    "id": "q_lesson_arrays_2_3",
+    "topicId": "arrays",
+    "lessonId": "lesson_arrays_2",
+    "type": "TRUE_FALSE",
+    "statement": "A resize of a dynamic array can take O(N) time because elements are copied.",
+    "options": [
+      "True",
+      "False"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "Copying all existing elements during a resize takes linear time.",
+    "difficulty": "EASY"
+  },
+  {
+    "id": "q_lesson_arrays_3_2",
+    "topicId": "arrays",
+    "lessonId": "lesson_arrays_3",
+    "type": "CODE_OUTPUT",
+    "statement": "What values does this traversal print, in order?\n\n```pseudocode\nnumbers = [4, 6, 8]\nfor i from 0 to length(numbers) - 1 do\n    print(numbers[i])\nend for\n```",
+    "options": [
+      "4, 6, 8",
+      "6, 8",
+      "4, 6",
+      "8, 6, 4"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "The index visits 0, 1, and 2 in order, printing each value from left to right.",
+    "difficulty": "MEDIUM"
+  },
+  {
+    "id": "q_lesson_arrays_3_3",
+    "topicId": "arrays",
+    "lessonId": "lesson_arrays_3",
+    "type": "TRUE_FALSE",
+    "statement": "A traversal visits every array element in order without skipping an index.",
+    "options": [
+      "True",
+      "False"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "Sequential inspection visits each element from the start to the end.",
+    "difficulty": "EASY"
+  },
+  {
+    "id": "q_lesson_arrays_4_2",
+    "topicId": "arrays",
+    "lessonId": "lesson_arrays_4",
+    "type": "CODE_OUTPUT",
+    "statement": "After the shifts and insertion, what are the first five array values?\n\n```pseudocode\narr = [10, 20, 30, 40, empty]\nsize = 4\nfor j from size - 1 down to 2 do\n    arr[j + 1] = arr[j]\nend for\narr[2] = 25\nprint(arr)\n```",
+    "options": [
+      "[10, 20, 25, 30, 40]",
+      "[10, 20, 30, 25, 40]",
+      "[10, 25, 20, 30, 40]",
+      "[25, 10, 20, 30, 40]"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "The loop copies 40 to index 4 and 30 to index 3. Then 25 fills index 2, resulting in [10, 20, 25, 30, 40].",
+    "difficulty": "MEDIUM"
+  },
+  {
+    "id": "q_lesson_arrays_4_3",
+    "topicId": "arrays",
+    "lessonId": "lesson_arrays_4",
+    "type": "TRUE_FALSE",
+    "statement": "Inserting at index size requires shifting existing elements.",
+    "options": [
+      "True",
+      "False"
+    ],
+    "correctOptionIndex": 1,
+    "explanation": "The lesson states insertion at size is after the last element and needs no shifts.",
+    "difficulty": "EASY"
+  },
+  {
+    "id": "q_lesson_arrays_5_2",
+    "topicId": "arrays",
+    "lessonId": "lesson_arrays_5",
+    "type": "MULTIPLE_CHOICE",
+    "statement": "If a linear search looks for a value that is not present in an unsorted array of n items, how many items may it need to check?",
+    "options": [
+      "One item regardless of n",
+      "Every item in the array",
+      "Only the first and last items",
+      "No items"
+    ],
+    "correctOptionIndex": 1,
+    "explanation": "When the target is absent, a linear search checks items one by one through the array, so it may inspect all n items.",
+    "difficulty": "MEDIUM"
+  },
+  {
+    "id": "q_lesson_arrays_5_3",
+    "topicId": "arrays",
+    "lessonId": "lesson_arrays_5",
+    "type": "TRUE_FALSE",
+    "statement": "Auxiliary space is extra working memory beyond the input.",
+    "options": [
+      "True",
+      "False"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "That is the lesson’s definition of auxiliary space.",
+    "difficulty": "EASY"
+  },
+  {
+    "id": "q_lesson_introduction_algo_1_2",
+    "topicId": "introduction_algo",
+    "lessonId": "lesson_introduction_algo_1",
+    "type": "CODE_OUTPUT",
+    "statement": "What does findMax(3, 8) return?\n\n```pseudocode\nfunction findMax(a, b)\n    if a > b then\n        return a\n    else\n        return b\n    end if\nend function\nprint(findMax(3, 8))\n```",
+    "options": [
+      "3",
+      "8",
+      "-1",
+      "3 and 8"
+    ],
+    "correctOptionIndex": 1,
+    "explanation": "The condition 3 > 8 is false, so ELSE returns 8, the larger value.",
+    "difficulty": "MEDIUM"
+  },
+  {
+    "id": "q_lesson_introduction_algo_1_3",
+    "topicId": "introduction_algo",
+    "lessonId": "lesson_introduction_algo_1",
+    "type": "TRUE_FALSE",
+    "statement": "An algorithm should have steps that are unambiguous and precise.",
+    "options": [
+      "True",
+      "False"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "Definiteness is listed as a key algorithm property.",
+    "difficulty": "EASY"
+  },
+  {
+    "id": "q_lesson_introduction_algo_2_2",
+    "topicId": "introduction_algo",
+    "lessonId": "lesson_introduction_algo_2",
+    "type": "CODE_OUTPUT",
+    "statement": "What result does this sequential search print?\n\n```pseudocode\nnumbers = [4, 7, 9]\ntarget = 5\nresult = -1\nfor i from 0 to length(numbers) - 1 do\n    if numbers[i] == target then\n        result = i\n        break\n    end if\nend for\nprint(result)\n```",
+    "options": [
+      "0",
+      "1",
+      "2",
+      "-1"
+    ],
+    "correctOptionIndex": 3,
+    "explanation": "The search checks 4, 7, and 9, and none matches 5. It keeps the not-found result -1 after three comparisons.",
+    "difficulty": "MEDIUM"
+  },
+  {
+    "id": "q_lesson_introduction_algo_2_3",
+    "topicId": "introduction_algo",
+    "lessonId": "lesson_introduction_algo_2",
+    "type": "TRUE_FALSE",
+    "statement": "Big-O describes elapsed time for every individual run exactly.",
+    "options": [
+      "True",
+      "False"
+    ],
+    "correctOptionIndex": 1,
+    "explanation": "The lesson says operation counts describe growth, not elapsed-time measurements.",
+    "difficulty": "EASY"
+  },
+  {
+    "id": "q_searching_1_2",
+    "topicId": "linear_search",
+    "lessonId": "searching_1",
+    "type": "CODE_OUTPUT",
+    "statement": "What result does this search print for target 6?\n\n```pseudocode\nvalues = [3, 6, 9]\ntarget = 6\nresult = -1\nfor i from 0 to length(values) - 1 do\n    if values[i] == target then\n        result = i\n        break\n    end if\nend for\nprint(result)\n```",
+    "options": [
+      "-1",
+      "0",
+      "1",
+      "2"
+    ],
+    "correctOptionIndex": 2,
+    "explanation": "The search checks index 0, then index 1 where it finds 6, and prints 1.",
+    "difficulty": "MEDIUM"
+  },
+  {
+    "id": "q_searching_1_3",
+    "topicId": "linear_search",
+    "lessonId": "searching_1",
+    "type": "TRUE_FALSE",
+    "statement": "In the lesson's search example, a target that is not present produces the result -1.",
+    "options": [
+      "True",
+      "False"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "The example initializes the result to -1 and leaves it unchanged when no item matches.",
+    "difficulty": "EASY"
+  },
+  {
+    "id": "q_searching_2_2",
+    "topicId": "linear_search",
+    "lessonId": "searching_2",
+    "type": "CODE_OUTPUT",
+    "statement": "How many comparisons occur before this search prints its result?\n\n```pseudocode\nvalues = [8, 3, 6, 1]\ntarget = 6\ncomparisons = 0\nfor i from 0 to length(values) - 1 do\n    comparisons = comparisons + 1\n    if values[i] == target then\n        print(comparisons)\n        break\n    end if\nend for\n```",
+    "options": [
+      "1",
+      "2",
+      "3",
+      "4"
+    ],
+    "correctOptionIndex": 2,
+    "explanation": "It compares 6 with 8, then 3, then 6. The match is found on comparison three at index 2.",
+    "difficulty": "MEDIUM"
+  },
+  {
+    "id": "q_searching_2_3",
+    "topicId": "linear_search",
+    "lessonId": "searching_2",
+    "type": "TRUE_FALSE",
+    "statement": "Linear search requires the input to be sorted first.",
+    "options": [
+      "True",
+      "False"
+    ],
+    "correctOptionIndex": 1,
+    "explanation": "It works on unsorted data and does not require sorting.",
+    "difficulty": "EASY"
+  },
+  {
+    "id": "q_searching_3_2",
+    "topicId": "linear_search",
+    "lessonId": "searching_3",
+    "type": "CODE_OUTPUT",
+    "statement": "What index does binary search reach for target 11?\n\n```pseudocode\nvalues = [1, 3, 5, 7, 9, 11, 13]\nleft = 0\nright = 6\nmid = left + (right - left) / 2\nif values[mid] < 11 then\n    left = mid + 1\nend if\nmid = left + (right - left) / 2\nprint(mid)\n```",
+    "options": [
+      "3",
+      "4",
+      "5",
+      "6"
+    ],
+    "correctOptionIndex": 2,
+    "explanation": "The first midpoint is index 3 (value 7), so left becomes 4. The next midpoint is index 5, where 11 is found.",
+    "difficulty": "MEDIUM"
+  },
+  {
+    "id": "q_searching_3_3",
+    "topicId": "linear_search",
+    "lessonId": "searching_3",
+    "type": "TRUE_FALSE",
+    "statement": "Binary search discards the midpoint and all values after it when arr[mid] is smaller than the target.",
+    "options": [
+      "True",
+      "False"
+    ],
+    "correctOptionIndex": 1,
+    "explanation": "When the midpoint is smaller, the right half remains and left becomes mid + 1.",
+    "difficulty": "EASY"
+  },
+  {
+    "id": "q_searching_4_2",
+    "topicId": "linear_search",
+    "lessonId": "searching_4",
+    "type": "CODE_OUTPUT",
+    "statement": "How many values does this binary search inspect before finding 72?\n\n```pseudocode\nvalues = [4, 12, 19, 27, 33, 44, 51, 60, 72, 81, 95]\ntarget = 72\nleft = 0\nright = length(values) - 1\ncomparisons = 0\nwhile left <= right do\n    mid = (left + right) / 2\n    comparisons = comparisons + 1\n    if values[mid] == target then\n        break\n    else if values[mid] < target then\n        left = mid + 1\n    else\n        right = mid - 1\n    end if\nend while\nprint(comparisons)\n```",
+    "options": [
+      "1",
+      "2",
+      "8",
+      "9"
+    ],
+    "correctOptionIndex": 1,
+    "explanation": "The midpoint is index 5 (value 44) on the first comparison. The remaining interval has midpoint index 8 (value 72), so it takes two comparisons.",
+    "difficulty": "MEDIUM"
+  },
+  {
+    "id": "q_searching_4_3",
+    "topicId": "linear_search",
+    "lessonId": "searching_4",
+    "type": "TRUE_FALSE",
+    "statement": "The worked example’s comparison counts apply to every array and target.",
+    "options": [
+      "True",
+      "False"
+    ],
+    "correctOptionIndex": 1,
+    "explanation": "The lesson explicitly says those counts describe only that target and array.",
+    "difficulty": "EASY"
+  },
+  {
+    "id": "q_sorting_1_2",
+    "topicId": "sorting",
+    "lessonId": "sorting_1",
+    "type": "CODE_OUTPUT",
+    "statement": "What does the swap leave in the array?\n\n```pseudocode\narr = [5, 2]\ntemp = arr[0]\narr[0] = arr[1]\narr[1] = temp\nprint(arr)\n```",
+    "options": [
+      "[5, 2]",
+      "[2, 5]",
+      "[5, 5]",
+      "[2, 2]"
+    ],
+    "correctOptionIndex": 1,
+    "explanation": "The temporary variable saves 5 before index 0 is overwritten. Assigning it to index 1 completes the swap: [2, 5].",
+    "difficulty": "MEDIUM"
+  },
+  {
+    "id": "q_sorting_1_3",
+    "topicId": "sorting",
+    "lessonId": "sorting_1",
+    "type": "TRUE_FALSE",
+    "statement": "A descending order arranges elements from smallest to largest.",
+    "options": [
+      "True",
+      "False"
+    ],
+    "correctOptionIndex": 1,
+    "explanation": "The lesson defines descending order as largest to smallest.",
+    "difficulty": "EASY"
+  },
+  {
+    "id": "q_sorting_2_2",
+    "topicId": "sorting",
+    "lessonId": "sorting_2",
+    "type": "CODE_OUTPUT",
+    "statement": "What is the array after the first Bubble Sort pass?\n\n```pseudocode\narr = [3, 1, 2]\nfor j from 0 to 1 do\n    if arr[j] > arr[j + 1] then\n        temp = arr[j]\n        arr[j] = arr[j + 1]\n        arr[j + 1] = temp\n    end if\nend for\nprint(arr)\n```",
+    "options": [
+      "[1, 2, 3]",
+      "[1, 3, 2]",
+      "[3, 1, 2]",
+      "[2, 1, 3]"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "The first comparison swaps 3 and 1, giving [1, 3, 2]. The second comparison swaps 3 and 2, so the pass ends at [1, 2, 3].",
+    "difficulty": "MEDIUM"
+  },
+  {
+    "id": "q_sorting_2_3",
+    "topicId": "sorting",
+    "lessonId": "sorting_2",
+    "type": "TRUE_FALSE",
+    "statement": "Bubble Sort swaps equal adjacent elements when using the strict greater-than comparison shown.",
+    "options": [
+      "True",
+      "False"
+    ],
+    "correctOptionIndex": 1,
+    "explanation": "The strict comparison does not swap equal elements, preserving stability.",
+    "difficulty": "EASY"
+  },
+  {
+    "id": "q_sorting_3_2",
+    "topicId": "sorting",
+    "lessonId": "sorting_3",
+    "type": "CODE_OUTPUT",
+    "statement": "What array results after Selection Sort’s first pass?\n\n```pseudocode\narr = [4, 2, 3]\nminIdx = 0\nfor j from 1 to 2 do\n    if arr[j] < arr[minIdx] then\n        minIdx = j\n    end if\nend for\ntemp = arr[minIdx]\narr[minIdx] = arr[0]\narr[0] = temp\nprint(arr)\n```",
+    "options": [
+      "[2, 4, 3]",
+      "[4, 2, 3]",
+      "[2, 3, 4]",
+      "[3, 2, 4]"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "The scan finds 2 as the minimum. Swapping it with the value at index 0 produces [2, 4, 3].",
+    "difficulty": "MEDIUM"
+  },
+  {
+    "id": "q_sorting_3_3",
+    "topicId": "sorting",
+    "lessonId": "sorting_3",
+    "type": "TRUE_FALSE",
+    "statement": "Selection Sort always scans the unsorted region even when the array is already sorted.",
+    "options": [
+      "True",
+      "False"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "The scan is unconditional, so comparisons remain quadratic.",
+    "difficulty": "EASY"
+  },
+  {
+    "id": "q_sorting_4_2",
+    "topicId": "sorting",
+    "lessonId": "sorting_4",
+    "type": "CODE_OUTPUT",
+    "statement": "What is the array after this Insertion Sort step?\n\n```pseudocode\narr = [2, 5, 4]\nkey = arr[2]\nj = 1\nwhile j >= 0 and arr[j] > key do\n    arr[j + 1] = arr[j]\n    j = j - 1\nend while\narr[j + 1] = key\nprint(arr)\n```",
+    "options": [
+      "[2, 4, 5]",
+      "[2, 5, 4]",
+      "[4, 2, 5]",
+      "[5, 2, 4]"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "The value 5 shifts right because it is greater than key 4. The key is placed at index 1, yielding [2, 4, 5].",
+    "difficulty": "MEDIUM"
+  },
+  {
+    "id": "q_sorting_4_3",
+    "topicId": "sorting",
+    "lessonId": "sorting_4",
+    "type": "TRUE_FALSE",
+    "statement": "Insertion Sort is stable according to the lesson.",
+    "options": [
+      "True",
+      "False"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "The lesson identifies Insertion Sort as stable.",
+    "difficulty": "EASY"
+  },
+  {
+    "id": "q_sorting_5_2",
+    "topicId": "sorting",
+    "lessonId": "sorting_5",
+    "type": "CODE_OUTPUT",
+    "statement": "What does the final print show?\n\n```pseudocode\narr = [5, 3, 4, 1]\nfor i from 1 to length(arr) - 1 do\n    key = arr[i]\n    j = i - 1\n    while j >= 0 and arr[j] > key do\n        arr[j + 1] = arr[j]\n        j = j - 1\n    end while\n    arr[j + 1] = key\nend for\nprint(arr)\n```",
+    "options": [
+      "[1, 3, 4, 5]",
+      "[3, 4, 5, 1]",
+      "[5, 3, 4, 1]",
+      "[1, 4, 3, 5]"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "Insertion Sort grows the sorted prefix by shifting larger values right to make room for each key. Tracing all three passes leaves [1, 3, 4, 5].",
+    "difficulty": "MEDIUM"
+  },
+  {
+    "id": "q_sorting_5_3",
+    "topicId": "sorting",
+    "lessonId": "sorting_5",
+    "type": "TRUE_FALSE",
+    "statement": "Selection Sort’s comparison count benefits substantially from nearly sorted input.",
+    "options": [
+      "True",
+      "False"
+    ],
+    "correctOptionIndex": 1,
+    "explanation": "It scans the unsorted suffix regardless of initial order.",
+    "difficulty": "EASY"
+  },
+  {
+    "id": "q_lesson_linked_list_1_2",
+    "topicId": "linked_list",
+    "lessonId": "lesson_linked_list_1",
+    "type": "CODE_OUTPUT",
+  "statement": "What does this code print?\n\n```pseudocode\nhead = Node(4)\nhead.next = Node(9)\nprint(head.data)\nprint(head.next.data)\n```",
+    "options": [
+      "4 then 9",
+      "9 then 4",
+      "4 only",
+      "Nothing"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "The head refers to the node containing 4, and its next reference points to the node containing 9, so those values are printed in that order.",
+    "difficulty": "MEDIUM"
+  },
+  {
+    "id": "q_lesson_linked_list_1_3",
+    "topicId": "linked_list",
+    "lessonId": "lesson_linked_list_1",
+    "type": "TRUE_FALSE",
+    "statement": "Nodes in a linked list must occupy contiguous memory locations.",
+    "options": [
+      "True",
+      "False"
+    ],
+    "correctOptionIndex": 1,
+    "explanation": "Linked-list nodes do not need to be contiguous.",
+    "difficulty": "EASY"
+  },
+  {
+    "id": "q_lesson_linked_list_2_2",
+    "topicId": "linked_list",
+    "lessonId": "lesson_linked_list_2",
+    "type": "CODE_OUTPUT",
+  "statement": "What value is reached at zero-based position 2?\n\n```pseudocode\nhead = Node(12)\nhead.next = Node(7)\nhead.next.next = Node(19)\ncurrent = head\ncurrent = current.next\ncurrent = current.next\nprint(current.data)\n```",
+    "options": [
+      "12",
+      "7",
+      "19",
+      "No value"
+    ],
+    "correctOptionIndex": 2,
+    "explanation": "Starting at index 0, two link advances reach position 2, whose value is 19.",
+    "difficulty": "MEDIUM"
+  },
+  {
+    "id": "q_lesson_linked_list_2_3",
+    "topicId": "linked_list",
+    "lessonId": "lesson_linked_list_2",
+    "type": "TRUE_FALSE",
+    "statement": "A missing-target search stops when current becomes null.",
+    "options": [
+      "True",
+      "False"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "The lesson’s example reaches null after all nodes and returns a sentinel.",
+    "difficulty": "EASY"
+  },
+  {
+    "id": "q_lesson_linked_list_3_2",
+    "topicId": "linked_list",
+    "lessonId": "lesson_linked_list_3",
+    "type": "CODE_OUTPUT",
+  "statement": "What values are in the list after inserting 8 after the node containing 5?\n\n```pseudocode\nfirst = Node(5)\nlast = Node(9)\nfirst.next = last\nnewNode = Node(8)\nnewNode.next = first.next\nfirst.next = newNode\nprint(first.data, first.next.data, first.next.next.data)\n```",
+    "options": [
+      "5, 8, 9",
+      "5, 9, 8",
+      "8, 5, 9",
+      "5, 8, null"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "The new node first points to the former next node (9), then 5 points to the new node. Following links gives 5, 8, 9.",
+    "difficulty": "MEDIUM"
+  },
+  {
+    "id": "q_lesson_linked_list_3_3",
+    "topicId": "linked_list",
+    "lessonId": "lesson_linked_list_3",
+    "type": "TRUE_FALSE",
+    "statement": "Inserting after a known node requires traversal from head even when that node reference is already held.",
+    "options": [
+      "True",
+      "False"
+    ],
+    "correctOptionIndex": 1,
+    "explanation": "With a known node, the two link updates take O(1) time.",
+    "difficulty": "EASY"
+  },
+  {
+    "id": "q_lesson_linked_list_4_2",
+    "topicId": "linked_list",
+    "lessonId": "lesson_linked_list_4",
+    "type": "CODE_OUTPUT",
+  "statement": "What values remain after removing the node containing 7?\n\n```pseudocode\nfirst = Node(4)\nmiddle = Node(7)\nlast = Node(9)\nfirst.next = middle\nmiddle.next = last\nfirst.next = middle.next\nprint(first.data, first.next.data)\n```",
+    "options": [
+      "4, 9",
+      "4, 7, 9",
+      "7, 9",
+      "4, null"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "The predecessor (4) links directly to the node after 7 (9), so traversal visits 4, then 9.",
+    "difficulty": "MEDIUM"
+  },
+  {
+    "id": "q_lesson_linked_list_4_3",
+    "topicId": "linked_list",
+    "lessonId": "lesson_linked_list_4",
+    "type": "TRUE_FALSE",
+    "statement": "Removing a node by value may leave the list unchanged when the value is absent.",
+    "options": [
+      "True",
+      "False"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "The lesson says if traversal reaches null, leave the list unchanged.",
+    "difficulty": "EASY"
+  },
+  {
+    "id": "q_lesson_linked_list_5_2",
+    "topicId": "linked_list",
+    "lessonId": "lesson_linked_list_5",
+    "type": "CODE_OUTPUT",
+  "statement": "What does the backward traversal print?\n\n```pseudocode\nfirst = Node(4)\ntail = Node(9)\nfirst.prev = null\nfirst.next = tail\ntail.prev = first\ntail.next = null\ncurrent = tail\nwhile current != null do\n    print(current.data)\n    current = current.prev\nend while\n```",
+    "options": [
+      "9 then 4",
+      "4 then 9",
+      "9 only",
+      "Nothing"
+    ],
+    "correctOptionIndex": 0,
+  "explanation": "The tail node contains 9 and its prev reference points to the node containing 4. That node's prev reference is null, so the traversal prints 9 then 4 and stops.",
+    "difficulty": "MEDIUM"
+  },
+  {
+    "id": "q_lesson_linked_list_5_3",
+    "topicId": "linked_list",
+    "lessonId": "lesson_linked_list_5",
+    "type": "TRUE_FALSE",
+    "statement": "A doubly linked list maintains a head reference to its first node and a tail reference to its last node.",
+    "options": [
+      "True",
+      "False"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "The lesson describes both references: head points to the first node and tail points to the last node.",
+    "difficulty": "EASY"
   }
 ]

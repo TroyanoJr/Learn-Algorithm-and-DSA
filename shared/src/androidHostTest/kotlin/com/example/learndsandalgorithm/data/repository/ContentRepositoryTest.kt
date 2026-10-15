@@ -4,10 +4,15 @@ import com.example.learndsandalgorithm.domain.model.QuestionDifficulty
 import com.example.learndsandalgorithm.domain.model.QuestionType
 import com.example.learndsandalgorithm.domain.repository.ContentRepository
 import com.example.learndsandalgorithm.presentation.learn.shuffleQuestionOptions
+import com.example.learndsandalgorithm.presentation.learn.prepareLessonQuestions
+import com.example.learndsandalgorithm.presentation.practice.prepareQuizQuestions
+import com.example.learndsandalgorithm.presentation.practice.shuffleQuizQuestionOrder
 import kotlinx.coroutines.runBlocking
 import java.io.File
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
+import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
@@ -82,8 +87,8 @@ class ContentRepositoryTest {
         assertTrue(content.contains("first in, first out"), "The lesson should explain queue ordering")
 
         val questions = repository.getQuestionsByLessonId(lesson.id)
-        assertEquals(1, questions.size, "The lesson should have exactly one linked question")
-        val question = questions.single()
+        assertEquals(3, questions.size, "The lesson should have three linked questions")
+        val question = questions.first { it.id == "q_lesson_introduction_ds_2" }
         assertEquals("q_lesson_introduction_ds_2", question.id)
         assertEquals("introduction_ds", question.topicId)
         assertEquals(lesson.id, question.lessonId)
@@ -110,8 +115,8 @@ class ContentRepositoryTest {
         assertTrue(content.contains("not measurements of elapsed time", ignoreCase = true))
 
         val questions = repository.getQuestionsByLessonId(lesson.id)
-        assertEquals(1, questions.size, "The lesson should have exactly one linked question")
-        val question = questions.single()
+        assertEquals(3, questions.size, "The lesson should have three linked questions")
+        val question = questions.first { it.id == "q_lesson_introduction_algo_2" }
         assertEquals("q_lesson_introduction_algo_2", question.id)
         assertEquals("introduction_algo", question.topicId)
         assertEquals(lesson.id, question.lessonId)
@@ -136,8 +141,8 @@ class ContentRepositoryTest {
         assertTrue(content.contains("nullptr"), "The lesson should explain nullptr")
 
         val questions = repository.getQuestionsByLessonId(lesson.id)
-        assertEquals(1, questions.size, "The lesson should have exactly one linked question")
-        val question = questions.single()
+        assertEquals(3, questions.size, "The lesson should have three linked questions")
+        val question = questions.first { it.id == "q_lesson_linked_list_1" }
         assertEquals("q_lesson_linked_list_1", question.id)
         assertEquals("linked_list", question.topicId)
         assertEquals(lesson.id, question.lessonId)
@@ -162,8 +167,8 @@ class ContentRepositoryTest {
         assertTrue(content.contains("O(n)"), "The lesson should explain time complexity")
 
         val questions = repository.getQuestionsByLessonId(lesson.id)
-        assertEquals(1, questions.size, "The lesson should have exactly one linked question")
-        val question = questions.single()
+        assertEquals(3, questions.size, "The lesson should have three linked questions")
+        val question = questions.first { it.id == "q_lesson_linked_list_2" }
         assertEquals("q_lesson_linked_list_2", question.id)
         assertEquals("linked_list", question.topicId)
         assertEquals(lesson.id, question.lessonId)
@@ -188,8 +193,8 @@ class ContentRepositoryTest {
         assertTrue(content.contains("newNode.next = prevNode.next"), "The lesson should explain safe link update order")
 
         val questions = repository.getQuestionsByLessonId(lesson.id)
-        assertEquals(1, questions.size, "The lesson should have exactly one linked question")
-        val question = questions.single()
+        assertEquals(3, questions.size, "The lesson should have three linked questions")
+        val question = questions.first { it.id == "q_lesson_linked_list_3" }
         assertEquals("q_lesson_linked_list_3", question.id)
         assertEquals("linked_list", question.topicId)
         assertEquals(lesson.id, question.lessonId)
@@ -214,8 +219,8 @@ class ContentRepositoryTest {
         assertTrue(content.contains("prev.next = targetNode.next"), "The lesson should explain unlinking via predecessor")
 
         val questions = repository.getQuestionsByLessonId(lesson.id)
-        assertEquals(1, questions.size, "The lesson should have exactly one linked question")
-        val question = questions.single()
+        assertEquals(3, questions.size, "The lesson should have three linked questions")
+        val question = questions.first { it.id == "q_lesson_linked_list_4" }
         assertEquals("q_lesson_linked_list_4", question.id)
         assertEquals("linked_list", question.topicId)
         assertEquals(lesson.id, question.lessonId)
@@ -240,8 +245,8 @@ class ContentRepositoryTest {
         assertTrue(content.contains("Doubly Linked Lists"), "The lesson should explain doubly linked lists")
 
         val questions = repository.getQuestionsByLessonId(lesson.id)
-        assertEquals(1, questions.size, "The lesson should have exactly one linked question")
-        val question = questions.single()
+        assertEquals(3, questions.size, "The lesson should have three linked questions")
+        val question = questions.first { it.id == "q_lesson_linked_list_5" }
         assertEquals("q_lesson_linked_list_5", question.id)
         assertEquals("linked_list", question.topicId)
         assertEquals(lesson.id, question.lessonId)
@@ -274,8 +279,8 @@ class ContentRepositoryTest {
             val lessonQs = repository.getQuestionsByLessonId(lessonId)
             lessonQuestionsTotal += lessonQs.size
         }
-        assertEquals(25, lessonQuestionsTotal, "Should load 25 lesson-specific questions")
-        assertEquals(54, quizTotal + lessonQuestionsTotal, "Total questions across quizzes and lessons must be 54")
+        assertEquals(69, lessonQuestionsTotal, "Should load 69 lesson-specific questions")
+        assertEquals(98, quizTotal + lessonQuestionsTotal, "Total questions across quizzes and lessons must be 98")
     }
 
     @Test
@@ -284,9 +289,9 @@ class ContentRepositoryTest {
         val lessonQuestions = allLessonIds.flatMap { repository.getQuestionsByLessonId(it) }
         val allQuestions = quizQuestions + lessonQuestions
 
-        assertEquals(54, allQuestions.size, "Total collected questions must be 54")
+        assertEquals(98, allQuestions.size, "Total collected questions must be 98")
         val uniqueIds = allQuestions.map { it.id }.toSet()
-        assertEquals(54, uniqueIds.size, "All 54 question IDs must be unique")
+        assertEquals(98, uniqueIds.size, "All question IDs must be unique")
     }
 
     @Test
@@ -297,9 +302,156 @@ class ContentRepositoryTest {
         allLessonIds.forEach { lessonId ->
             assertTrue(allLessonIdsInRepo.contains(lessonId), "Lesson ID '$lessonId' must exist in lessons.json")
             val questions = repository.getQuestionsByLessonId(lessonId)
-            val expectedCount = if (lessonId == "lesson_arrays_1") 3 else 1
-            assertEquals(expectedCount, questions.size, "Lesson '$lessonId' must have $expectedCount question(s)")
+            assertEquals(3, questions.size, "Lesson '$lessonId' must have 3 questions")
             assertEquals(lessonId, questions.first().lessonId, "Question lessonId must match")
+        }
+    }
+
+    @Test
+    fun testExpandedQuestionTypesAndLessonMappings() = runBlocking {
+        val topicQuestions = listOf("arrays", "linear_search", "sorting", "linked_list")
+            .flatMap { repository.getQuestionsByTopic(it) }
+        assertEquals(29, topicQuestions.size)
+        assertTrue(topicQuestions.all { it.lessonId == null })
+
+        val lessonQuestions = allLessonIds.flatMap { repository.getQuestionsByLessonId(it) }
+        assertEquals(69, lessonQuestions.size)
+        assertTrue(lessonQuestions.all { it.lessonId in allLessonIds })
+        assertEquals(98, topicQuestions.size + lessonQuestions.size)
+        val registeredTopicIds = repository.getTopics().map { it.id }.toSet()
+        assertTrue((topicQuestions + lessonQuestions).all { it.topicId in registeredTopicIds })
+
+        val addedIds = allLessonIds.filter { it != "lesson_arrays_1" }
+            .flatMap { listOf("q_${it}_2", "q_${it}_3") }.toSet()
+        val addedQuestions = lessonQuestions.filter { it.id in addedIds }
+        assertEquals(44, addedQuestions.size)
+        assertEquals(44, addedQuestions.map { it.id }.toSet().size)
+        addedQuestions.filter { it.type == QuestionType.TRUE_FALSE }.forEach { question ->
+            assertEquals(listOf("True", "False"), question.options, question.id)
+            assertTrue(question.correctOptionIndex in 0..1, question.id)
+        }
+        addedQuestions.filter { it.type == QuestionType.MULTIPLE_CHOICE }.forEach { question ->
+            assertTrue(question.options.size >= 2, question.id)
+            assertTrue(question.correctOptionIndex in question.options.indices, question.id)
+        }
+        addedQuestions.filter { it.type == QuestionType.CODE_OUTPUT }.forEach { question ->
+            assertTrue(question.statement.contains("```"), "${question.id} must contain a fenced snippet")
+            assertTrue(question.options.size >= 2, question.id)
+            assertTrue(question.explanation.isNotBlank(), question.id)
+            assertTrue(question.correctOptionIndex in question.options.indices, question.id)
+        }
+        topicQuestions.filter { it.type == QuestionType.CODE_OUTPUT }.forEach { question ->
+            assertTrue(question.statement.contains("```"), "${question.id} must contain a fenced snippet")
+            assertTrue(question.options.size >= 2, question.id)
+            assertTrue(question.explanation.isNotBlank(), question.id)
+        }
+
+        allLessonIds.forEach { lessonId ->
+            val lessonSet = lessonQuestions.filter { it.lessonId == lessonId }
+            assertEquals(3, lessonSet.size, "Lesson '$lessonId' must have three questions")
+        }
+
+        assertEquals(25, lessonQuestions.count { it.type == QuestionType.MULTIPLE_CHOICE })
+        assertEquals(23, lessonQuestions.count { it.type == QuestionType.TRUE_FALSE })
+        assertEquals(21, lessonQuestions.count { it.type == QuestionType.CODE_OUTPUT })
+        assertEquals(QuestionType.MULTIPLE_CHOICE, lessonQuestions.single { it.id == "q_lesson_introduction_ds_1_2" }.type)
+        assertEquals(QuestionType.MULTIPLE_CHOICE, lessonQuestions.single { it.id == "q_lesson_arrays_5_2" }.type)
+
+        topicQuestions.groupBy { it.topicId }.forEach { (topicId, questions) ->
+            assertEquals(
+                setOf(QuestionType.MULTIPLE_CHOICE, QuestionType.TRUE_FALSE, QuestionType.CODE_OUTPUT),
+                questions.map { it.type }.toSet(),
+                "Topic '$topicId' must cover all question types"
+            )
+        }
+    }
+
+    @Test
+    fun testCorrectedQuestionTracesAndLessonQuestionOrderPreparation() = runBlocking {
+        val searching = repository.getQuestionsByLessonId("searching_2").single { it.id == "q_searching_2_2" }
+        assertTrue(searching.statement.contains("comparisons = comparisons + 1"))
+        assertTrue(searching.statement.contains("print(comparisons)"))
+        assertEquals("3", searching.options[searching.correctOptionIndex])
+
+        val sortingLesson = repository.getQuestionsByLessonId("sorting_2").single { it.id == "q_sorting_2_2" }
+        val sortingQuiz = repository.getQuestionsByTopic("sorting").single { it.id == "q_sorting_quiz_5" }
+        listOf(sortingLesson, sortingQuiz).forEach { question ->
+            assertEquals("[1, 2, 3]", question.options[question.correctOptionIndex], question.id)
+            assertTrue(question.explanation.contains("second comparison swaps 3 and 2"), question.id)
+        }
+
+        val lessonQuestions = repository.getQuestionsByLessonId("lesson_arrays_1")
+        val preparedLesson = prepareLessonQuestions(lessonQuestions) { it.reversed() }
+        assertEquals(lessonQuestions.map { it.id }.reversed(), preparedLesson.map { it.id })
+        lessonQuestions.zip(preparedLesson.reversed()).forEach { (original, prepared) ->
+            assertEquals(original.options[original.correctOptionIndex], prepared.options[prepared.correctOptionIndex], original.id)
+            if (original.type == QuestionType.TRUE_FALSE) assertEquals(listOf("True", "False"), prepared.options)
+        }
+
+        val topicQuestions = repository.getQuestionsByTopic("sorting")
+        val preparedTopic = prepareQuizQuestions(topicQuestions)
+        val retriedOrder = shuffleQuizQuestionOrder(preparedTopic) { it.reversed() }
+        assertEquals(preparedTopic.map { it.id }.reversed(), retriedOrder.map { it.id })
+        preparedTopic.zip(retriedOrder.reversed()).forEach { (original, prepared) ->
+            assertEquals(original.options[original.correctOptionIndex], prepared.options[prepared.correctOptionIndex], original.id)
+            if (original.type == QuestionType.TRUE_FALSE) assertEquals(listOf("True", "False"), prepared.options)
+        }
+    }
+
+    @Test
+    fun testLinkedListCodeOutputFieldsAndDeterministicTraces() = runBlocking {
+        val topicQuestion = repository.getQuestionsByTopic("linked_list").single { it.id == "q_linked_list_1" }
+        val lessonQuestions = (1..5).flatMap { order ->
+            repository.getQuestionsByLessonId("lesson_linked_list_$order")
+        }
+        val affectedLessonIds = setOf(
+            "q_lesson_linked_list_1_2",
+            "q_lesson_linked_list_2_2",
+            "q_lesson_linked_list_3_2",
+            "q_lesson_linked_list_4_2",
+            "q_lesson_linked_list_5_2"
+        )
+        val affectedLessonQuestions = lessonQuestions.filter { it.id in affectedLessonIds }
+        assertEquals(5, affectedLessonQuestions.size)
+        val expectedOutputs = mapOf(
+            "q_linked_list_1" to "4 then 9",
+            "q_lesson_linked_list_1_2" to "4 then 9",
+            "q_lesson_linked_list_2_2" to "19",
+            "q_lesson_linked_list_3_2" to "5, 8, 9",
+            "q_lesson_linked_list_4_2" to "4, 9",
+            "q_lesson_linked_list_5_2" to "9 then 4"
+        )
+        val affectedQuestions = listOf(topicQuestion) + affectedLessonQuestions
+        assertEquals(expectedOutputs.keys, affectedQuestions.map { it.id }.toSet())
+        affectedQuestions.forEach { question ->
+            assertEquals(QuestionType.CODE_OUTPUT, question.type, question.id)
+            assertTrue(question.statement.contains(".data"), question.id)
+            assertFalse(question.statement.contains(".value"), question.id)
+            assertEquals(expectedOutputs.getValue(question.id), question.options[question.correctOptionIndex], question.id)
+            assertTrue(question.explanation.isNotBlank(), question.id)
+        }
+
+        val lessonOneTrace = affectedLessonQuestions.single { it.id == "q_lesson_linked_list_1_2" }
+        assertFalse(lessonOneTrace.statement.contains("while "))
+        assertFalse(lessonOneTrace.statement.contains("for "))
+        assertFalse(lessonOneTrace.statement.contains("if "))
+        assertTrue(lessonOneTrace.statement.contains("print(head.data)"))
+        assertTrue(lessonOneTrace.statement.contains("print(head.next.data)"))
+
+        val lessonFiveTrace = affectedLessonQuestions.single { it.id == "q_lesson_linked_list_5_2" }
+        assertTrue(lessonFiveTrace.statement.contains("first.prev = null"))
+        assertTrue(lessonFiveTrace.statement.contains("tail.prev = first"))
+        assertTrue(lessonFiveTrace.statement.contains("tail.next = null"))
+        assertTrue(lessonFiveTrace.explanation.contains("prints 9 then 4 and stops"))
+
+        val allLessonQuestions = allLessonIds.flatMap { repository.getQuestionsByLessonId(it) }
+        val allTopicQuestions = listOf("arrays", "linear_search", "sorting", "linked_list")
+            .flatMap { repository.getQuestionsByTopic(it) }
+        assertEquals(69, allLessonQuestions.size)
+        assertEquals(29, allTopicQuestions.size)
+        assertEquals(98, allLessonQuestions.size + allTopicQuestions.size)
+        allLessonIds.forEach { lessonId ->
+            assertEquals(3, allLessonQuestions.count { it.lessonId == lessonId }, lessonId)
         }
     }
 
@@ -318,25 +470,24 @@ class ContentRepositoryTest {
 
         val formulaQuestion = questions[1]
         assertEquals("q_lesson_arrays_1_2", formulaQuestion.id)
-        assertEquals(QuestionType.MULTIPLE_CHOICE, formulaQuestion.type)
-        assertEquals(
-            "In the lesson's address formula, what does i represent in Address(A[i]) = Base Address + (i × Element Size)?",
-            formulaQuestion.statement
-        )
-        assertEquals(
-            listOf("The requested zero-based index", "The memory location of A[0]", "The size of each element in bytes", "The value stored at A[i]"),
-            formulaQuestion.options
-        )
-        assertEquals(0, formulaQuestion.correctOptionIndex)
-        assertEquals("The requested zero-based index", formulaQuestion.options[formulaQuestion.correctOptionIndex])
-        assertEquals(
-            "The lesson defines i as the requested zero-based index. The base address identifies A[0], and element size determines the offset between elements.",
-            formulaQuestion.explanation
-        )
+        assertEquals(QuestionType.CODE_OUTPUT, formulaQuestion.type)
+        assertTrue(formulaQuestion.statement.contains("```pseudocode"))
+        assertEquals("30", formulaQuestion.options[formulaQuestion.correctOptionIndex])
         val shuffledFormulaQuestion = shuffleQuestionOptions(formulaQuestion)
         assertEquals(
             formulaQuestion.options[formulaQuestion.correctOptionIndex],
             shuffledFormulaQuestion.options[shuffledFormulaQuestion.correctOptionIndex]
+        )
+        val topicPrepared = prepareQuizQuestions(listOf(formulaQuestion)).single()
+        assertEquals(QuestionType.CODE_OUTPUT, topicPrepared.type)
+        assertEquals(
+            formulaQuestion.options[formulaQuestion.correctOptionIndex],
+            topicPrepared.options[topicPrepared.correctOptionIndex]
+        )
+        val preparedMultipleChoice = prepareQuizQuestions(listOf(original)).single()
+        assertEquals(
+            original.options[original.correctOptionIndex],
+            preparedMultipleChoice.options[preparedMultipleChoice.correctOptionIndex]
         )
 
         val directAccessQuestion = questions[2]
@@ -353,6 +504,9 @@ class ContentRepositoryTest {
         val shuffledDirectAccessQuestion = shuffleQuestionOptions(directAccessQuestion)
         assertEquals(directAccessQuestion.options, shuffledDirectAccessQuestion.options)
         assertEquals(directAccessQuestion.correctOptionIndex, shuffledDirectAccessQuestion.correctOptionIndex)
+        val preparedDirectAccess = prepareQuizQuestions(listOf(directAccessQuestion)).single()
+        assertEquals(directAccessQuestion.options, preparedDirectAccess.options)
+        assertEquals(directAccessQuestion.correctOptionIndex, preparedDirectAccess.correctOptionIndex)
     }
 
     @Test
@@ -364,7 +518,37 @@ class ContentRepositoryTest {
         allQuestions.forEach { q ->
             assertTrue(q.correctOptionIndex >= 0, "correctOptionIndex must be >= 0 for ${q.id}")
             assertTrue(q.correctOptionIndex < q.options.size, "correctOptionIndex must be < options.size for ${q.id}")
+            assertTrue(q.statement.isNotBlank(), "statement must be present for ${q.id}")
+            assertTrue(q.explanation.isNotBlank(), "explanation must be present for ${q.id}")
+            assertTrue(q.options.size >= 2, "at least two options are required for ${q.id}")
+            if (q.type == QuestionType.TRUE_FALSE) assertEquals(listOf("True", "False"), q.options, q.id)
+            else {
+                val correctOption = q.options[q.correctOptionIndex]
+                val lessonPrepared = shuffleQuestionOptions(q)
+                assertEquals(correctOption, lessonPrepared.options[lessonPrepared.correctOptionIndex], q.id)
+                val topicPrepared = prepareQuizQuestions(listOf(q)).single()
+                assertEquals(correctOption, topicPrepared.options[topicPrepared.correctOptionIndex], q.id)
+            }
         }
+    }
+
+    @Test
+    fun invalidQuestionTypeIsObservableWithQuestionId() = runBlocking {
+        val invalidRepository = ContentRepositoryImpl(
+            readResourceText = { path ->
+                if (path == "files/questions.json") {
+                    """[{"id":"broken_question_42","topicId":"arrays","statement":"Prompt","options":["A","B"],"correctOptionIndex":0,"explanation":"Reason","difficulty":"EASY","type":"UNKNOWN_KIND"}]"""
+                } else {
+                    "[]"
+                }
+            }
+        )
+
+        val error = assertFailsWith<IllegalStateException> {
+            invalidRepository.getQuestionsByTopic("arrays")
+        }
+        assertTrue(error.message.orEmpty().contains("broken_question_42"))
+        assertTrue(error.message.orEmpty().contains("UNKNOWN_KIND"))
     }
 
     @Test
@@ -433,10 +617,11 @@ class ContentRepositoryTest {
         assertEquals("q_linear_search_2", q5.id)
         assertEquals("linear_search", q5.topicId)
         assertNull(q5.lessonId)
-        assertEquals("Does Linear Search require the target array to be sorted before searching?", q5.statement)
-        assertEquals(listOf("Yes, always", "No, it works on unsorted arrays", "Only if array size > 100", "Yes, but only in descending order"), q5.options)
+        assertEquals("Linear Search requires the array to be sorted before it can search for a target.", q5.statement)
+        assertEquals(QuestionType.TRUE_FALSE, q5.type)
+        assertEquals(listOf("True", "False"), q5.options)
         assertEquals(1, q5.correctOptionIndex)
-        assertEquals("Linear search checks elements sequentially one by one, so array order or sorting is not required.", q5.explanation)
+        assertEquals("Linear Search checks items in order and also works when values are unsorted.", q5.explanation)
         assertEquals(QuestionDifficulty.EASY, q5.difficulty)
 
         val q6 = searchQuiz[2]

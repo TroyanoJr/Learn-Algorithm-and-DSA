@@ -42,8 +42,10 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.learndsandalgorithm.domain.model.Question
+import com.example.learndsandalgorithm.domain.model.QuestionType
 import com.example.learndsandalgorithm.domain.model.TopicCategory
 import com.example.learndsandalgorithm.domain.repository.ContentRepository
+import com.example.learndsandalgorithm.presentation.components.MarkdownContent
 import com.example.learndsandalgorithm.presentation.components.TopicIcon
 
 private val DarkBgColor = Color(0xFF111115)
@@ -115,11 +117,13 @@ private val IconClose = buildVectorIcon("Close") {
     close()
 }
 
-private data class QuizQuestionState(
+internal data class QuizQuestionState(
+    val id: String,
     val statement: String,
     val options: List<String>,
     val correctOptionIndex: Int,
-    val explanation: String
+    val explanation: String,
+    val type: QuestionType
 )
 
 private data class QuizTopicState(
@@ -138,20 +142,32 @@ private enum class QuizFlowState {
     QUIZ_RESULT
 }
 
-private fun prepareQuizQuestions(rawQuestions: List<Question>): List<QuizQuestionState> {
+internal fun prepareQuizQuestions(rawQuestions: List<Question>): List<QuizQuestionState> {
     return rawQuestions.map { q ->
+        if (q.type == QuestionType.TRUE_FALSE) {
+            require(q.options == listOf("True", "False")) {
+                "True/False question '${q.id}' must have options [True, False] in that order."
+            }
+        }
         val indexedOptions = q.options.mapIndexed { index, text -> index to text }
-        val shuffled = indexedOptions.shuffled()
+        val shuffled = if (q.type == QuestionType.TRUE_FALSE) indexedOptions else indexedOptions.shuffled()
         val newCorrectIndex = shuffled.indexOfFirst { it.first == q.correctOptionIndex }
 
         QuizQuestionState(
+            id = q.id,
             statement = q.statement,
             options = shuffled.map { it.second },
             correctOptionIndex = if (newCorrectIndex != -1) newCorrectIndex else q.correctOptionIndex,
-            explanation = q.explanation
+            explanation = q.explanation,
+            type = q.type
         )
     }
 }
+
+internal fun shuffleQuizQuestionOrder(
+    questions: List<QuizQuestionState>,
+    shuffleQuestionOrder: (List<QuizQuestionState>) -> List<QuizQuestionState> = { it.shuffled() }
+): List<QuizQuestionState> = shuffleQuestionOrder(questions)
 
 private fun getTopicDescription(topicId: String): String = when (topicId) {
     "arrays" -> "Contiguous memory elements with instant index-based lookup."
@@ -212,7 +228,7 @@ fun TopicQuizFlow(
             selectedTopicId = initialTarget.id
 
             if (initialTopicId != null) {
-                activeTopic = initialTarget
+                activeTopic = initialTarget.copy(questions = shuffleQuizQuestionOrder(initialTarget.questions))
                 currentQuestionIndex = 0
                 selectedOptionIndex = null
                 correctCount = 0
@@ -278,7 +294,7 @@ fun TopicQuizFlow(
                     selectedTopicId = selectedTopicId,
                     onSelectTopic = { selectedTopicId = it },
                     onStartQuizForTopic = { topic ->
-                        activeTopic = topic
+                        activeTopic = topic.copy(questions = shuffleQuizQuestionOrder(topic.questions))
                         currentQuestionIndex = 0
                         selectedOptionIndex = null
                         correctCount = 0
@@ -343,6 +359,7 @@ fun TopicQuizFlow(
                     totalQuestions = total,
                     percentage = percentage,
                     onTryAgain = {
+                        activeTopic = topic.copy(questions = shuffleQuizQuestionOrder(topic.questions))
                         currentQuestionIndex = 0
                         selectedOptionIndex = null
                         correctCount = 0
@@ -642,19 +659,23 @@ private fun QuizQuestionScreen(
         // Question Statement
         Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
             Text(
-                text = "QUESTION ${questionIndex + 1}",
+                text = "QUESTION ${questionIndex + 1} · ${question.type.name.replace('_', ' ')}",
                 color = OrangeAccent,
                 fontSize = 10.sp,
                 fontWeight = FontWeight.Bold,
                 letterSpacing = 1.2.sp
             )
-            Text(
-                text = question.statement,
-                color = TextPrimary,
-                fontSize = 18.sp,
-                fontWeight = FontWeight.Bold,
-                lineHeight = 23.sp
-            )
+            if (question.type == QuestionType.CODE_OUTPUT) {
+                MarkdownContent(content = question.statement)
+            } else {
+                Text(
+                    text = question.statement,
+                    color = TextPrimary,
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.Bold,
+                    lineHeight = 23.sp
+                )
+            }
         }
 
         // Answer Option Cards

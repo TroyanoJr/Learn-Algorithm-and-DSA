@@ -93,7 +93,7 @@ class ContentRepositoryImpl(
             val dtos = json.decodeFromString<List<QuestionDto>>(questionsJson)
             dtos.map { it.toDomain() }
         } catch (e: Exception) {
-            emptyList()
+            throw IllegalStateException("Failed to load questions from files/questions.json: ${e.message}", e)
         }
         cachedQuestions = questions
         return questions

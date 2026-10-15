@@ -14,5 +14,6 @@ data class Question(
 
 enum class QuestionType {
     MULTIPLE_CHOICE,
-    TRUE_FALSE
+    TRUE_FALSE,
+    CODE_OUTPUT
 }

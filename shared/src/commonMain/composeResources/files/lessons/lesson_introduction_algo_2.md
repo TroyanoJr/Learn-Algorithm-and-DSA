@@ -11,6 +11,25 @@ Suppose a list has items stored in an array:
 
 In the first situation, doubling the number of items leaves the number of accesses at one. In the second, doubling the number of items doubles the comparisons in this example. The situations have different information available: an index is already known in the first, while the second must discover whether a value is present.
 
+### Example: Search an Array in Order
+
+```pseudocode
+numbers = [4, 7, 9]
+target = 7
+result = -1
+
+for i from 0 to length(numbers) - 1 do
+    if numbers[i] == target then
+        result = i
+        break
+    end if
+end for
+
+print(result)
+```
+
+The output is `1`, the index where `7` appears. The search checks `4` and then `7`, so it stops after two comparisons. If the target were absent, it would check all three items.
+
 **Big-O** describes how an algorithm's resource use, such as the number of operations, grows as the input size increases. The known-index access takes constant work, written `O(1)`, because it stays at one access as the list grows. The search for an absent value checks every item, so its work grows in proportion to the number of items, written `O(n)`.
 
 Operation counts are a simplified way to reason about growth, not measurements of elapsed time. They do not mean every individual run takes longer whenever the input is larger: the work depends on the input and on what the algorithm has to do. In upcoming Searching and Sorting lessons, you will see how an algorithm's choices affect the work it does as its input grows.

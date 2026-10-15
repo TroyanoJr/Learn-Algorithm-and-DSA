@@ -17,6 +17,18 @@ Imagine an office that serves students in the order they arrive. A queue is a na
 
 The choice depends on the required behavior. If the program instead needed to jump to a student by a known position, an array might be more convenient. If it needed to undo the most recent action, a stack would fit better. No one structure is best for every situation.
 
+### Queue Example
+
+```pseudocode
+line = ["Mina", "Leo"]
+line.addToBack("Ava")
+nextStudent = line.removeFromFront()
+print(nextStudent)
+print(line)
+```
+
+The output is `Mina`, then `["Leo", "Ava"]`. Ava joins at the back, while Mina—the student who arrived first—is served from the front.
+
 ## Summary
 
 Arrays and linked lists keep sequences of items, while stacks and queues add rules about which item is handled next. Consider how the program needs to access, add, remove, and order its data before choosing a structure.

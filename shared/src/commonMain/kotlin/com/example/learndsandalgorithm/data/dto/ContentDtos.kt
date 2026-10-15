@@ -66,6 +66,13 @@ internal data class QuestionDto(
         explanation = explanation,
         difficulty = runCatching { QuestionDifficulty.valueOf(difficulty) }.getOrDefault(QuestionDifficulty.EASY),
         lessonId = lessonId,
-        type = runCatching { QuestionType.valueOf(type) }.getOrDefault(QuestionType.MULTIPLE_CHOICE)
+        type = try {
+            QuestionType.valueOf(type)
+        } catch (e: IllegalArgumentException) {
+            throw IllegalArgumentException(
+                "Question '$id' has invalid type '$type'. Expected one of ${QuestionType.values().joinToString()}.",
+                e
+            )
+        }
     )
 }

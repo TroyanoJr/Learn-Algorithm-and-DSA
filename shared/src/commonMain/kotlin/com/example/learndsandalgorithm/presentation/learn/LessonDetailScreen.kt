@@ -280,7 +280,7 @@ fun LessonDetailScreen(
 
                         // Check Your Understanding Quiz Section
                         if (state.questions.isNotEmpty()) {
-                            val hasQuestionSequence = state.lesson.id == "lesson_arrays_1"
+                            val hasQuestionSequence = state.questions.size > 1
                             val questionIndex = if (hasQuestionSequence) {
                                 lessonQuestionIndex.coerceIn(0, state.questions.lastIndex)
                             } else {
@@ -4031,7 +4031,11 @@ private fun CheckYourUnderstandingSection(
                         onClick = { onPreviousQuestion?.invoke() }
                     )
                     Text(
-                        text = "Question $questionNumber of $questionCount · ${if (questionType == QuestionType.TRUE_FALSE) "TRUE / FALSE" else "MULTIPLE CHOICE"}",
+                        text = "Question $questionNumber of $questionCount · ${when (questionType) {
+                            QuestionType.TRUE_FALSE -> "TRUE / FALSE"
+                            QuestionType.CODE_OUTPUT -> "CODE OUTPUT"
+                            QuestionType.MULTIPLE_CHOICE -> "MULTIPLE CHOICE"
+                        }}",
                         color = TextSecondary,
                         fontSize = 9.sp,
                         fontWeight = FontWeight.Bold,
@@ -4045,13 +4049,17 @@ private fun CheckYourUnderstandingSection(
                 }
             }
 
-            Text(
-                text = statement,
-                color = TextPrimary,
-                fontSize = 16.sp,
-                fontWeight = FontWeight.Bold,
-                lineHeight = 22.sp
-            )
+            if (questionType == QuestionType.CODE_OUTPUT) {
+                MarkdownContent(content = statement)
+            } else {
+                Text(
+                    text = statement,
+                    color = TextPrimary,
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Bold,
+                    lineHeight = 22.sp
+                )
+            }
 
             // Options list
             Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {

@@ -47,8 +47,8 @@ class LessonViewModel(
                 val rawQuestions = contentRepository.getQuestionsByLessonId(lesson.id)
                 val isCompleted = lesson.id in progressRepository.getCompletedLessonIds()
 
-                // Shuffle options once in memory and remap correctOptionIndex
-                val shuffledQuestions = rawQuestions.map(::shuffleQuestionOptions)
+                // Shuffle the question order and options once for this loaded lesson session.
+                val shuffledQuestions = prepareLessonQuestions(rawQuestions)
 
                 _uiState.value = LessonUiState.Success(
                     lesson = lesson,
@@ -71,6 +71,11 @@ class LessonViewModel(
         }
     }
 }
+
+internal fun prepareLessonQuestions(
+    rawQuestions: List<Question>,
+    shuffleQuestionOrder: (List<Question>) -> List<Question> = { it.shuffled() }
+): List<Question> = shuffleQuestionOrder(rawQuestions).map(::shuffleQuestionOptions)
 
 internal fun shuffleQuestionOptions(question: Question): Question {
     if (question.type == QuestionType.TRUE_FALSE) return question
