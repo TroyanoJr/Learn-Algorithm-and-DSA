@@ -380,8 +380,8 @@ private fun TopicQuizSelectionScreen(
             .fillMaxSize()
             .background(DarkBgColor)
             .verticalScroll(rememberScrollState())
-            .padding(horizontal = 20.dp, vertical = 16.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp)
+            .padding(horizontal = 16.dp, vertical = 12.dp),
+        verticalArrangement = Arrangement.spacedBy(10.dp)
     ) {
         // Top Bar
         Row(
@@ -391,7 +391,7 @@ private fun TopicQuizSelectionScreen(
         ) {
             Box(
                 modifier = Modifier
-                    .size(36.dp)
+                    .size(32.dp)
                     .clip(RoundedCornerShape(10.dp))
                     .background(DarkCardBgColor)
                     .clickable { onBack() },
@@ -422,7 +422,7 @@ private fun TopicQuizSelectionScreen(
                     fontWeight = FontWeight.Bold,
                     letterSpacing = 1.2.sp
                 )
-                Spacer(modifier = Modifier.height(6.dp))
+                Spacer(modifier = Modifier.height(4.dp))
                 Text(
                     text = "What do you want to practice?",
                     color = TextPrimary,
@@ -430,7 +430,7 @@ private fun TopicQuizSelectionScreen(
                     fontWeight = FontWeight.Bold,
                     lineHeight = 28.sp
                 )
-                Spacer(modifier = Modifier.height(8.dp))
+                Spacer(modifier = Modifier.height(6.dp))
                 Text(
                     text = "Pick a focused set and sharpen one concept at a time.",
                     color = TextSecondary,
@@ -440,7 +440,7 @@ private fun TopicQuizSelectionScreen(
 
             Box(
                 modifier = Modifier
-                    .size(42.dp)
+                    .size(38.dp)
                     .clip(CircleShape)
                     .background(Color(0xFF1E1E28))
                     .border(1.dp, CardBorderColor, CircleShape),
@@ -465,22 +465,22 @@ private fun TopicQuizSelectionScreen(
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(12.dp),
+                        .padding(10.dp),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     // Topic content area (clickable to select topic details)
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(12.dp),
+                        horizontalArrangement = Arrangement.spacedBy(10.dp),
                         modifier = Modifier
                             .weight(1f)
                             .clickable { onSelectTopic(topic.id) }
                     ) {
                         TopicIcon(
                             topicId = topic.id,
-                            containerSize = 40.dp,
-                            iconSize = 20.dp
+                            containerSize = 36.dp,
+                            iconSize = 18.dp
                         )
 
                         Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
@@ -507,7 +507,7 @@ private fun TopicQuizSelectionScreen(
                     // Chevron action button (clickable to start quiz)
                     Box(
                         modifier = Modifier
-                            .size(32.dp)
+                            .size(28.dp)
                             .clip(CircleShape)
                             .background(Color(0xFF262634))
                             .clickable { onStartQuizForTopic(topic) },
@@ -517,7 +517,7 @@ private fun TopicQuizSelectionScreen(
                             imageVector = IconChevronRight,
                             contentDescription = "Start topic quiz",
                             tint = TextPrimary,
-                            modifier = Modifier.size(16.dp)
+                            modifier = Modifier.size(14.dp)
                         )
                     }
                 }

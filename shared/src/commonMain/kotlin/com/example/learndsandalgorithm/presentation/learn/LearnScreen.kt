@@ -304,8 +304,8 @@ fun LearnScreen(
             .fillMaxSize()
             .background(DarkBgColor)
             .verticalScroll(rememberScrollState())
-            .padding(horizontal = 20.dp, vertical = 16.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
+            .padding(horizontal = 16.dp, vertical = 12.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         LearnHeader()
 
@@ -356,7 +356,7 @@ private fun LearnHeader() {
                 fontWeight = FontWeight.Bold,
                 letterSpacing = 1.5.sp
             )
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(4.dp))
             Text(
                 text = "What will you",
                 color = TextPrimary,
@@ -375,7 +375,7 @@ private fun LearnHeader() {
 
         Box(
             modifier = Modifier
-                .size(42.dp)
+                .size(38.dp)
                 .clip(CircleShape)
                 .background(Color(0xFF1E1E28))
                 .border(1.dp, CardBorderColor, CircleShape),
@@ -395,7 +395,7 @@ private fun LearnHeader() {
 private fun CourseProgressOverview(overviewData: LearnOverviewData) {
     Column(
         modifier = Modifier.fillMaxWidth(),
-        verticalArrangement = Arrangement.spacedBy(10.dp)
+        verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -490,7 +490,7 @@ private fun CourseCategoryCard(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(14.dp)
+                .padding(12.dp)
         ) {
             // Header row
             Row(
@@ -509,7 +509,7 @@ private fun CourseCategoryCard(
                     Box(
                         modifier = Modifier
                             .width(3.dp)
-                            .height(28.dp)
+                            .height(24.dp)
                             .clip(RoundedCornerShape(2.dp))
                             .background(BlueAccent)
                     )
@@ -554,7 +554,7 @@ private fun CourseCategoryCard(
             }
 
             if (isExpanded) {
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(12.dp))
 
                 // Progress bar inside expanded card
                 Box(
@@ -572,7 +572,7 @@ private fun CourseCategoryCard(
                     )
                 }
 
-                Spacer(modifier = Modifier.height(10.dp))
+                Spacer(modifier = Modifier.height(8.dp))
 
                 // Status counts row
                 Row(
@@ -594,7 +594,7 @@ private fun CourseCategoryCard(
                     )
                 }
 
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(12.dp))
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -635,25 +635,25 @@ private fun TopicItemRow(
         modifier = Modifier
             .fillMaxWidth()
             .clickable(enabled = !topic.isLocked, onClick = onClick)
-            .padding(vertical = 8.dp),
+            .padding(vertical = 6.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(12.dp),
+            horizontalArrangement = Arrangement.spacedBy(10.dp),
             modifier = Modifier.weight(1f)
         ) {
             // Topic Vector Icon
             TopicIcon(
                 topicId = topic.topicId,
-                containerSize = 36.dp,
-                iconSize = 18.dp,
+                containerSize = 32.dp,
+                iconSize = 16.dp,
                 isLocked = topic.isLocked
             )
 
             Column(
-                verticalArrangement = Arrangement.spacedBy(3.dp)
+                verticalArrangement = Arrangement.spacedBy(2.dp)
             ) {
                 Text(
                     text = topic.title,
@@ -683,7 +683,7 @@ private fun TopicItemRow(
         if (topic.isLocked) {
             Box(
                 modifier = Modifier
-                    .size(28.dp)
+                    .size(26.dp)
                     .clip(CircleShape)
                     .background(Color(0xFF1E1E28)),
                 contentAlignment = Alignment.Center
@@ -692,13 +692,13 @@ private fun TopicItemRow(
                     imageVector = IconLock,
                     contentDescription = "Locked",
                     tint = TextSecondary,
-                    modifier = Modifier.size(14.dp)
+                    modifier = Modifier.size(13.dp)
                 )
             }
         } else {
             Box(
                 modifier = Modifier
-                    .size(28.dp)
+                    .size(26.dp)
                     .clip(CircleShape)
                     .background(Color(0xFF2A1C12)),
                 contentAlignment = Alignment.Center
@@ -707,7 +707,7 @@ private fun TopicItemRow(
                     imageVector = IconChevronRight,
                     contentDescription = null,
                     tint = OrangeAccent,
-                    modifier = Modifier.size(16.dp)
+                    modifier = Modifier.size(15.dp)
                 )
             }
         }

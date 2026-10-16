@@ -4304,7 +4304,7 @@ private fun LessonCompletionCelebrationOverlay(
             .fillMaxSize()
             .background(Color(0xF2111115))
             .clickable(enabled = false) {}
-            .padding(horizontal = 24.dp, vertical = 16.dp),
+            .padding(horizontal = 18.dp, vertical = 14.dp),
         contentAlignment = Alignment.Center
     ) {
         Column(
@@ -4318,12 +4318,12 @@ private fun LessonCompletionCelebrationOverlay(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.SpaceBetween
         ) {
-            Spacer(modifier = Modifier.height(10.dp))
+            Spacer(modifier = Modifier.height(6.dp))
 
             // Center Content
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(10.dp)
+                verticalArrangement = Arrangement.spacedBy(9.dp)
             ) {
                 // Celebration Badge Container with spark accents
                 Box(contentAlignment = Alignment.Center) {
@@ -4346,7 +4346,7 @@ private fun LessonCompletionCelebrationOverlay(
                         color = Color(0xFF221A15),
                         shape = RoundedCornerShape(24.dp),
                         border = BorderStroke(1.5.dp, OrangeAccent),
-                        modifier = Modifier.size(72.dp)
+                        modifier = Modifier.size(68.dp)
                     ) {
                         Box(contentAlignment = Alignment.Center) {
                             Surface(
@@ -4368,7 +4368,7 @@ private fun LessonCompletionCelebrationOverlay(
                     }
                 }
 
-                Spacer(modifier = Modifier.height(4.dp))
+                Spacer(modifier = Modifier.height(2.dp))
 
                 Text(
                     text = "LESSON COMPLETE",
@@ -4392,7 +4392,7 @@ private fun LessonCompletionCelebrationOverlay(
                     fontWeight = FontWeight.Medium
                 )
 
-                Spacer(modifier = Modifier.height(6.dp))
+                Spacer(modifier = Modifier.height(4.dp))
 
                 // XP Reward Card
                 Surface(
@@ -4402,7 +4402,7 @@ private fun LessonCompletionCelebrationOverlay(
                     modifier = Modifier.padding(horizontal = 16.dp)
                 ) {
                     Column(
-                        modifier = Modifier.padding(horizontal = 24.dp, vertical = 10.dp),
+                        modifier = Modifier.padding(horizontal = 26.dp, vertical = 9.dp),
                         horizontalAlignment = Alignment.CenterHorizontally,
                         verticalArrangement = Arrangement.spacedBy(4.dp)
                     ) {
@@ -4455,7 +4455,7 @@ private fun LessonCompletionCelebrationOverlay(
             // Bottom Action Buttons
             Column(
                 modifier = Modifier.fillMaxWidth(),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
+                verticalArrangement = Arrangement.spacedBy(7.dp)
             ) {
                 // Primary: Continue to next lesson
                 Surface(
@@ -4463,13 +4463,13 @@ private fun LessonCompletionCelebrationOverlay(
                     shape = RoundedCornerShape(14.dp),
                     modifier = Modifier
                         .fillMaxWidth()
-                        .heightIn(min = 48.dp)
+                        .heightIn(min = 44.dp)
                         .clickable { onContinue() }
                 ) {
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(vertical = 12.dp),
+                            .padding(vertical = 10.dp),
                         contentAlignment = Alignment.Center
                     ) {
                         Text(
@@ -4488,13 +4488,13 @@ private fun LessonCompletionCelebrationOverlay(
                     border = BorderStroke(1.dp, CardBorderColor),
                     modifier = Modifier
                         .fillMaxWidth()
-                        .heightIn(min = 48.dp)
+                        .heightIn(min = 44.dp)
                         .clickable { onReview() }
                 ) {
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(vertical = 12.dp),
+                            .padding(vertical = 10.dp),
                         contentAlignment = Alignment.Center
                     ) {
                         Text(

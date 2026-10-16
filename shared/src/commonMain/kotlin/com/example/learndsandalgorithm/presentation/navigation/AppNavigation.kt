@@ -240,16 +240,16 @@ fun AppBottomNavigation(
     Surface(
         color = DarkCardBgColor,
         border = BorderStroke(1.dp, SubtleBorderColor),
-        shape = RoundedCornerShape(24.dp),
+        shape = RoundedCornerShape(20.dp),
         modifier = Modifier
             .fillMaxWidth()
             .navigationBarsPadding()
-            .padding(start = 16.dp, end = 16.dp, top = 6.dp, bottom = 4.dp)
+            .padding(start = 16.dp, end = 16.dp, top = 4.dp, bottom = 2.dp)
     ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(vertical = 8.dp),
+                .padding(vertical = 5.dp),
             horizontalArrangement = Arrangement.SpaceAround,
             verticalAlignment = Alignment.CenterVertically
         ) {
@@ -277,7 +277,7 @@ fun BottomNavItem(
         verticalArrangement = Arrangement.spacedBy(2.dp),
         modifier = Modifier
             .clickable(onClick = onClick)
-            .padding(horizontal = 12.dp, vertical = 2.dp)
+            .padding(horizontal = 12.dp, vertical = 1.dp)
     ) {
         Icon(
             imageVector = icon,

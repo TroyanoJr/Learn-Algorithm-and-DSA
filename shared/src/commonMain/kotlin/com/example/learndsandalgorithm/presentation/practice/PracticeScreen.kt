@@ -300,8 +300,8 @@ fun PracticeScreen(
                 .fillMaxWidth()
                 .weight(1f)
                 .verticalScroll(rememberScrollState())
-                .padding(start = 20.dp, end = 20.dp, top = 24.dp, bottom = 8.dp),
-            verticalArrangement = Arrangement.spacedBy(20.dp)
+                .padding(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 4.dp),
+            verticalArrangement = Arrangement.spacedBy(14.dp)
         ) {
             PracticeHeader()
             RecommendedCard(onOpenTopicQuiz = onOpenTopicQuiz)
@@ -320,7 +320,7 @@ fun PracticeScreen(
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 20.dp, vertical = 12.dp)
+                .padding(start = 16.dp, end = 16.dp, top = 6.dp, bottom = 3.dp)
         ) {
             PracticeFeaturedCard(
                 mode = selectedMode,
@@ -349,14 +349,14 @@ private fun PracticeHeader() {
                 fontWeight = FontWeight.Bold,
                 letterSpacing = 1.5.sp
             )
-            Spacer(modifier = Modifier.height(6.dp))
+            Spacer(modifier = Modifier.height(4.dp))
             Text(
                 text = "Practice",
                 color = TextPrimary,
                 fontSize = 24.sp,
                 fontWeight = FontWeight.Bold
             )
-            Spacer(modifier = Modifier.height(4.dp))
+            Spacer(modifier = Modifier.height(2.dp))
             Text(
                 text = "Turn knowledge into confidence.",
                 color = TextSecondary,
@@ -366,7 +366,7 @@ private fun PracticeHeader() {
 
         Box(
             modifier = Modifier
-                .size(42.dp)
+                .size(38.dp)
                 .clip(CircleShape)
                 .background(Color(0xFF1E1E28))
                 .border(1.dp, CardBorderColor, CircleShape),
@@ -395,19 +395,19 @@ private fun RecommendedCard(onOpenTopicQuiz: () -> Unit) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(12.dp),
+                .padding(10.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(14.dp),
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
                 modifier = Modifier.weight(1f)
             ) {
                 // Play Icon Box
                 Box(
                     modifier = Modifier
-                        .size(48.dp)
+                        .size(42.dp)
                         .clip(RoundedCornerShape(12.dp))
                         .background(Color(0xFF2A180E)),
                     contentAlignment = Alignment.Center
@@ -416,12 +416,12 @@ private fun RecommendedCard(onOpenTopicQuiz: () -> Unit) {
                         imageVector = IconPlayArrow,
                         contentDescription = null,
                         tint = OrangeAccent,
-                        modifier = Modifier.size(20.dp)
+                        modifier = Modifier.size(18.dp)
                     )
                 }
 
                 Column(
-                    verticalArrangement = Arrangement.spacedBy(4.dp)
+                    verticalArrangement = Arrangement.spacedBy(3.dp)
                 ) {
                     Text(
                         text = "RECOMMENDED FOR YOU",
@@ -449,7 +449,7 @@ private fun RecommendedCard(onOpenTopicQuiz: () -> Unit) {
             // Action Button
             Box(
                 modifier = Modifier
-                    .size(40.dp)
+                    .size(36.dp)
                     .clip(CircleShape)
                     .background(OrangeAccent),
                 contentAlignment = Alignment.Center
@@ -458,7 +458,7 @@ private fun RecommendedCard(onOpenTopicQuiz: () -> Unit) {
                     imageVector = IconArrowForward,
                     contentDescription = null,
                     tint = Color(0xFF111115),
-                    modifier = Modifier.size(20.dp)
+                    modifier = Modifier.size(18.dp)
                 )
             }
         }
@@ -474,7 +474,7 @@ private fun PracticeModesSection(
 ) {
     Column(
         modifier = Modifier.fillMaxWidth(),
-        verticalArrangement = Arrangement.spacedBy(12.dp)
+        verticalArrangement = Arrangement.spacedBy(10.dp)
     ) {
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -541,13 +541,13 @@ private fun PracticeModeCard(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(12.dp),
+                .padding(10.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(14.dp),
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
                 modifier = Modifier
                     .weight(1f)
                     .clickable { onClickMode() }
@@ -555,7 +555,7 @@ private fun PracticeModeCard(
                 // Icon Box
                 Box(
                     modifier = Modifier
-                        .size(48.dp)
+                        .size(42.dp)
                         .clip(RoundedCornerShape(12.dp))
                         .background(mode.iconBgColor)
                         .border(1.dp, mode.iconBorderColor.copy(alpha = 0.35f), RoundedCornerShape(12.dp)),
@@ -565,12 +565,12 @@ private fun PracticeModeCard(
                         imageVector = mode.icon,
                         contentDescription = null,
                         tint = mode.iconTextColor,
-                        modifier = Modifier.size(22.dp)
+                        modifier = Modifier.size(20.dp)
                     )
                 }
 
                 Column(
-                    verticalArrangement = Arrangement.spacedBy(3.dp)
+                    verticalArrangement = Arrangement.spacedBy(2.dp)
                 ) {
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
@@ -652,8 +652,8 @@ private fun PracticeFeaturedCard(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(12.dp),
-            verticalArrangement = Arrangement.spacedBy(14.dp)
+                .padding(4.dp),
+            verticalArrangement = Arrangement.spacedBy(4.dp)
         ) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -694,7 +694,7 @@ private fun PracticeFeaturedCard(
             // 2 Stat Tiles
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
+                horizontalArrangement = Arrangement.spacedBy(4.dp)
             ) {
                 StatTile(
                     modifier = Modifier.weight(1f),
@@ -720,7 +720,7 @@ private fun PracticeFeaturedCard(
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(vertical = 14.dp),
+                        .padding(vertical = 6.dp),
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
@@ -745,7 +745,7 @@ private fun StatTile(
         modifier = modifier
             .clip(RoundedCornerShape(12.dp))
             .background(Color(0xFF1E1E28))
-            .padding(vertical = 12.dp, horizontal = 14.dp)
+            .padding(vertical = 4.dp, horizontal = 6.dp)
     ) {
         Column(
             verticalArrangement = Arrangement.spacedBy(2.dp)

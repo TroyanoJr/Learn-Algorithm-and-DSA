@@ -162,8 +162,8 @@ fun HomeScreenContent(
             .fillMaxSize()
             .padding(innerPadding)
             .verticalScroll(rememberScrollState())
-            .padding(horizontal = 20.dp, vertical = 16.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
+            .padding(horizontal = 16.dp, vertical = 12.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         HomeHeader()
         HomeStatistics(uiState.userStats)
@@ -201,7 +201,7 @@ fun HomeHeader() {
                 fontWeight = FontWeight.Bold,
                 letterSpacing = 1.5.sp
             )
-            Spacer(modifier = Modifier.height(6.dp))
+            Spacer(modifier = Modifier.height(4.dp))
             Text(
                 text = "Ready to learn?",
                 color = TextPrimary,
@@ -211,7 +211,7 @@ fun HomeHeader() {
         }
         Box(
             modifier = Modifier
-                .size(46.dp)
+                .size(40.dp)
                 .clip(CircleShape)
                 .background(Color(0xFF262632))
                 .border(BorderStroke(1.dp, OrangeAccent), CircleShape),
@@ -284,9 +284,9 @@ fun StatCard(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 12.dp, vertical = 12.dp),
+                .padding(horizontal = 10.dp, vertical = 9.dp),
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(10.dp)
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             Icon(
                 imageVector = icon,
@@ -326,7 +326,7 @@ fun ContinueLearningSection(
             fontWeight = FontWeight.Bold,
             letterSpacing = 1.5.sp
         )
-        Spacer(modifier = Modifier.height(10.dp))
+        Spacer(modifier = Modifier.height(8.dp))
         Card(
             modifier = Modifier
                 .fillMaxWidth()
@@ -338,19 +338,19 @@ fun ContinueLearningSection(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(12.dp),
+                    .padding(10.dp),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier.weight(1f),
-                    horizontalArrangement = Arrangement.spacedBy(16.dp)
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
                     if (info.isAllComplete) {
                         Box(
                             modifier = Modifier
-                                .size(48.dp)
+                                .size(42.dp)
                                 .clip(RoundedCornerShape(14.dp))
                                 .background(OrangeAccent.copy(alpha = 0.1f)),
                             contentAlignment = Alignment.Center
@@ -359,14 +359,14 @@ fun ContinueLearningSection(
                                 imageVector = IconCheckCircle,
                                 contentDescription = null,
                                 tint = OrangeAccent,
-                                modifier = Modifier.size(24.dp)
+                                modifier = Modifier.size(20.dp)
                             )
                         }
                     } else {
                         TopicIcon(
                             topicId = info.topicId,
-                            containerSize = 48.dp,
-                            iconSize = 24.dp
+                            containerSize = 42.dp,
+                            iconSize = 20.dp
                         )
                     }
                     Column {
@@ -382,7 +382,7 @@ fun ContinueLearningSection(
                             color = TextSecondary,
                             fontSize = 12.sp
                         )
-                        Spacer(modifier = Modifier.height(10.dp))
+                        Spacer(modifier = Modifier.height(6.dp))
                         Box(modifier = Modifier.fillMaxWidth()) {
                             LinearProgressIndicator(
                                 progress = { info.topicProgressFloat.coerceIn(0f, 1f) },
@@ -398,7 +398,7 @@ fun ContinueLearningSection(
                 }
                 Box(
                     modifier = Modifier
-                        .size(44.dp)
+                        .size(40.dp)
                         .clip(CircleShape)
                         .background(OrangeAccent),
                     contentAlignment = Alignment.Center
@@ -433,7 +433,7 @@ fun OverallProgressSection(uiState: HomeUiState) {
                 fontSize = 11.sp
             )
         }
-        Spacer(modifier = Modifier.height(10.dp))
+        Spacer(modifier = Modifier.height(8.dp))
         Card(
             modifier = Modifier
                 .fillMaxWidth()
@@ -444,7 +444,7 @@ fun OverallProgressSection(uiState: HomeUiState) {
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(14.dp)
+                    .padding(12.dp)
             ) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -467,12 +467,12 @@ fun OverallProgressSection(uiState: HomeUiState) {
                         Text("${uiState.algoProgressPercent}%", color = PurpleAccent, fontSize = 11.sp, fontWeight = FontWeight.Bold)
                     }
                 }
-                Spacer(modifier = Modifier.height(20.dp))
+                Spacer(modifier = Modifier.height(14.dp))
                 LinearProgressIndicator(
                     progress = { (overallPercent / 100f).coerceIn(0f, 1f) },
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(6.dp)
+                        .height(5.dp)
                         .clip(RoundedCornerShape(3.dp)),
                     color = PurpleAccent,
                     trackColor = SubtleBorderColor
@@ -498,8 +498,8 @@ fun RecentTopicsSection(uiState: HomeUiState) {
             fontWeight = FontWeight.Bold,
             letterSpacing = 1.5.sp
         )
-        Spacer(modifier = Modifier.height(10.dp))
-        Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        Spacer(modifier = Modifier.height(8.dp))
+        Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
             recentTopicsList.forEach { topic ->
                 val progress = uiState.recentTopicsProgress[topic.id] ?: 0
                 TopicCardItem(topic = topic, progressPercent = progress)
@@ -522,18 +522,18 @@ fun TopicCardItem(topic: Topic, progressPercent: Int) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(12.dp),
+                .padding(10.dp),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
+                horizontalArrangement = Arrangement.spacedBy(10.dp)
             ) {
                 TopicIcon(
                     topicId = topic.id,
-                    containerSize = 40.dp,
-                    iconSize = 20.dp
+                    containerSize = 36.dp,
+                    iconSize = 18.dp
                 )
                 Column {
                     Text(text = topic.title, color = TextPrimary, fontSize = 16.sp, fontWeight = FontWeight.Bold)
@@ -548,7 +548,7 @@ fun TopicCardItem(topic: Topic, progressPercent: Int) {
                     progress = { (progressPercent / 100f).coerceIn(0f, 1f) },
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(5.dp)
+                        .height(4.dp)
                         .clip(RoundedCornerShape(3.dp)),
                     color = OrangeAccent,
                     trackColor = SubtleBorderColor
@@ -574,7 +574,7 @@ fun RecommendedPracticeSection(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(14.dp),
+                .padding(12.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
@@ -586,14 +586,14 @@ fun RecommendedPracticeSection(
                     fontWeight = FontWeight.Bold,
                     letterSpacing = 1.5.sp
                 )
-                Spacer(modifier = Modifier.height(8.dp))
+                Spacer(modifier = Modifier.height(6.dp))
                 Text(
                     text = info.topicTitle,
                     color = TextPrimary,
                     fontSize = 18.sp,
                     fontWeight = FontWeight.Bold
                 )
-                Spacer(modifier = Modifier.height(6.dp))
+                Spacer(modifier = Modifier.height(4.dp))
                 Text(
                     text = info.description,
                     color = TextSecondary,
@@ -603,7 +603,7 @@ fun RecommendedPracticeSection(
             Spacer(modifier = Modifier.width(12.dp))
             Box(
                 modifier = Modifier
-                    .size(44.dp)
+                    .size(40.dp)
                     .clip(CircleShape)
                     .background(OrangeAccent),
                 contentAlignment = Alignment.Center
