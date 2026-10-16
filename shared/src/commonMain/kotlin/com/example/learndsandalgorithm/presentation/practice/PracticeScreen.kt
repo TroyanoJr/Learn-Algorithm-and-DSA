@@ -294,30 +294,43 @@ fun PracticeScreen(
         modifier = Modifier
             .fillMaxSize()
             .background(DarkBgColor)
-            .verticalScroll(rememberScrollState())
-            .padding(horizontal = 20.dp, vertical = 24.dp),
-        verticalArrangement = Arrangement.spacedBy(20.dp)
     ) {
-        PracticeHeader()
-        RecommendedCard(onOpenTopicQuiz = onOpenTopicQuiz)
-        PracticeModesSection(
-            modes = practiceModes,
-            selectedModeId = selectedModeId,
-            onSelectMode = { modeId -> selectedModeId = modeId },
-            onStartMode = { modeId ->
-                if (modeId == "topic_quiz") {
-                    onOpenTopicQuiz()
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .weight(1f)
+                .verticalScroll(rememberScrollState())
+                .padding(start = 20.dp, end = 20.dp, top = 24.dp, bottom = 8.dp),
+            verticalArrangement = Arrangement.spacedBy(20.dp)
+        ) {
+            PracticeHeader()
+            RecommendedCard(onOpenTopicQuiz = onOpenTopicQuiz)
+            PracticeModesSection(
+                modes = practiceModes,
+                selectedModeId = selectedModeId,
+                onSelectMode = { modeId -> selectedModeId = modeId },
+                onStartMode = { modeId ->
+                    if (modeId == "topic_quiz") {
+                        onOpenTopicQuiz()
+                    }
                 }
-            }
-        )
-        PracticeFeaturedCard(
-            mode = selectedMode,
-            onStart = {
-                if (selectedMode.isAvailable) {
-                    onOpenTopicQuiz()
+            )
+        }
+
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 20.dp, vertical = 12.dp)
+        ) {
+            PracticeFeaturedCard(
+                mode = selectedMode,
+                onStart = {
+                    if (selectedMode.isAvailable) {
+                        onOpenTopicQuiz()
+                    }
                 }
-            }
-        )
+            )
+        }
     }
 }
 

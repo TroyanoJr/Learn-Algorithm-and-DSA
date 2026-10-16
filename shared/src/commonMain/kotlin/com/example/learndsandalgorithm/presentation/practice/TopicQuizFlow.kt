@@ -131,7 +131,6 @@ private data class QuizTopicState(
     val title: String,
     val category: String,
     val questionCount: Int,
-    val description: String,
     val questions: List<QuizQuestionState>
 )
 
@@ -169,13 +168,6 @@ internal fun shuffleQuizQuestionOrder(
     shuffleQuestionOrder: (List<QuizQuestionState>) -> List<QuizQuestionState> = { it.shuffled() }
 ): List<QuizQuestionState> = shuffleQuestionOrder(questions)
 
-private fun getTopicDescription(topicId: String): String = when (topicId) {
-    "arrays" -> "Contiguous memory elements with instant index-based lookup."
-    "linear_search" -> "Sequential element inspection from start to end."
-    "sorting" -> "Arranging elements in a defined ascending or descending order."
-    else -> "Practice core computer science concepts."
-}
-
 @Composable
 fun TopicQuizFlow(
     contentRepository: ContentRepository,
@@ -211,7 +203,6 @@ fun TopicQuizFlow(
                         title = topic.title,
                         category = categoryName,
                         questionCount = preparedQuestions.size,
-                        description = getTopicDescription(topic.id),
                         questions = preparedQuestions
                     )
                 )
@@ -533,40 +524,6 @@ private fun TopicQuizSelectionScreen(
             }
         }
 
-        // Topic Details Section for selected topic
-        val currentSelectedTopic = topics.find { it.id == selectedTopicId } ?: topics.first()
-        Surface(
-            color = DarkCardBgColor,
-            shape = RoundedCornerShape(16.dp),
-            border = BorderStroke(1.dp, CardBorderColor),
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(12.dp),
-                verticalArrangement = Arrangement.spacedBy(6.dp)
-            ) {
-                Text(
-                    text = "TOPIC DETAILS",
-                    color = OrangeAccent,
-                    fontSize = 10.sp,
-                    fontWeight = FontWeight.Bold,
-                    letterSpacing = 1.2.sp
-                )
-                Text(
-                    text = currentSelectedTopic.title,
-                    color = TextPrimary,
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Bold
-                )
-                Text(
-                    text = currentSelectedTopic.description,
-                    color = TextSecondary,
-                    fontSize = 13.sp
-                )
-            }
-        }
     }
 }
 
@@ -852,6 +809,7 @@ private fun QuizCompleteScreen(
         modifier = Modifier
             .fillMaxSize()
             .background(DarkBgColor)
+            .verticalScroll(rememberScrollState())
             .padding(horizontal = 20.dp, vertical = 24.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.SpaceBetween
@@ -971,6 +929,7 @@ private fun QuizResultScreen(
         modifier = Modifier
             .fillMaxSize()
             .background(DarkBgColor)
+            .verticalScroll(rememberScrollState())
             .padding(horizontal = 16.dp, vertical = 16.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.SpaceBetween

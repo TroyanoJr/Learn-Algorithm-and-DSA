@@ -1,5 +1,11 @@
 package com.example.learndsandalgorithm.presentation.learn
 
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -34,6 +40,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.graphics.vector.PathBuilder
 import androidx.compose.ui.graphics.vector.path
@@ -728,6 +735,16 @@ private fun TopicStatusIcon(status: TopicStatus) {
             }
         }
         TopicStatus.IN_PROGRESS -> {
+            val pulseTransition = rememberInfiniteTransition()
+            val dotAlpha by pulseTransition.animateFloat(
+                initialValue = 0.35f,
+                targetValue = 1f,
+                animationSpec = infiniteRepeatable(
+                    animation = tween(durationMillis = 800, easing = FastOutSlowInEasing),
+                    repeatMode = RepeatMode.Reverse
+                )
+            )
+
             Box(
                 modifier = Modifier
                     .size(22.dp)
@@ -740,6 +757,7 @@ private fun TopicStatusIcon(status: TopicStatus) {
                         .size(6.dp)
                         .clip(CircleShape)
                         .background(OrangeAccent)
+                        .graphicsLayer { alpha = dotAlpha }
                 )
             }
         }
