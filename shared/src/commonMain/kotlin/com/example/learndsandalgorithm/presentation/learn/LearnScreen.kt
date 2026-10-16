@@ -806,7 +806,7 @@ private fun TopicLevelBadge(level: TopicLevel) {
 
 private fun getEstimatedLessonsText(topicId: String): String = when (topicId) {
     "introduction_ds", "introduction_algo" -> "3 lessons"
-    "structures", "brute_force" -> "4 lessons"
+    "brute_force" -> "4 lessons"
     "stack", "queues", "heap", "iteration_recursion", "greedy", "branch_bound" -> "5 lessons"
     "hash_tables", "divide_conquer", "backtracking" -> "6 lessons"
     "linked_list" -> "7 lessons"

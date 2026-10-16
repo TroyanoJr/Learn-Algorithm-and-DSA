@@ -42,7 +42,7 @@ class ContentRepositoryTest {
     @Test
     fun testLoadAllTopics() = runBlocking {
         val topics = repository.getTopics()
-        assertEquals(20, topics.size, "Should load exactly 20 topics")
+        assertEquals(19, topics.size, "Should load exactly 19 topics")
     }
 
     @Test

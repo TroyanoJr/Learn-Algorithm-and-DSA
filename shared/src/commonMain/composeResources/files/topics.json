@@ -14,60 +14,53 @@
     "order": 2
   },
   {
-    "id": "structures",
-    "title": "Structures",
-    "category": "DATA_STRUCTURES",
-    "level": "FOUNDATION",
-    "order": 3
-  },
-  {
     "id": "linked_list",
     "title": "Linked List",
     "category": "DATA_STRUCTURES",
     "level": "FOUNDATION",
-    "order": 4
+    "order": 3
   },
   {
     "id": "stack",
     "title": "Stack",
     "category": "DATA_STRUCTURES",
     "level": "FOUNDATION",
-    "order": 5
+    "order": 4
   },
   {
     "id": "queues",
     "title": "Queues",
     "category": "DATA_STRUCTURES",
     "level": "FOUNDATION",
-    "order": 6
+    "order": 5
   },
   {
     "id": "hash_tables",
     "title": "Hash Tables",
     "category": "DATA_STRUCTURES",
     "level": "INTERMEDIATE",
-    "order": 7
+    "order": 6
   },
   {
     "id": "trees",
     "title": "Trees",
     "category": "DATA_STRUCTURES",
     "level": "INTERMEDIATE",
-    "order": 8
+    "order": 7
   },
   {
     "id": "heap",
     "title": "Heap",
     "category": "DATA_STRUCTURES",
     "level": "INTERMEDIATE",
-    "order": 9
+    "order": 8
   },
   {
     "id": "graphs",
     "title": "Graphs",
     "category": "DATA_STRUCTURES",
     "level": "ADVANCED",
-    "order": 10
+    "order": 9
   },
   {
     "id": "introduction_algo",

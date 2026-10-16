@@ -19,14 +19,13 @@ val mockTopics = listOf(
     // DATA STRUCTURES
     Topic("introduction_ds", "Introduction", TopicCategory.DATA_STRUCTURES, TopicLevel.FOUNDATION, 1),
     Topic("arrays", "Arrays", TopicCategory.DATA_STRUCTURES, TopicLevel.FOUNDATION, 2),
-    Topic("structures", "Structures", TopicCategory.DATA_STRUCTURES, TopicLevel.FOUNDATION, 3),
-    Topic("linked_list", "Linked List", TopicCategory.DATA_STRUCTURES, TopicLevel.FOUNDATION, 4),
-    Topic("stack", "Stack", TopicCategory.DATA_STRUCTURES, TopicLevel.FOUNDATION, 5),
-    Topic("queues", "Queues", TopicCategory.DATA_STRUCTURES, TopicLevel.FOUNDATION, 6),
-    Topic("hash_tables", "Hash Tables", TopicCategory.DATA_STRUCTURES, TopicLevel.INTERMEDIATE, 7),
-    Topic("trees", "Trees", TopicCategory.DATA_STRUCTURES, TopicLevel.INTERMEDIATE, 8),
-    Topic("heap", "Heap", TopicCategory.DATA_STRUCTURES, TopicLevel.INTERMEDIATE, 9),
-    Topic("graphs", "Graphs", TopicCategory.DATA_STRUCTURES, TopicLevel.ADVANCED, 10),
+    Topic("linked_list", "Linked List", TopicCategory.DATA_STRUCTURES, TopicLevel.FOUNDATION, 3),
+    Topic("stack", "Stack", TopicCategory.DATA_STRUCTURES, TopicLevel.FOUNDATION, 4),
+    Topic("queues", "Queues", TopicCategory.DATA_STRUCTURES, TopicLevel.FOUNDATION, 5),
+    Topic("hash_tables", "Hash Tables", TopicCategory.DATA_STRUCTURES, TopicLevel.INTERMEDIATE, 6),
+    Topic("trees", "Trees", TopicCategory.DATA_STRUCTURES, TopicLevel.INTERMEDIATE, 7),
+    Topic("heap", "Heap", TopicCategory.DATA_STRUCTURES, TopicLevel.INTERMEDIATE, 8),
+    Topic("graphs", "Graphs", TopicCategory.DATA_STRUCTURES, TopicLevel.ADVANCED, 9),
 
     // ALGORITHMS
     Topic("introduction_algo", "Introduction", TopicCategory.ALGORITHMS, TopicLevel.FOUNDATION, 1),

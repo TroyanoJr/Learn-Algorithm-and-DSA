@@ -441,7 +441,6 @@ fun getTopicIconSpec(topicId: String): TopicIconSpec {
         // Data Structures (Blue Accents)
         "introduction_ds" -> TopicIconSpec(IconBlocks, isDataStructure = true)
         "arrays" -> TopicIconSpec(IconGrid, isDataStructure = true)
-        "structures" -> TopicIconSpec(IconSchema, isDataStructure = true)
         "linked_list" -> TopicIconSpec(IconLink, isDataStructure = true)
         "stack" -> TopicIconSpec(IconStack, isDataStructure = true)
         "queues" -> TopicIconSpec(IconQueue, isDataStructure = true)
