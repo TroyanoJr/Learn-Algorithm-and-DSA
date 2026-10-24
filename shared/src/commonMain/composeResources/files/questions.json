@@ -2679,5 +2679,315 @@
     "correctOptionIndex": 0,
     "explanation": "Hash tables store entries based on hash codes without key ordering. Range queries require scanning all N buckets in a hash table, whereas balanced BSTs maintain key order for efficient range searches.",
     "difficulty": "HARD"
+  },
+  {
+    "id": "q_lesson_trees_1_1",
+    "topicId": "trees",
+    "lessonId": "lesson_trees_1",
+    "type": "MULTIPLE_CHOICE",
+    "statement": "What is the topmost node in a hierarchical tree data structure called?",
+    "options": [
+      "Root node",
+      "Leaf node",
+      "Parent node",
+      "Sibling node"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "The topmost node in any tree is the root node, which has no parent.",
+    "difficulty": "EASY"
+  },
+  {
+    "id": "q_lesson_trees_1_2",
+    "topicId": "trees",
+    "lessonId": "lesson_trees_1",
+    "type": "CODE_OUTPUT",
+    "statement": "What does this code print when creating a general tree node and adding two children?\n\n```pseudocode\nstructure TreeNode\n    data\n    children = []\nend structure\n\nroot = new TreeNode\nroot.data = \"Root\"\nroot.children.add(\"ChildA\")\nroot.children.add(\"ChildB\")\nprint(root.data, length(root.children))\n```",
+    "options": [
+      "Root 2",
+      "Root 0",
+      "ChildA 2",
+      "Root 1"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "The root data is 'Root' and its children collection contains 2 elements, printing 'Root 2'.",
+    "difficulty": "MEDIUM"
+  },
+  {
+    "id": "q_lesson_trees_1_3",
+    "topicId": "trees",
+    "lessonId": "lesson_trees_1",
+    "type": "TRUE_FALSE",
+    "statement": "A leaf node in a tree structure has no children.",
+    "options": [
+      "True",
+      "False"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "A leaf (or terminal node) has no child connections (its child pointers or list are empty).",
+    "difficulty": "EASY"
+  },
+  {
+    "id": "q_lesson_trees_2_1",
+    "topicId": "trees",
+    "lessonId": "lesson_trees_2",
+    "type": "MULTIPLE_CHOICE",
+    "statement": "Which property distinguishes a Binary Search Tree (BST) from a standard binary tree?",
+    "options": [
+      "Left subtree values are strictly less than the parent and right subtree values are strictly greater",
+      "Every node must have exactly two children",
+      "Nodes are stored in contiguous memory like an array",
+      "All leaves must be at the exact same depth"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "A BST enforces strict ordering where left descendants are smaller and right descendants are larger than their parent.",
+    "difficulty": "EASY"
+  },
+  {
+    "id": "q_lesson_trees_2_2",
+    "topicId": "trees",
+    "lessonId": "lesson_trees_2",
+    "type": "CODE_OUTPUT",
+    "statement": "What values are stored in the root and its children after inserting 5, then 3, then 7 into an empty BST?\n\n```pseudocode\nroot = insert(null, 5)\nroot = insert(root, 3)\nroot = insert(root, 7)\nprint(root.val, root.left.val, root.right.val)\n```",
+    "options": [
+      "5 3 7",
+      "3 5 7",
+      "7 3 5",
+      "5 7 3"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "5 is root; 3 is smaller so it goes to the left child; 7 is larger so it goes to the right child, printing '5 3 7'.",
+    "difficulty": "MEDIUM"
+  },
+  {
+    "id": "q_lesson_trees_2_3",
+    "topicId": "trees",
+    "lessonId": "lesson_trees_2",
+    "type": "TRUE_FALSE",
+    "statement": "Every binary tree is automatically a valid Binary Search Tree.",
+    "options": [
+      "True",
+      "False"
+    ],
+    "correctOptionIndex": 1,
+    "explanation": "False. A general binary tree has no ordering requirements between parents and children; a BST adds strict left-smaller, right-larger rules.",
+    "difficulty": "EASY"
+  },
+  {
+    "id": "q_lesson_trees_3_1",
+    "topicId": "trees",
+    "lessonId": "lesson_trees_3",
+    "type": "MULTIPLE_CHOICE",
+    "statement": "Which tree traversal order visits nodes in Left, Root, Right sequence, producing sorted order in a BST?",
+    "options": [
+      "In-order traversal",
+      "Pre-order traversal",
+      "Post-order traversal",
+      "Level-order traversal"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "In-order traversal visits the left subtree, then the root, then the right subtree, which visits BST keys in ascending order.",
+    "difficulty": "EASY"
+  },
+  {
+    "id": "q_lesson_trees_3_2",
+    "topicId": "trees",
+    "lessonId": "lesson_trees_3",
+    "type": "CODE_OUTPUT",
+    "statement": "What sequence does a recursive in-order traversal print for a BST with root 5, left 3, and right 7?\n\n```pseudocode\nfunction inOrder(node)\n    if node != null then\n        inOrder(node.left)\n        print(node.val)\n        inOrder(node.right)\n    end if\nend function\ninOrder(root)\n```",
+    "options": [
+      "3 5 7",
+      "5 3 7",
+      "3 7 5",
+      "7 5 3"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "In-order visits left child (3), then root (5), then right child (7), printing '3 5 7'.",
+    "difficulty": "MEDIUM"
+  },
+  {
+    "id": "q_lesson_trees_3_3",
+    "topicId": "trees",
+    "lessonId": "lesson_trees_3",
+    "type": "TRUE_FALSE",
+    "statement": "Breadth-First Search (BFS) level-order traversal visits tree nodes level by level using a Queue.",
+    "options": [
+      "True",
+      "False"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "Level-order traversal uses a queue to explore nodes level by level from top to bottom.",
+    "difficulty": "EASY"
+  },
+  {
+    "id": "q_lesson_trees_4_1",
+    "topicId": "trees",
+    "lessonId": "lesson_trees_4",
+    "type": "MULTIPLE_CHOICE",
+    "statement": "What is the worst-case time complexity of searching in a skewed (degenerate) Binary Search Tree containing N nodes?",
+    "options": [
+      "O(N)",
+      "O(1)",
+      "O(log N)",
+      "O(N log N)"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "A skewed BST resembles a linked list with height N, resulting in O(N) worst-case search time.",
+    "difficulty": "EASY"
+  },
+  {
+    "id": "q_lesson_trees_4_2",
+    "topicId": "trees",
+    "lessonId": "lesson_trees_4",
+    "type": "CODE_OUTPUT",
+    "statement": "What does this BST search function return when searching for target 5 in a tree with root 10, left 5, right 15?\n\n```pseudocode\nfunction search(node, target)\n    if node == null or node.val == target then\n        return node\n    end if\n    if target < node.val then\n        return search(node.left, target)\n    else\n        return search(node.right, target)\n    end if\nend function\nprint(search(root, 5).val)\n```",
+    "options": [
+      "5",
+      "10",
+      "15",
+      "null"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "Target 5 is smaller than 10, so it navigates to left child 5, which matches target.val and returns node with value 5.",
+    "difficulty": "MEDIUM"
+  },
+  {
+    "id": "q_lesson_trees_4_3",
+    "topicId": "trees",
+    "lessonId": "lesson_trees_4",
+    "type": "TRUE_FALSE",
+    "statement": "A balanced Binary Search Tree guarantees O(log N) time complexity for search, insertion, and deletion.",
+    "options": [
+      "True",
+      "False"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "A balanced BST maintains logarithmic height H = O(log N), ensuring O(log N) operations.",
+    "difficulty": "EASY"
+  },
+  {
+    "id": "q_trees_1",
+    "topicId": "trees",
+    "lessonId": null,
+    "type": "MULTIPLE_CHOICE",
+    "statement": "What is the height of a tree consisting of a single root node with no children?",
+    "options": [
+      "0",
+      "1",
+      "-1",
+      "2"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "The height of a node is the longest path from that node down to a leaf. A root node that is also a leaf has height 0.",
+    "difficulty": "EASY"
+  },
+  {
+    "id": "q_trees_2",
+    "topicId": "trees",
+    "lessonId": null,
+    "type": "MULTIPLE_CHOICE",
+    "statement": "Which traversal visits the root node before visiting its left and right subtrees?",
+    "options": [
+      "Pre-order traversal",
+      "In-order traversal",
+      "Post-order traversal",
+      "Level-order traversal"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "Pre-order traversal processes the Root first, then Left, then Right.",
+    "difficulty": "EASY"
+  },
+  {
+    "id": "q_trees_3",
+    "topicId": "trees",
+    "lessonId": null,
+    "type": "MULTIPLE_CHOICE",
+    "statement": "Why is a balanced Binary Search Tree significantly faster than a sorted array for dynamic insertions and deletions?",
+    "options": [
+      "BST insertions and deletions take O(log N) time without requiring element shifting",
+      "BSTs store all elements in contiguous memory blocks",
+      "BSTs eliminate the need for pointer references",
+      "BSTs require zero extra memory space"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "Inserting or deleting in a sorted array requires shifting elements (O(N)), whereas a balanced BST modifies pointers along a single path (O(log N)).",
+    "difficulty": "MEDIUM"
+  },
+  {
+    "id": "q_trees_4",
+    "topicId": "trees",
+    "lessonId": null,
+    "type": "CODE_OUTPUT",
+    "statement": "What is the post-order traversal sequence for a binary tree with root 1, left child 2, and right child 3?\n\n```pseudocode\n// Root: 1, Left: 2, Right: 3 (no grandchildren)\n// Post-order: Left, Right, Root\nprint(postOrderSequence)\n```",
+    "options": [
+      "2 3 1",
+      "1 2 3",
+      "2 1 3",
+      "3 2 1"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "Post-order visits Left (2), then Right (3), then Root (1), producing '2 3 1'.",
+    "difficulty": "MEDIUM"
+  },
+  {
+    "id": "q_trees_5",
+    "topicId": "trees",
+    "lessonId": null,
+    "type": "TRUE_FALSE",
+    "statement": "In a Binary Search Tree, all nodes in the right subtree of any node must have values greater than that node's value.",
+    "options": [
+      "True",
+      "False"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "True. The BST property requires left subtree values to be smaller and right subtree values to be greater than the parent.",
+    "difficulty": "EASY"
+  },
+  {
+    "id": "q_trees_6",
+    "topicId": "trees",
+    "lessonId": null,
+    "type": "MULTIPLE_CHOICE",
+    "statement": "What data structure is used to implement Breadth-First Search (Level-order traversal) in a tree?",
+    "options": [
+      "A Queue",
+      "A Stack",
+      "A Priority Queue",
+      "An Array list with index sorting"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "BFS level-order traversal visits nodes level by level, which requires FIFO ordering provided by a Queue.",
+    "difficulty": "EASY"
+  },
+  {
+    "id": "q_trees_7",
+    "topicId": "trees",
+    "lessonId": null,
+    "type": "CODE_OUTPUT",
+    "statement": "What does this tree height function return for a tree with just a root node and one child?\n\n```pseudocode\nfunction getHeight(node)\n    if node == null then return -1\n    leftH = getHeight(node.left)\n    rightH = getHeight(node.right)\n    return 1 + max(leftH, rightH)\nend function\n// Root has 1 child\nprint(getHeight(root))\n```",
+    "options": [
+      "1",
+      "0",
+      "2",
+      "-1"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "A root with one child has height 1 (root to child edge = 1 edge on longest path).",
+    "difficulty": "MEDIUM"
+  },
+  {
+    "id": "q_trees_8",
+    "topicId": "trees",
+    "lessonId": null,
+    "type": "MULTIPLE_CHOICE",
+    "statement": "What happens to the performance of a Binary Search Tree if elements are inserted in strictly sorted ascending order?",
+    "options": [
+      "The tree becomes skewed, degrading operations to O(N) linear time",
+      "The tree automatically balances itself to O(1) time",
+      "Insertion throws a duplicate key exception",
+      "The tree converts into a complete binary tree"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "Inserting sorted data creates a degenerate right-skewed tree resembling a linked list, resulting in O(N) height and time complexity.",
+    "difficulty": "MEDIUM"
   }
 ]

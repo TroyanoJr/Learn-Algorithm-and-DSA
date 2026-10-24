@@ -310,5 +310,37 @@
     "order": 4,
     "xp": 30,
     "contentPath": "files/lessons/lesson_hash_tables_4.md"
+  },
+  {
+    "id": "lesson_trees_1",
+    "topicId": "trees",
+    "title": "Tree Fundamentals and Terminology",
+    "order": 1,
+    "xp": 30,
+    "contentPath": "files/lessons/lesson_trees_1.md"
+  },
+  {
+    "id": "lesson_trees_2",
+    "topicId": "trees",
+    "title": "Binary Trees and Binary Search Trees",
+    "order": 2,
+    "xp": 30,
+    "contentPath": "files/lessons/lesson_trees_2.md"
+  },
+  {
+    "id": "lesson_trees_3",
+    "topicId": "trees",
+    "title": "Tree Traversals and Their Applications",
+    "order": 3,
+    "xp": 30,
+    "contentPath": "files/lessons/lesson_trees_3.md"
+  },
+  {
+    "id": "lesson_trees_4",
+    "topicId": "trees",
+    "title": "Binary Search Tree Operations, Complexity, and Trade-offs",
+    "order": 4,
+    "xp": 30,
+    "contentPath": "files/lessons/lesson_trees_4.md"
   }
 ]
