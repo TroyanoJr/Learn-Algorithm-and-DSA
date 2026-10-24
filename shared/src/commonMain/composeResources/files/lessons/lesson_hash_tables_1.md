@@ -22,7 +22,7 @@ A hash function solves this problem by mapping non-integer keys to integer indic
 ## Properties of a Good Hash Function
 
 - **Deterministic**: The same key must always produce the exact same hash value.
-- **Fast Computation**: Hash calculation must run in $O(1)$ time.
+- **Fast Computation**: Hash computation cost depends on the key and hash function; this character-by-character example takes O(m) time for a key of length m. Hash-table lookup and insertion are typically average O(1) when keys are well distributed and the load factor is controlled, but collisions can make them O(N).
 - **Uniform Distribution**: Keys should be evenly distributed across all array buckets to minimize collisions.
 
 ### Code Example: Basic Hash Calculation

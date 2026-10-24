@@ -12,17 +12,15 @@ A **stack** is a collection where adding and removing items happens at one end, 
 
 Write the top at the right. Start empty, then perform `push(A)`, `push(B)`, `push(C)`, `push(D)`, `push(E)`, `pop()`, `push(F)`, `pop()`:
 
-| Operation | Stack (bottom → top) | Result |
-|---|---|---|
-| start | `[]` | — |
-| push A | `[A]` | — |
-| push B | `[A, B]` | — |
-| push C | `[A, B, C]` | — |
-| push D | `[A, B, C, D]` | — |
-| push E | `[A, B, C, D, E]` | — |
-| pop | `[A, B, C, D]` | `E` |
-| push F | `[A, B, C, D, F]` | — |
-| pop | `[A, B, C, D]` | `F` |
+- **Start** — Stack (bottom → top): `[]`; result: —.
+- **Push A** — Stack: `[A]`; result: —.
+- **Push B** — Stack: `[A, B]`; result: —.
+- **Push C** — Stack: `[A, B, C]`; result: —.
+- **Push D** — Stack: `[A, B, C, D]`; result: —.
+- **Push E** — Stack: `[A, B, C, D, E]`; result: —.
+- **Pop** — Stack: `[A, B, C, D]`; result: `E`.
+- **Push F** — Stack: `[A, B, C, D, F]`; result: —.
+- **Pop** — Stack: `[A, B, C, D]`; result: `F`.
 
 The bottom item `A` remains untouched: a stack does not provide ordinary access to arbitrary positions. Repeated pops now return D, C, B, then A.
 

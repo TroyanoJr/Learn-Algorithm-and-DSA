@@ -6,23 +6,20 @@ A **Binary Search Tree (BST)** organizes data for efficient searching, insertion
 
 1. **Search**: Compare target key with current node. If equal, found. If target < current node, search left subtree. If target > current node, search right subtree.
 2. **Insertion**: Similar to search, traverse down left or right branches until reaching a null reference, then create and attach the new node.
-3. **Deletion**: Three cases:
-   - *Case 1 (Leaf node)*: Remove directly by setting parent's child reference to null.
-   - *Case 2 (Node with one child)*: Bypass the node by linking its parent directly to its single child.
-   - *Case 3 (Node with two children)*: Find the **in-order successor** (the minimum value in the right subtree) or in-order predecessor, copy its value into the node, and delete the successor node.
+3. **Deletion — Case 1 (leaf node)**: Remove the node directly by setting its parent's child reference to null.
+4. **Deletion — Case 2 (node with one child)**: Bypass the node by linking its parent directly to its single child.
+5. **Deletion — Case 3 (node with two children)**: Find the **in-order successor** (the minimum value in the right subtree) or in-order predecessor, copy its value into the node, then delete the successor or predecessor node used.
 
 ## Time and Space Complexity
 
-| Operation | Average Case (Balanced) | Worst Case (Skewed) | Explanation |
-|---|---|---|---|
-| **Search (`search`)** | $O(\log N)$ | $O(N)$ | Eliminates half the remaining nodes per level if balanced; degenerates to linear linked list if skewed. |
-| **Insertion (`insert`)** | $O(\log N)$ | $O(N)$ | Traverses down one path from root to leaf. |
-| **Deletion (`remove`)** | $O(\log N)$ | $O(N)$ | Finds node and handles child restructuring. |
+- **Search (`search`)** — Average case (balanced): O(log N); worst case (skewed): O(N). It eliminates half the remaining nodes per level if balanced and degenerates to a linear linked list if skewed.
+- **Insertion (`insert`)** — Average case (balanced): O(log N); worst case (skewed): O(N). It traverses down one path from root to a leaf.
+- **Deletion (`remove`)** — Average case (balanced): O(log N); worst case (skewed): O(N). It finds the node and handles child restructuring.
 
 ## Balanced vs. Skewed Trees
 
-- **Balanced BST**: Subtree heights differ by at most 1, keeping height $H = O(\log N)$. Operations run efficiently in $O(\log N)$ time.
-- **Skewed BST**: If elements are inserted in already sorted order (e.g. 1, 2, 3, 4, 5), every node attaches only to the right child, forming a straight chain. Height becomes $H = O(N)$, reducing performance to $O(N)$ linear time. Self-balancing trees (such as AVL trees or Red-Black trees) solve this by rotating nodes automatically.
+- **Balanced BST**: Has height H = O(log N), so operations run efficiently in O(log N) time. Balance rules differ: AVL trees require the left and right subtree heights at each node to differ by at most 1, while Red-Black trees use color and black-height rules to keep overall height logarithmic without requiring that same one-level difference.
+- **Skewed BST**: If elements are inserted in already sorted order (e.g. 1, 2, 3, 4, 5), every node attaches only to the right child, forming a straight chain. Height becomes H = O(N), reducing performance to O(N) linear time. Self-balancing trees (such as AVL trees or Red-Black trees) solve this by rotating nodes automatically.
 
 ### Code Example: BST Search Operation
 
@@ -127,10 +124,10 @@ if found:
 
 ## Remember
 
-- BST operations run in **$O(\log N)$ average time** when the tree remains balanced.
-- In a **skewed** BST (e.g., inserted sorted data), height becomes $O(N)$, degrading operations to $O(N)$ linear time.
+- BST operations run in **O(log N) average time** when the tree remains balanced.
+- In a **skewed** BST (e.g., inserted sorted data), height becomes O(N), degrading operations to O(N) linear time.
 - Deletion has three cases: leaf, single child, and two children (requiring an in-order successor).
 
 ## Summary
 
-Binary Search Trees provide efficient hierarchical search and modification in $O(\log N)$ average time. Tree balance is critical: skewed trees lose their logarithmic efficiency and perform like linked lists.
+Binary Search Trees provide efficient hierarchical search and modification in O(log N) average time. Tree balance is critical: skewed trees lose their logarithmic efficiency and perform like linked lists.

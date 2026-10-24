@@ -65,12 +65,10 @@ For a stack with a linked-list top or a fixed-capacity array with available spac
 
 A dynamic-array-backed stack has **amortized O(1)** push: most pushes write one slot, and the occasional resize copies the existing n items and costs **O(n)**. Across many pushes, that copy cost is spread over the operations. Pop remains O(1) unless the implementation deliberately shrinks its storage; shrinking policies may introduce occasional copying too. These bounds assume the top is at the array's end or a linked-list endpoint that is directly referenced.
 
-| Operation | Typical time | Notes |
-|---|---:|---|
-| push | O(1) amortized for dynamic array | A resize can cost O(n); fixed array can be full |
-| pop | O(1) | Requires non-empty stack |
-| peek / top | O(1) | Does not remove; requires non-empty stack |
-| isEmpty / size | O(1) | If size or top state is maintained |
+- **push** — Typical time: O(1) amortized for a dynamic array. A resize can cost O(n); a fixed array can be full.
+- **pop** — Typical time: O(1). Requires a non-empty stack.
+- **peek / top** — Typical time: O(1). Does not remove the item and requires a non-empty stack.
+- **isEmpty / size** — Typical time: O(1) if size or top state is maintained.
 
 The stack stores n elements, so space is **O(n)**. The abstract interface stays the same even when its implementation changes.
 

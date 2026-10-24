@@ -72,8 +72,8 @@ public class StaticVsDynamic {
 }
 ```
 ```python
-# Fixed-size representation
-static_arr = [10, 20, 30, 40]
+# Python's built-in list is dynamically resizable and does not enforce fixed capacity.
+python_list = [10, 20, 30, 40]
 
 # Dynamic array (Python list resizes automatically)
 dynamic_arr = []

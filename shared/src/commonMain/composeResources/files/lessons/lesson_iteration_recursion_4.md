@@ -15,7 +15,7 @@ For summing values 1 through n, both approaches perform O(n) additions. A loop c
 
 ### Code Example
 
-This recursive version returns the sum from 1 through `n`; the base case stops when `n` reaches zero.
+This recursive version returns the sum from 1 through `n` and assumes `n` is non-negative so calls reach the base case at zero.
 
 ```pseudocode
 function sumTo(n):

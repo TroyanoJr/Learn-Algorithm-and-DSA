@@ -11,7 +11,7 @@ A **nested loop** places one loop inside another. For each pass of the outer loo
 
 ## Count nested iterations
 
-If `i` runs from 1 through 3 and `j` runs from 1 through 2 each time, the body runs six times: three outer passes times two inner passes. A break in the inner loop stops only that inner loop; the outer loop can continue.
+If `i` runs from 1 through 2 and `j` runs from 1 through 3 each time, the body runs six times: two outer passes times three inner passes. A break in the inner loop stops only that inner loop; the outer loop can continue.
 
 ### Code Example
 

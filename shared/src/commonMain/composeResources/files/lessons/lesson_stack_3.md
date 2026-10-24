@@ -25,17 +25,28 @@ peek(a):
 ```
 
 ```cpp
-// std::vector<int> values; // dynamic array
-values.push_back(8);        // push
-int top = values.back();    // peek (only when not empty)
-values.pop_back();          // pop (only when not empty)
+#include <vector>
+
+int main() {
+    std::vector<int> values; // dynamic array
+    values.push_back(8);     // push
+    int top = values.back(); // peek (only when not empty)
+    values.pop_back();       // pop (only when not empty)
+}
 ```
 
 ```java
-Deque<Integer> stack = new ArrayDeque<>();
-stack.push(8);
-int top = stack.peek(); // null if empty
-Integer removed = stack.poll(); // null if empty
+import java.util.ArrayDeque;
+import java.util.Deque;
+
+class ArrayBackedStackExample {
+    public static void main(String[] args) {
+        Deque<Integer> stack = new ArrayDeque<>();
+        stack.push(8);
+        Integer top = stack.peek(); // null if empty
+        Integer removed = stack.poll(); // null if empty
+    }
+}
 ```
 
 ```python

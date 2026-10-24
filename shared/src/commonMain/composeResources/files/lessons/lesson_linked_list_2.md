@@ -33,12 +33,8 @@ To **search** for a target value, traverse the list while comparing each node's 
 - **Target Absent:** If `current` becomes `null` without finding a match, return `-1` (or a sentinel indicator) to signal that the value is not in the list.
 
 Trace for `head → [12] → [7] → [19] → null`:
-- **Search for `7`:**
-  - Check index 0 (value `12`): `12 != 7`. Advance to index 1.
-  - Check index 1 (value `7`): `7 == 7`. Match found at index `1`!
-- **Search for `99` (Absent Target):**
-  - Check index 0 (`12 != 99`), index 1 (`7 != 99`), index 2 (`19 != 99`).
-  - Advance to next node: `current` is now `null`. Search ends and returns `-1`.
+- **Search for `7` — found:** Check index 0 (value `12`): `12 != 7`; advance to index 1. Then check index 1 (value `7`): `7 == 7`, so the match is at index `1`.
+- **Search for `99` — absent:** Check index 0 (`12 != 99`), index 1 (`7 != 99`), and index 2 (`19 != 99`). Advance to the next node, where `current` is `null`; the search ends and returns `-1`.
 
 ## Accessing a Value by Position (Index)
 
@@ -46,9 +42,7 @@ In an array, reaching position `k` takes constant O(1) time because memory is co
 
 To access position `index` (using zero-based positioning):
 1. Start at `current = head` and `currentIndex = 0`.
-2. While `current` is not `null` and `currentIndex < index`:
-   - Advance `current = current.next`.
-   - Increment `currentIndex`.
+2. While `current` is not `null` and `currentIndex < index`, repeat these steps: advance `current = current.next`, then increment `currentIndex`.
 3. If `current` is not `null` when `currentIndex == index`, return `current.data`.
 4. If `index` is negative or `current` becomes `null` before reaching the requested position, return the invalid-position result.
 

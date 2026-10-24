@@ -2989,5 +2989,669 @@
     "correctOptionIndex": 0,
     "explanation": "Inserting sorted data creates a degenerate right-skewed tree resembling a linked list, resulting in O(N) height and time complexity.",
     "difficulty": "MEDIUM"
+  },
+  {
+    "id": "q_lesson_divide_conquer_1_1",
+    "topicId": "divide_conquer",
+    "lessonId": "lesson_divide_conquer_1",
+    "type": "MULTIPLE_CHOICE",
+    "statement": "What are the three core phases of a divide-and-conquer algorithm?",
+    "options": [
+      "Divide, Conquer, and Combine",
+      "Initialize, Iterate, and Terminate",
+      "Push, Pop, and Peek",
+      "Enqueue, Dequeue, and Wrap"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "Divide and conquer divides the problem, conquers subproblems recursively, and combines their solutions.",
+    "difficulty": "EASY"
+  },
+  {
+    "id": "q_lesson_divide_conquer_1_2",
+    "topicId": "divide_conquer",
+    "lessonId": "lesson_divide_conquer_1",
+    "type": "CODE_OUTPUT",
+    "statement": "What does this recursive max function return for array [4, 2, 9, 7]?\n\n```pseudocode\nfunction findMax(arr, low, high)\n    if low == high then return arr[low]\n    mid = low + (high - low) / 2\n    return max(findMax(arr, low, mid), findMax(arr, mid + 1, high))\nend function\nprint(findMax(arr, 0, 3))\n```",
+    "options": [
+      "9",
+      "4",
+      "7",
+      "2"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "Recursive divide and conquer splits the array and finds the maximum value 9.",
+    "difficulty": "MEDIUM"
+  },
+  {
+    "id": "q_lesson_divide_conquer_1_3",
+    "topicId": "divide_conquer",
+    "lessonId": "lesson_divide_conquer_1",
+    "type": "TRUE_FALSE",
+    "statement": "Divide-and-conquer algorithms solve subproblems recursively until reaching a base case.",
+    "options": [
+      "True",
+      "False"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "True. Subproblems are broken down recursively until they reach a small base case that is solved directly.",
+    "difficulty": "EASY"
+  },
+  {
+    "id": "q_lesson_divide_conquer_2_1",
+    "topicId": "divide_conquer",
+    "lessonId": "lesson_divide_conquer_2",
+    "type": "MULTIPLE_CHOICE",
+    "statement": "What is an essential prerequisite for applying Binary Search to an array?",
+    "options": [
+      "The array must be sorted",
+      "The array size must be a power of two",
+      "All elements must be positive integers",
+      "The array must contain unique values"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "Binary search relies on sorted order to eliminate half the search space with every comparison.",
+    "difficulty": "EASY"
+  },
+  {
+    "id": "q_lesson_divide_conquer_2_2",
+    "topicId": "divide_conquer",
+    "lessonId": "lesson_divide_conquer_2",
+    "type": "CODE_OUTPUT",
+    "statement": "What index does recursive binary search return for target 8 in [2, 5, 8, 12, 16]?\n\n```pseudocode\nfunction binarySearch(arr, target, left, right)\n    if left > right then return -1\n    mid = left + (right - left) / 2\n    if arr[mid] == target then return mid\n    else if arr[mid] > target then return binarySearch(arr, target, left, mid - 1)\n    else return binarySearch(arr, target, mid + 1, right)\nend function\nprint(binarySearch([2, 5, 8, 12, 16], 8, 0, 4))\n```",
+    "options": [
+      "2",
+      "1",
+      "3",
+      "-1"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "Midpoint is index 2 (value 8), which matches target 8 directly, returning index 2.",
+    "difficulty": "MEDIUM"
+  },
+  {
+    "id": "q_lesson_divide_conquer_2_3",
+    "topicId": "divide_conquer",
+    "lessonId": "lesson_divide_conquer_2",
+    "type": "TRUE_FALSE",
+    "statement": "When `left > right` in recursive binary search, it indicates the target element is absent from the array.",
+    "options": [
+      "True",
+      "False"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "True. An inverted search range (`left > right`) signals that the search space is exhausted without finding the target.",
+    "difficulty": "EASY"
+  },
+  {
+    "id": "q_lesson_divide_conquer_3_1",
+    "topicId": "divide_conquer",
+    "lessonId": "lesson_divide_conquer_3",
+    "type": "MULTIPLE_CHOICE",
+    "statement": "What are the three steps executed by Merge Sort?",
+    "options": [
+      "Divide array in half, sort recursively, merge sorted halves",
+      "Pivot, partition, and recurse",
+      "Push, pop, and combine",
+      "Search, insert, and rehash"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "Merge Sort divides the array into halves, sorts each half recursively, and merges the sorted halves.",
+    "difficulty": "EASY"
+  },
+  {
+    "id": "q_lesson_divide_conquer_3_2",
+    "topicId": "divide_conquer",
+    "lessonId": "lesson_divide_conquer_3",
+    "type": "CODE_OUTPUT",
+    "statement": "What array results from merging left=[1, 4] and right=[2, 3]?\n\n```pseudocode\n// merge([1, 4], [2, 3])\nprint(mergedResult)\n```",
+    "options": [
+      "[1, 2, 3, 4]",
+      "[1, 4, 2, 3]",
+      "[2, 3, 1, 4]",
+      "[4, 3, 2, 1]"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "Comparing front elements: 1, then 2, then 3, then 4, producing [1, 2, 3, 4].",
+    "difficulty": "MEDIUM"
+  },
+  {
+    "id": "q_lesson_divide_conquer_3_3",
+    "topicId": "divide_conquer",
+    "lessonId": "lesson_divide_conquer_3",
+    "type": "TRUE_FALSE",
+    "statement": "The merge step of Merge Sort combines two separate sorted arrays into one sorted array in linear O(N) time.",
+    "options": [
+      "True",
+      "False"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "True. Comparing pointers from both sorted halves takes linear time proportional to the total number of elements.",
+    "difficulty": "EASY"
+  },
+  {
+    "id": "q_lesson_divide_conquer_4_1",
+    "topicId": "divide_conquer",
+    "lessonId": "lesson_divide_conquer_4",
+    "type": "MULTIPLE_CHOICE",
+    "statement": "What is the time complexity of Merge Sort in the best, average, and worst cases?",
+    "options": [
+      "O(N log N) in all cases",
+      "O(N²) in all cases",
+      "O(N) best and O(N²) worst",
+      "O(log N) in all cases"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "Merge Sort always divides the array in half (log N levels) and performs O(N) merging work per level, guaranteeing O(N log N) time.",
+    "difficulty": "EASY"
+  },
+  {
+    "id": "q_lesson_divide_conquer_4_2",
+    "topicId": "divide_conquer",
+    "lessonId": "lesson_divide_conquer_4",
+    "type": "CODE_OUTPUT",
+    "statement": "How many recursive split levels occur before Merge Sort reaches single-element base cases for an array of 8 elements?\n\n```pseudocode\n// 8 -> 4 -> 2 -> 1\nprint(levels)\n```",
+    "options": [
+      "3",
+      "4",
+      "8",
+      "2"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "Halving 8 three times (8 -> 4 -> 2 -> 1) takes 3 recursion levels (log2 8 = 3).",
+    "difficulty": "MEDIUM"
+  },
+  {
+    "id": "q_lesson_divide_conquer_4_3",
+    "topicId": "divide_conquer",
+    "lessonId": "lesson_divide_conquer_4",
+    "type": "TRUE_FALSE",
+    "statement": "Merge Sort is an in-place sorting algorithm that requires O(1) auxiliary space.",
+    "options": [
+      "True",
+      "False"
+    ],
+    "correctOptionIndex": 1,
+    "explanation": "False. Merge Sort requires O(N) auxiliary space for temporary merging buffers.",
+    "difficulty": "EASY"
+  },
+  {
+    "id": "q_lesson_divide_conquer_5_1",
+    "topicId": "divide_conquer",
+    "lessonId": "lesson_divide_conquer_5",
+    "type": "MULTIPLE_CHOICE",
+    "statement": "What is the primary purpose of the partitioning step in Quick Sort?",
+    "options": [
+      "To rearrange elements around a pivot so smaller items are left and larger items are right",
+      "To merge two sorted sublists together",
+      "To find the middle element of an unsorted array",
+      "To remove all duplicate values"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "Partitioning places elements smaller than the pivot to its left and larger elements to its right, putting the pivot in its final sorted position.",
+    "difficulty": "EASY"
+  },
+  {
+    "id": "q_lesson_divide_conquer_5_2",
+    "topicId": "divide_conquer",
+    "lessonId": "lesson_divide_conquer_5",
+    "type": "CODE_OUTPUT",
+    "statement": "After partitioning [3, 1, 4, 1, 5, 9, 2] with pivot 4 at the end, where is pivot 4 placed relative to smaller and larger items?\n\n```pseudocode\n// Partition places elements <= pivot on left, > pivot on right\nprint(pivotFinalIndexPosition)\n```",
+    "options": [
+      "All elements to its left are <= 4 and all elements to its right are > 4",
+      "All elements to its left are sorted",
+      "It is placed at index 0",
+      "It remains at the end of the array"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "Partitioning guarantees the pivot is in its correct final sorted position with smaller items left and larger items right.",
+    "difficulty": "MEDIUM"
+  },
+  {
+    "id": "q_lesson_divide_conquer_5_3",
+    "topicId": "divide_conquer",
+    "lessonId": "lesson_divide_conquer_5",
+    "type": "TRUE_FALSE",
+    "statement": "Quick Sort requires an explicit combine step after its recursive calls finish.",
+    "options": [
+      "True",
+      "False"
+    ],
+    "correctOptionIndex": 1,
+    "explanation": "False. Partitioning places elements into their correct sorted positions in-place, so no combine step is needed.",
+    "difficulty": "EASY"
+  },
+  {
+    "id": "q_lesson_divide_conquer_6_1",
+    "topicId": "divide_conquer",
+    "lessonId": "lesson_divide_conquer_6",
+    "type": "MULTIPLE_CHOICE",
+    "statement": "What is the worst-case time complexity of Quick Sort, and when does it occur?",
+    "options": [
+      "O(N²), when pivot selection consistently produces highly unbalanced partitions",
+      "O(N log N), when input is sorted",
+      "O(N), when the array has duplicate values",
+      "O(log N), when partitioning splits the array in half"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "If pivot choices are unbalanced (e.g. always picking min/max on sorted data), recursion depth becomes N, resulting in O(N²) time.",
+    "difficulty": "MEDIUM"
+  },
+  {
+    "id": "q_lesson_divide_conquer_6_2",
+    "topicId": "divide_conquer",
+    "lessonId": "lesson_divide_conquer_6",
+    "type": "CODE_OUTPUT",
+    "statement": "What partition sizes result from a perfectly balanced split of 10 elements vs a maximally unbalanced split?\n\n```pseudocode\ngood = 10 / 2\nbad = 1\nprint(good, bad)\n```",
+    "options": [
+      "5 and 1",
+      "10 and 0",
+      "9 and 1",
+      "2 and 8"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "A balanced split divides 10 into 5 and 5 (or 5), while a maximally unbalanced split yields 1 and n-1 (represented here as 1).",
+    "difficulty": "MEDIUM"
+  },
+  {
+    "id": "q_lesson_divide_conquer_6_3",
+    "topicId": "divide_conquer",
+    "lessonId": "lesson_divide_conquer_6",
+    "type": "TRUE_FALSE",
+    "statement": "Merge Sort is a stable sorting algorithm, whereas standard Quick Sort is unstable.",
+    "options": [
+      "True",
+      "False"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "True. Merge Sort preserves the relative order of equal keys during merging, while Quick Sort's swapping can reorder equal keys.",
+    "difficulty": "EASY"
+  },
+  {
+    "id": "q_divide_conquer_1",
+    "topicId": "divide_conquer",
+    "lessonId": null,
+    "type": "MULTIPLE_CHOICE",
+    "statement": "What are the three main steps of the divide-and-conquer paradigm?",
+    "options": [
+      "Divide the problem, conquer subproblems recursively, combine results",
+      "Search the array, sort elements, delete duplicates",
+      "Push items, pop items, peek at top",
+      "Enqueue elements, dequeue elements, check capacity"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "Divide and conquer divides problems into subproblems, conquers them recursively, and combines solutions.",
+    "difficulty": "EASY"
+  },
+  {
+    "id": "q_divide_conquer_2",
+    "topicId": "divide_conquer",
+    "lessonId": null,
+    "type": "MULTIPLE_CHOICE",
+    "statement": "Why does Binary Search achieve O(log N) time complexity?",
+    "options": [
+      "It cuts the search space in half with every comparison",
+      "It accesses array elements using hash buckets",
+      "It sorts the entire array in linear time first",
+      "It uses a linked list for pointer traversal"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "Halving the search range at each step results in logarithmic log2 N operations.",
+    "difficulty": "EASY"
+  },
+  {
+    "id": "q_divide_conquer_3",
+    "topicId": "divide_conquer",
+    "lessonId": null,
+    "type": "MULTIPLE_CHOICE",
+    "statement": "What is the primary advantage of Merge Sort over Quick Sort?",
+    "options": [
+      "Merge Sort guarantees O(N log N) worst-case time and is stable",
+      "Merge Sort requires O(1) auxiliary space",
+      "Merge Sort never uses recursion",
+      "Merge Sort always sorts in-place"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "Merge Sort's key advantages are its guaranteed O(N log N) worst-case time and stability.",
+    "difficulty": "MEDIUM"
+  },
+  {
+    "id": "q_divide_conquer_4",
+    "topicId": "divide_conquer",
+    "lessonId": null,
+    "type": "CODE_OUTPUT",
+    "statement": "How many comparisons occur in the base case when binary searching for target 5 in [5] (left=0, right=0)?\n\n```pseudocode\narr = [5]\nleft = 0\nright = 0\nmid = left + (right - left) / 2\nif arr[mid] == 5 then print(\"Found\")\n```",
+    "options": [
+      "Found",
+      "NotFound",
+      "Error",
+      "InfiniteLoop"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "Mid is 0, arr[0] is 5, which matches target 5 and prints 'Found'.",
+    "difficulty": "EASY"
+  },
+  {
+    "id": "q_divide_conquer_5",
+    "topicId": "divide_conquer",
+    "lessonId": null,
+    "type": "TRUE_FALSE",
+    "statement": "Quick Sort generally runs faster in practice than Merge Sort due to in-place partitioning and better cache locality.",
+    "options": [
+      "True",
+      "False"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "True. Quick Sort operates largely in-place with fewer memory allocations and excellent cache performance.",
+    "difficulty": "EASY"
+  },
+  {
+    "id": "q_divide_conquer_6",
+    "topicId": "divide_conquer",
+    "lessonId": null,
+    "type": "MULTIPLE_CHOICE",
+    "statement": "What causes Quick Sort to hit its worst-case O(N²) time complexity?",
+    "options": [
+      "Consistently unbalanced partitions (e.g. bad pivot choices on sorted data)",
+      "Having duplicate values in the array",
+      "Using separate chaining for collision resolution",
+      "Exceeding the maximum recursion depth"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "Unbalanced partitions result in N levels of recursion instead of log N, leading to O(N²) quadratic time.",
+    "difficulty": "MEDIUM"
+  },
+  {
+    "id": "q_divide_conquer_7",
+    "topicId": "divide_conquer",
+    "lessonId": null,
+    "type": "CODE_OUTPUT",
+    "statement": "What is the merged result of [2, 5] and [1, 6]?\n\n```pseudocode\nprint(merge([2, 5], [1, 6]))\n```",
+    "options": [
+      "[1, 2, 5, 6]",
+      "[2, 5, 1, 6]",
+      "[1, 6, 2, 5]",
+      "[2, 1, 5, 6]"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "Comparing front elements: 1, then 2, then 5, then 6, producing [1, 2, 5, 6].",
+    "difficulty": "MEDIUM"
+  },
+  {
+    "id": "q_divide_conquer_8",
+    "topicId": "divide_conquer",
+    "lessonId": null,
+    "type": "MULTIPLE_CHOICE",
+    "statement": "How does the auxiliary space complexity of Merge Sort compare to Quick Sort?",
+    "options": [
+      "Merge Sort requires O(N) extra space, while Quick Sort requires O(log N) stack space",
+      "Both require O(N) extra space",
+      "Merge Sort requires O(1) space and Quick Sort requires O(N) space",
+      "Neither algorithm uses any extra memory"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "Merge Sort needs O(N) auxiliary merging buffers, while Quick Sort sorts in-place using O(log N) recursive stack space.",
+    "difficulty": "MEDIUM"
+  },
+  {
+    "id": "q_lesson_brute_force_1",
+    "topicId": "brute_force",
+    "lessonId": "lesson_brute_force_1",
+    "type": "MULTIPLE_CHOICE",
+    "statement": "What makes a search strategy brute force?",
+    "options": [
+      "It systematically checks the relevant candidate possibilities",
+      "It always sorts the input before checking it",
+      "It skips candidates that appear difficult",
+      "It guarantees constant-time work"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "Brute force defines a candidate set and checks candidates systematically. It does not require sorting and does not guarantee fast execution.",
+    "difficulty": "EASY"
+  },
+  {
+    "id": "q_lesson_brute_force_1_2",
+    "topicId": "brute_force",
+    "lessonId": "lesson_brute_force_1",
+    "type": "CODE_OUTPUT",
+    "statement": "What value is printed after the loop checks every candidate?\n\n```pseudocode\nsolution = -1\nfor candidate from 1 through 4:\n    if candidate * candidate == 10:\n        solution = candidate\n        break\nprint(solution)\n```",
+    "options": [
+      "-1",
+      "1",
+      "3",
+      "4"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "The squares of 1, 2, 3, and 4 are 1, 4, 9, and 16. None is 10, so solution remains -1.",
+    "difficulty": "EASY"
+  },
+  {
+    "id": "q_lesson_brute_force_1_3",
+    "topicId": "brute_force",
+    "lessonId": "lesson_brute_force_1",
+    "type": "TRUE_FALSE",
+    "statement": "If a task asks for any valid answer, a brute-force search may stop when it finds one.",
+    "options": [
+      "True",
+      "False"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "When any valid answer is enough, stopping at the first one is correct. Proving that no answer exists or finding the best answer requires checking all relevant candidates.",
+    "difficulty": "EASY"
+  },
+  {
+    "id": "q_lesson_brute_force_2",
+    "topicId": "brute_force",
+    "lessonId": "lesson_brute_force_2",
+    "type": "MULTIPLE_CHOICE",
+    "statement": "Why does the inner loop for a pair problem usually start at j = i + 1?",
+    "options": [
+      "It guarantees that values are checked in sorted order",
+      "It avoids pairing an element with itself and avoids repeating an unordered pair",
+      "It makes every comparison constant time regardless of list size",
+      "It skips all negative values"
+    ],
+    "correctOptionIndex": 1,
+    "explanation": "Starting after i selects a distinct second index and checks each unordered pair only once, such as (0, 1) without later checking (1, 0).",
+    "difficulty": "EASY"
+  },
+  {
+    "id": "q_lesson_brute_force_2_2",
+    "topicId": "brute_force",
+    "lessonId": "lesson_brute_force_2",
+    "type": "CODE_OUTPUT",
+    "statement": "Which indices does the nested loop return for target 10?\n\n```pseudocode\nvalues = [3, 8, 4, 6]\ntarget = 10\nfor i from 0 to length(values) - 1:\n    for j from i + 1 to length(values) - 1:\n        if values[i] + values[j] == target:\n            return (i, j)\n```",
+    "options": [
+      "(0, 1)",
+      "(2, 3)",
+      "(1, 2)",
+      "No pair is found"
+    ],
+    "correctOptionIndex": 1,
+    "explanation": "The earlier pairs do not sum to 10. At i = 2 and j = 3, values 4 and 6 sum to 10, so the returned indices are (2, 3).",
+    "difficulty": "MEDIUM"
+  },
+  {
+    "id": "q_lesson_brute_force_2_3",
+    "topicId": "brute_force",
+    "lessonId": "lesson_brute_force_2",
+    "type": "TRUE_FALSE",
+    "statement": "The nested-loop pair-sum method requires the input list to be sorted.",
+    "options": [
+      "True",
+      "False"
+    ],
+    "correctOptionIndex": 1,
+    "explanation": "The method checks every distinct pair directly, so it works on unsorted input. Sorting is not a prerequisite for this implementation.",
+    "difficulty": "EASY"
+  },
+  {
+    "id": "q_lesson_brute_force_3",
+    "topicId": "brute_force",
+    "lessonId": "lesson_brute_force_3",
+    "type": "MULTIPLE_CHOICE",
+    "statement": "Why does naive pattern matching try every start position where the pattern fits?",
+    "options": [
+      "A mismatch at one alignment does not rule out a match at the next position",
+      "The text must be sorted alphabetically first",
+      "It can determine the answer without comparing characters",
+      "Each character can be compared only once across the whole text"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "A failed alignment only rules out that one start. The next position may still begin a valid occurrence, including an overlapping match.",
+    "difficulty": "EASY"
+  },
+  {
+    "id": "q_lesson_brute_force_3_2",
+    "topicId": "brute_force",
+    "lessonId": "lesson_brute_force_3",
+    "type": "CODE_OUTPUT",
+    "statement": "Which start indices match the pattern?\n\n```pseudocode\ntext = \"ABABA\"\npattern = \"ABA\"\nprint(naiveMatch(text, pattern))\n```",
+    "options": [
+      "[0]",
+      "[1]",
+      "[0, 2]",
+      "[1, 3]"
+    ],
+    "correctOptionIndex": 2,
+    "explanation": "The pattern matches at text indices 0 through 2 and again at indices 2 through 4. The attempted alignment at index 1 mismatches immediately.",
+    "difficulty": "MEDIUM"
+  },
+  {
+    "id": "q_lesson_brute_force_3_3",
+    "topicId": "brute_force",
+    "lessonId": "lesson_brute_force_3",
+    "type": "TRUE_FALSE",
+    "statement": "Naive pattern matching always takes O(n + m) time for text length n and pattern length m.",
+    "options": [
+      "True",
+      "False"
+    ],
+    "correctOptionIndex": 1,
+    "explanation": "In the worst case it checks up to m characters at each of as many as n - m + 1 alignments, giving O(nm) time when m is no longer than n.",
+    "difficulty": "MEDIUM"
+  },
+  {
+    "id": "q_brute_force_1",
+    "topicId": "brute_force",
+    "lessonId": null,
+    "type": "MULTIPLE_CHOICE",
+    "statement": "What is an important prerequisite for a brute-force search to be correct?",
+    "options": [
+      "Its candidate set must include every possibility allowed by the problem",
+      "The candidates must always be stored in a balanced tree",
+      "Every candidate test must take O(1) time",
+      "The input must be sorted"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "Systematic checking can only guarantee a correct answer if the candidate generation covers the relevant possibilities and the condition is tested correctly.",
+    "difficulty": "EASY"
+  },
+  {
+    "id": "q_brute_force_2",
+    "topicId": "brute_force",
+    "lessonId": null,
+    "type": "CODE_OUTPUT",
+    "statement": "Which pair of indices is returned first?\n\n```pseudocode\nvalues = [1, 5, 3, 4]\ntarget = 7\nfor i from 0 to length(values) - 1:\n    for j from i + 1 to length(values) - 1:\n        if values[i] + values[j] == target:\n            return (i, j)\n```",
+    "options": [
+      "(0, 3)",
+      "(1, 2)",
+      "(2, 3)",
+      "No pair is found"
+    ],
+    "correctOptionIndex": 2,
+    "explanation": "The first two values 1 and 5 sum to 6. The next checks also fail until indices (2, 3): 3 + 4 = 7, so that pair is returned.",
+    "difficulty": "MEDIUM"
+  },
+  {
+    "id": "q_brute_force_3",
+    "topicId": "brute_force",
+    "lessonId": null,
+    "type": "TRUE_FALSE",
+    "statement": "Starting the inner pair loop at i + 1 avoids checking an element with itself and avoids repeating each unordered pair.",
+    "options": [
+      "True",
+      "False"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "For each first index i, only later indices are paired with it. This skips (i, i) and prevents checking both (i, j) and (j, i).",
+    "difficulty": "EASY"
+  },
+  {
+    "id": "q_brute_force_4",
+    "topicId": "brute_force",
+    "lessonId": null,
+    "type": "MULTIPLE_CHOICE",
+    "statement": "How many distinct unordered pairs can be formed from n elements?",
+    "options": [
+      "n",
+      "n(n - 1) / 2",
+      "n^2 + 1",
+      "log n"
+    ],
+    "correctOptionIndex": 1,
+    "explanation": "There are n choices for the first position and n - 1 for the second, but this counts each unordered pair twice. Dividing by 2 gives n(n - 1) / 2.",
+    "difficulty": "MEDIUM"
+  },
+  {
+    "id": "q_brute_force_5",
+    "topicId": "brute_force",
+    "lessonId": null,
+    "type": "CODE_OUTPUT",
+    "statement": "What indices does naive matching return?\n\n```pseudocode\nprint(naiveMatch(\"AAAA\", \"AA\"))\n```",
+    "options": [
+      "[0, 2]",
+      "[0, 1, 2]",
+      "[1, 2]",
+      "[0, 1, 2, 3]"
+    ],
+    "correctOptionIndex": 1,
+    "explanation": "The two-character pattern fits at starts 0, 1, and 2. Each alignment matches, including the overlapping occurrences.",
+    "difficulty": "MEDIUM"
+  },
+  {
+    "id": "q_brute_force_6",
+    "topicId": "brute_force",
+    "lessonId": null,
+    "type": "MULTIPLE_CHOICE",
+    "statement": "What does naive pattern matching return when the pattern is longer than the text?",
+    "options": [
+      "One match at index 0",
+      "Every index in the text",
+      "No matches, because the pattern has no valid alignment",
+      "An error from repeatedly comparing the last character"
+    ],
+    "correctOptionIndex": 2,
+    "explanation": "If the pattern is longer than the text, it cannot fit at any start position, so the set of alignments is empty and there are no matches.",
+    "difficulty": "EASY"
+  },
+  {
+    "id": "q_brute_force_7",
+    "topicId": "brute_force",
+    "lessonId": null,
+    "type": "TRUE_FALSE",
+    "statement": "Brute force is never useful because it is always slower than every other approach.",
+    "options": [
+      "True",
+      "False"
+    ],
+    "correctOptionIndex": 1,
+    "explanation": "Brute force is practical for small candidate sets, provides a simple baseline, and can be easier to verify. Its limitation is that large search spaces may require too much work.",
+    "difficulty": "EASY"
+  },
+  {
+    "id": "q_brute_force_8",
+    "topicId": "brute_force",
+    "lessonId": null,
+    "type": "CODE_OUTPUT",
+    "statement": "Using the lesson's convention that an empty pattern matches every text boundary, what does this call return?\n\n```pseudocode\nprint(naiveMatch(\"CAT\", \"\"))\n```",
+    "options": [
+      "[]",
+      "[0, 1, 2]",
+      "[0, 1, 2, 3]",
+      "An error"
+    ],
+    "correctOptionIndex": 2,
+    "explanation": "An empty pattern uses no characters, so it matches before the first character, between each pair of characters, and after the last one: indices 0 through 3.",
+    "difficulty": "MEDIUM"
   }
 ]

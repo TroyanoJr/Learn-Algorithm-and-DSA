@@ -342,5 +342,77 @@
     "order": 4,
     "xp": 30,
     "contentPath": "files/lessons/lesson_trees_4.md"
+  },
+  {
+    "id": "lesson_divide_conquer_1",
+    "topicId": "divide_conquer",
+    "title": "Divide & Conquer Fundamentals",
+    "order": 1,
+    "xp": 30,
+    "contentPath": "files/lessons/lesson_divide_conquer_1.md"
+  },
+  {
+    "id": "lesson_divide_conquer_2",
+    "topicId": "divide_conquer",
+    "title": "Recursive Binary Search",
+    "order": 2,
+    "xp": 30,
+    "contentPath": "files/lessons/lesson_divide_conquer_2.md"
+  },
+  {
+    "id": "lesson_divide_conquer_3",
+    "topicId": "divide_conquer",
+    "title": "Merge Sort Fundamentals",
+    "order": 3,
+    "xp": 30,
+    "contentPath": "files/lessons/lesson_divide_conquer_3.md"
+  },
+  {
+    "id": "lesson_divide_conquer_4",
+    "topicId": "divide_conquer",
+    "title": "Merge Sort Implementation and Complexity",
+    "order": 4,
+    "xp": 30,
+    "contentPath": "files/lessons/lesson_divide_conquer_4.md"
+  },
+  {
+    "id": "lesson_divide_conquer_5",
+    "topicId": "divide_conquer",
+    "title": "Quick Sort Fundamentals and Partitioning",
+    "order": 5,
+    "xp": 30,
+    "contentPath": "files/lessons/lesson_divide_conquer_5.md"
+  },
+  {
+    "id": "lesson_divide_conquer_6",
+    "topicId": "divide_conquer",
+    "title": "Divide & Conquer Complexity and Trade-offs",
+    "order": 6,
+    "xp": 30,
+    "contentPath": "files/lessons/lesson_divide_conquer_6.md"
+  },
+  {
+    "id": "lesson_brute_force_1",
+    "topicId": "brute_force",
+    "title": "Brute Force Fundamentals",
+    "order": 1,
+    "xp": 30,
+    "contentPath": "files/lessons/lesson_brute_force_1.md"
+  },
+  {
+    "id": "lesson_brute_force_2",
+    "topicId": "brute_force",
+    "title": "Brute Force for Pair Problems",
+    "order": 2,
+    "xp": 30,
+    "contentPath": "files/lessons/lesson_brute_force_2.md"
+  },
+  {
+    "id": "lesson_brute_force_3",
+    "topicId": "brute_force",
+    "title": "Naive String Pattern Matching",
+    "order": 3,
+    "xp": 30,
+    "contentPath": "files/lessons/lesson_brute_force_3.md"
   }
 ]

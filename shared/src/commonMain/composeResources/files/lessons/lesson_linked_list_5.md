@@ -29,7 +29,7 @@ Comparing time complexity clarifies why algorithm selection depends on operation
 - **Linear Search:** Both arrays and linked lists inspect elements sequentially, taking O(n) worst-case time.
 
 ### Insertion and Removal
-- **Head Operations:** Linked lists insert or remove at `head` in O(1) constant time without moving other elements. Arrays require shifting all n elements, taking O(n) time.
+- **Head Operations:** Linked lists insert or remove at `head` in O(1) constant time without moving other elements. Arrays can shift n existing elements for insertion at the beginning and n - 1 remaining elements for removal of the first element. Both take O(n) time because the work grows linearly with the number of elements.
 - **Operations After Known Node:** Once a pointer to node `prev` is known, inserting or unlinking the adjacent node takes O(1) time in a linked list. Finding that node by position or value first takes O(n) traversal time.
 - **Tail Operations:** Appending to a singly linked list with only a `head` reference takes O(n) time to reach the end. With a maintained `tail` reference, appending takes O(1) constant time.
 
