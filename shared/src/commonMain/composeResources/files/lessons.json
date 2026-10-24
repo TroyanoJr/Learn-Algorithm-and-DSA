@@ -278,5 +278,37 @@
     "order": 4,
     "xp": 30,
     "contentPath": "files/lessons/lesson_iteration_recursion_4.md"
+  },
+  {
+    "id": "lesson_hash_tables_1",
+    "topicId": "hash_tables",
+    "title": "Hash Table Fundamentals and Hash Functions",
+    "order": 1,
+    "xp": 30,
+    "contentPath": "files/lessons/lesson_hash_tables_1.md"
+  },
+  {
+    "id": "lesson_hash_tables_2",
+    "topicId": "hash_tables",
+    "title": "Collisions and Collision Resolution",
+    "order": 2,
+    "xp": 30,
+    "contentPath": "files/lessons/lesson_hash_tables_2.md"
+  },
+  {
+    "id": "lesson_hash_tables_3",
+    "topicId": "hash_tables",
+    "title": "Hash Table Operations and Complexity",
+    "order": 3,
+    "xp": 30,
+    "contentPath": "files/lessons/lesson_hash_tables_3.md"
+  },
+  {
+    "id": "lesson_hash_tables_4",
+    "topicId": "hash_tables",
+    "title": "Applications, Trade-offs, and Practical Design",
+    "order": 4,
+    "xp": 30,
+    "contentPath": "files/lessons/lesson_hash_tables_4.md"
   }
 ]

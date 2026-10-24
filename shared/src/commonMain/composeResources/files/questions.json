@@ -2369,5 +2369,315 @@
     "correctOptionIndex": 0,
     "explanation": "A loop and a recursive function can both express repeated work. Recursion uses active call frames and must reach a base case; a loop usually keeps its control state without one frame per iteration.",
     "difficulty": "MEDIUM"
+  },
+  {
+    "id": "q_lesson_hash_tables_1_1",
+    "topicId": "hash_tables",
+    "lessonId": "lesson_hash_tables_1",
+    "type": "MULTIPLE_CHOICE",
+    "statement": "What is the primary role of a hash function in a hash table?",
+    "options": [
+      "To convert arbitrary keys into integer array bucket indices",
+      "To sort elements in ascending order",
+      "To compress the memory size of data values",
+      "To secure network connections against unauthorized access"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "A hash function transforms a key into an integer index (index = hash(key) % capacity) to determine which array bucket holds the value.",
+    "difficulty": "EASY"
+  },
+  {
+    "id": "q_lesson_hash_tables_1_2",
+    "topicId": "hash_tables",
+    "lessonId": "lesson_hash_tables_1",
+    "type": "CODE_OUTPUT",
+    "statement": "What bucket index does this hash calculation produce?\n\n```pseudocode\nfunction hashKey(key, capacity)\n    sum = 0\n    for each char in key do\n        sum = sum + charCode(char)\n    end for\n    return sum % capacity\nend function\n\n// charCode('C') = 67, 'A' = 65, 'T' = 84\nprint(hashKey(\"CAT\", 10))\n```",
+    "options": [
+      "6",
+      "2",
+      "7",
+      "0"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "Summing character codes 67 + 65 + 84 gives 216. 216 % 10 calculates bucket index 6.",
+    "difficulty": "MEDIUM"
+  },
+  {
+    "id": "q_lesson_hash_tables_1_3",
+    "topicId": "hash_tables",
+    "lessonId": "lesson_hash_tables_1",
+    "type": "TRUE_FALSE",
+    "statement": "A deterministic hash function must always produce the exact same hash value when given the exact same key.",
+    "options": [
+      "True",
+      "False"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "Determinism is required so that searching for a key always inspects the same bucket where it was originally inserted.",
+    "difficulty": "EASY"
+  },
+  {
+    "id": "q_lesson_hash_tables_2_1",
+    "topicId": "hash_tables",
+    "lessonId": "lesson_hash_tables_2",
+    "type": "MULTIPLE_CHOICE",
+    "statement": "In separate chaining collision resolution, how are multiple keys that hash to the same bucket stored?",
+    "options": [
+      "In a linked list or chain attached to that bucket",
+      "By overwriting the existing key in the array",
+      "By placing the new key in the first array slot",
+      "By doubling the table size immediately"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "Separate chaining stores a linked list at each bucket, appending colliding entries to that bucket's list.",
+    "difficulty": "EASY"
+  },
+  {
+    "id": "q_lesson_hash_tables_2_2",
+    "topicId": "hash_tables",
+    "lessonId": "lesson_hash_tables_2",
+    "type": "CODE_OUTPUT",
+    "statement": "In a hash table using linear probing of size 5, keys hash as follows: hash('A')=2, hash('B')=2, hash('C')=2. At what index is 'C' inserted?\n\n```pseudocode\n// Slot 2 occupied by 'A'\n// Slot 3 occupied by 'B'\n// Inserting 'C': checks slot 2 (full), checks slot 3 (full), checks slot 4 (empty)\nprint(slotOf(\"C\"))\n```",
+    "options": [
+      "4",
+      "2",
+      "3",
+      "0"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "Linear probing inspects consecutive slots starting from index 2. Slots 2 and 3 are occupied, so 'C' is placed at index 4.",
+    "difficulty": "MEDIUM"
+  },
+  {
+    "id": "q_lesson_hash_tables_2_3",
+    "topicId": "hash_tables",
+    "lessonId": "lesson_hash_tables_2",
+    "type": "TRUE_FALSE",
+    "statement": "Linear probing resolves collisions by storing colliding entries in a linked list attached to the bucket.",
+    "options": [
+      "True",
+      "False"
+    ],
+    "correctOptionIndex": 1,
+    "explanation": "Linear probing is an open addressing strategy that stores entries directly in the main array by probing consecutive open slots.",
+    "difficulty": "EASY"
+  },
+  {
+    "id": "q_lesson_hash_tables_3_1",
+    "topicId": "hash_tables",
+    "lessonId": "lesson_hash_tables_3",
+    "type": "MULTIPLE_CHOICE",
+    "statement": "What is the load factor of a hash table storing 15 elements with a total capacity of 20 buckets?",
+    "options": [
+      "0.75",
+      "1.33",
+      "15",
+      "300"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "Load factor alpha = elements / capacity = 15 / 20 = 0.75.",
+    "difficulty": "EASY"
+  },
+  {
+    "id": "q_lesson_hash_tables_3_2",
+    "topicId": "hash_tables",
+    "lessonId": "lesson_hash_tables_3",
+    "type": "CODE_OUTPUT",
+    "statement": "What capacity is printed after inserting the 4th item?\n\n```pseudocode\ncapacity = 4\nsize = 3\nsize = size + 1\nif (size / capacity) > 0.75 then\n    capacity = capacity * 2\nend if\nprint(capacity)\n```",
+    "options": [
+      "8",
+      "4",
+      "16",
+      "2"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "Size 4 / capacity 4 = 1.0 > 0.75 threshold. Resizing doubles capacity from 4 to 8.",
+    "difficulty": "MEDIUM"
+  },
+  {
+    "id": "q_lesson_hash_tables_3_3",
+    "topicId": "hash_tables",
+    "lessonId": "lesson_hash_tables_3",
+    "type": "TRUE_FALSE",
+    "statement": "Rehashing during a table resize requires recalculating bucket indices for all existing elements using the new capacity.",
+    "options": [
+      "True",
+      "False"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "Because index depends on capacity (hash(key) % new_capacity), every entry must be rehashed and reinserted into the new array.",
+    "difficulty": "EASY"
+  },
+  {
+    "id": "q_lesson_hash_tables_4_1",
+    "topicId": "hash_tables",
+    "lessonId": "lesson_hash_tables_4",
+    "type": "MULTIPLE_CHOICE",
+    "statement": "Which scenario represents a primary limitation of a hash table compared to a balanced binary search tree?",
+    "options": [
+      "Hash tables do not maintain keys in sorted order, making range queries inefficient",
+      "Hash tables cannot store string keys",
+      "Hash tables require O(N) time for single key lookups on average",
+      "Hash tables cannot count frequency of elements"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "Hash tables store entries without preserving key order. Range queries (e.g. keys between X and Y) require scanning all N entries.",
+    "difficulty": "EASY"
+  },
+  {
+    "id": "q_lesson_hash_tables_4_2",
+    "topicId": "hash_tables",
+    "lessonId": "lesson_hash_tables_4",
+    "type": "CODE_OUTPUT",
+    "statement": "What character count is printed?\n\n```pseudocode\ntext = \"banana\"\ncounts = empty map\nfor each c in text do\n    counts[c] = getOrDefault(counts, c, 0) + 1\nend for\nprint(counts[\"a\"])\n```",
+    "options": [
+      "3",
+      "1",
+      "2",
+      "6"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "Character 'a' appears 3 times in 'banana'.",
+    "difficulty": "MEDIUM"
+  },
+  {
+    "id": "q_lesson_hash_tables_4_3",
+    "topicId": "hash_tables",
+    "lessonId": "lesson_hash_tables_4",
+    "type": "TRUE_FALSE",
+    "statement": "Modifying a key object in-place after inserting it into a hash table is safe because the bucket index updates automatically.",
+    "options": [
+      "True",
+      "False"
+    ],
+    "correctOptionIndex": 1,
+    "explanation": "Modifying a key in-place changes its hash value, making the entry unfindable in its original bucket slot.",
+    "difficulty": "EASY"
+  },
+  {
+    "id": "q_hash_tables_1",
+    "topicId": "hash_tables",
+    "lessonId": null,
+    "type": "MULTIPLE_CHOICE",
+    "statement": "What is the primary function of a hash table in computer science?",
+    "options": [
+      "To provide fast average-case O(1) key-value lookup and storage",
+      "To sort arrays in ascending order in O(N log N) time",
+      "To store elements in contiguous sequential memory without gaps",
+      "To manage function call frames during recursion"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "Hash tables convert keys to array bucket indices, providing average O(1) time complexity for lookup, insertion, and deletion.",
+    "difficulty": "EASY"
+  },
+  {
+    "id": "q_hash_tables_2",
+    "topicId": "hash_tables",
+    "lessonId": null,
+    "type": "MULTIPLE_CHOICE",
+    "statement": "What mathematical operation is commonly used to map a large hash code to a valid array bucket index of capacity N?",
+    "options": [
+      "Modulo operation (hash % N)",
+      "Square root operation (sqrt(hash))",
+      "Addition operation (hash + N)",
+      "Bitwise left shift (hash << N)"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "The modulo operator limits any integer hash code to a valid array index range from 0 to N - 1.",
+    "difficulty": "EASY"
+  },
+  {
+    "id": "q_hash_tables_3",
+    "topicId": "hash_tables",
+    "lessonId": null,
+    "type": "MULTIPLE_CHOICE",
+    "statement": "In separate chaining collision resolution, what data structure is traditionally stored in each array bucket?",
+    "options": [
+      "A linked list of key-value pairs",
+      "A binary search tree only",
+      "A fixed 2D matrix",
+      "A single integer pointer"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "Separate chaining handles collisions by storing a linked list at each bucket, appending new entries that hash to the same index.",
+    "difficulty": "MEDIUM"
+  },
+  {
+    "id": "q_hash_tables_4",
+    "topicId": "hash_tables",
+    "lessonId": null,
+    "type": "CODE_OUTPUT",
+    "statement": "What index does linear probing assign to key 'X' in a table of size 10?\n\n```pseudocode\n// hash('X') = 3. Slots 3 and 4 are occupied.\n// Linear probing checks 3 (full), 4 (full), 5 (empty)\nprint(slotOf(\"X\"))\n```",
+    "options": [
+      "5",
+      "3",
+      "4",
+      "0"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "Linear probing inspects consecutive slots starting at index 3: slot 3 is full, slot 4 is full, slot 5 is empty and gets key 'X'.",
+    "difficulty": "MEDIUM"
+  },
+  {
+    "id": "q_hash_tables_5",
+    "topicId": "hash_tables",
+    "lessonId": null,
+    "type": "TRUE_FALSE",
+    "statement": "The load factor of a hash table is defined as the total number of stored elements divided by the total number of buckets.",
+    "options": [
+      "True",
+      "False"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "Load factor alpha = elements / capacity. When alpha exceeds a threshold (e.g. 0.75), rehashing is triggered.",
+    "difficulty": "EASY"
+  },
+  {
+    "id": "q_hash_tables_6",
+    "topicId": "hash_tables",
+    "lessonId": null,
+    "type": "MULTIPLE_CHOICE",
+    "statement": "What is the worst-case time complexity of searching for a key in a hash table when all N keys collide into a single bucket?",
+    "options": [
+      "O(1)",
+      "O(log N)",
+      "O(N)",
+      "O(N²)"
+    ],
+    "correctOptionIndex": 2,
+    "explanation": "When all N keys collide into a single bucket, lookup degenerates to searching a linked list of length N, taking O(N) linear time.",
+    "difficulty": "MEDIUM"
+  },
+  {
+    "id": "q_hash_tables_7",
+    "topicId": "hash_tables",
+    "lessonId": null,
+    "type": "CODE_OUTPUT",
+    "statement": "What value does the lookup return after these operations on an empty map?\n\n```pseudocode\nmap = empty map\nput(map, \"A\", 10)\nput(map, \"B\", 20)\nput(map, \"A\", 30)\nprint(get(map, \"A\"))\n```",
+    "options": [
+      "30",
+      "10",
+      "20",
+      "null"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "Keys in a hash map are unique. Re-inserting key 'A' with value 30 overwrites the previous value 10.",
+    "difficulty": "EASY"
+  },
+  {
+    "id": "q_hash_tables_8",
+    "topicId": "hash_tables",
+    "lessonId": null,
+    "type": "MULTIPLE_CHOICE",
+    "statement": "Why is a balanced Binary Search Tree preferred over a Hash Table for applications requiring range queries?",
+    "options": [
+      "Binary Search Trees maintain keys in sorted order, whereas Hash Tables do not maintain ordered keys",
+      "Binary Search Trees perform O(1) lookups in the worst case",
+      "Hash Tables cannot store numeric integer keys",
+      "Hash Tables require logarithmic memory per element"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "Hash tables store entries based on hash codes without key ordering. Range queries require scanning all N buckets in a hash table, whereas balanced BSTs maintain key order for efficient range searches.",
+    "difficulty": "HARD"
   }
 ]
