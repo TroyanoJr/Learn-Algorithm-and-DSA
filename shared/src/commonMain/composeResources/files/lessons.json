@@ -414,5 +414,45 @@
     "order": 3,
     "xp": 30,
     "contentPath": "files/lessons/lesson_brute_force_3.md"
+  },
+  {
+    "id": "lesson_greedy_1",
+    "topicId": "greedy",
+    "title": "Greedy Algorithm Fundamentals",
+    "order": 1,
+    "xp": 30,
+    "contentPath": "files/lessons/lesson_greedy_1.md"
+  },
+  {
+    "id": "lesson_greedy_2",
+    "topicId": "greedy",
+    "title": "Greedy Coin Change",
+    "order": 2,
+    "xp": 30,
+    "contentPath": "files/lessons/lesson_greedy_2.md"
+  },
+  {
+    "id": "lesson_greedy_3",
+    "topicId": "greedy",
+    "title": "Activity Selection",
+    "order": 3,
+    "xp": 30,
+    "contentPath": "files/lessons/lesson_greedy_3.md"
+  },
+  {
+    "id": "lesson_greedy_4",
+    "topicId": "greedy",
+    "title": "Fractional Knapsack",
+    "order": 4,
+    "xp": 30,
+    "contentPath": "files/lessons/lesson_greedy_4.md"
+  },
+  {
+    "id": "lesson_greedy_5",
+    "topicId": "greedy",
+    "title": "Greedy Counterexamples and Correctness",
+    "order": 5,
+    "xp": 30,
+    "contentPath": "files/lessons/lesson_greedy_5.md"
   }
 ]
