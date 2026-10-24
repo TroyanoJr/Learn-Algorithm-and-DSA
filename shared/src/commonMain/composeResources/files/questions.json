@@ -1897,4 +1897,477 @@
     "explanation": "Wrapping the rear index reuses freed slots, while front and size preserve logical order.",
     "difficulty": "EASY"
   }
+,
+{
+    "id": "q_lesson_iteration_recursion_1",
+    "topicId": "iteration_recursion",
+    "lessonId": "lesson_iteration_recursion_1",
+    "type": "MULTIPLE_CHOICE",
+    "statement": "Which three parts make a loop’s repetition controlled and able to terminate?",
+    "options": [
+      "Initialization, condition, and an update that moves state",
+      "A function, a parameter, and a return value",
+      "A queue, a front, and a rear",
+      "A base case, a call, and a stack frame"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "A loop initializes its state, checks a condition, and updates state so the condition can eventually become false.",
+    "difficulty": "EASY"
+  },
+{
+    "id": "q_lesson_iteration_recursion_1_2",
+    "topicId": "iteration_recursion",
+    "lessonId": "lesson_iteration_recursion_1",
+    "type": "CODE_OUTPUT",
+    "statement": "What value is printed?\n\n```pseudocode\ntotal = 0\nfor i from 1 through 4:\n    total = total + i\nprint(total)\n```",
+    "options": [
+      "4",
+      "6",
+      "10",
+      "15"
+    ],
+    "correctOptionIndex": 2,
+    "explanation": "The loop adds 1 + 2 + 3 + 4, producing 10.",
+    "difficulty": "EASY"
+  },
+{
+    "id": "q_lesson_iteration_recursion_1_3",
+    "topicId": "iteration_recursion",
+    "lessonId": "lesson_iteration_recursion_1",
+    "type": "TRUE_FALSE",
+    "statement": "A loop whose condition starts false skips its body on the first check.",
+    "options": [
+      "True",
+      "False"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "A condition-controlled loop checks before entering its body, so a false initial condition means zero passes.",
+    "difficulty": "EASY"
+  },
+{
+    "id": "q_lesson_iteration_recursion_2",
+    "topicId": "iteration_recursion",
+    "lessonId": "lesson_iteration_recursion_2",
+    "type": "MULTIPLE_CHOICE",
+    "statement": "In nested loops, what does `continue` do when it is inside the inner loop?",
+    "options": [
+      "Skips the rest of the current inner pass and begins its next pass",
+      "Exits every loop immediately",
+      "Restarts the outer loop from its first pass",
+      "Terminates the program"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "Continue affects the nearest enclosing loop, so here it advances the inner loop to its next pass.",
+    "difficulty": "EASY"
+  },
+{
+    "id": "q_lesson_iteration_recursion_2_2",
+    "topicId": "iteration_recursion",
+    "lessonId": "lesson_iteration_recursion_2",
+    "type": "CODE_OUTPUT",
+    "statement": "How many times does `print` run?\n\n```pseudocode\ncount = 0\nfor i from 1 through 3:\n    for j from 1 through i:\n        count = count + 1\nprint(count)\n```",
+    "options": [
+      "3",
+      "5",
+      "6",
+      "9"
+    ],
+    "correctOptionIndex": 2,
+    "explanation": "The inner loop runs 1 time for i=1, 2 times for i=2, and 3 times for i=3: 1+2+3=6.",
+    "difficulty": "MEDIUM"
+  },
+{
+    "id": "q_lesson_iteration_recursion_2_3",
+    "topicId": "iteration_recursion",
+    "lessonId": "lesson_iteration_recursion_2",
+    "type": "TRUE_FALSE",
+    "statement": "If an outer loop runs three times and its inner loop runs twice on every outer pass, the inner body runs six times.",
+    "options": [
+      "True",
+      "False"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "The inner body executes 3 × 2 times when the inner loop has two passes for each of the three outer passes.",
+    "difficulty": "EASY"
+  },
+{
+    "id": "q_lesson_iteration_recursion_3",
+    "topicId": "iteration_recursion",
+    "lessonId": "lesson_iteration_recursion_3",
+    "type": "MULTIPLE_CHOICE",
+    "statement": "What is the base case in a recursive function?",
+    "options": [
+      "A condition that returns an answer without making another recursive call",
+      "The largest input the function can accept",
+      "The first recursive call made",
+      "A loop that updates a variable"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "The base case stops further recursion for that input and begins the returns through earlier calls.",
+    "difficulty": "EASY"
+  },
+{
+    "id": "q_lesson_iteration_recursion_3_2",
+    "topicId": "iteration_recursion",
+    "lessonId": "lesson_iteration_recursion_3",
+    "type": "CODE_OUTPUT",
+    "statement": "What value is printed by this recursive function?\n\n```pseudocode\nfunction sumTo(n):\n    if n == 0: return 0\n    return n + sumTo(n - 1)\nprint(sumTo(3))\n```",
+    "options": [
+      "3",
+      "5",
+      "6",
+      "7"
+    ],
+    "correctOptionIndex": 2,
+    "explanation": "sumTo(0)=0, then sumTo(1)=1, sumTo(2)=3, and sumTo(3)=6.",
+    "difficulty": "MEDIUM"
+  },
+{
+    "id": "q_lesson_iteration_recursion_3_3",
+    "topicId": "iteration_recursion",
+    "lessonId": "lesson_iteration_recursion_3",
+    "type": "TRUE_FALSE",
+    "statement": "In a recursive call, the program keeps information about the unfinished caller on the call stack.",
+    "options": [
+      "True",
+      "False"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "Each active call has a frame so it can resume with its own values when the deeper call returns.",
+    "difficulty": "EASY"
+  },
+{
+    "id": "q_lesson_iteration_recursion_4",
+    "topicId": "iteration_recursion",
+    "lessonId": "lesson_iteration_recursion_4",
+    "type": "MULTIPLE_CHOICE",
+    "statement": "For a direct recursive function that makes n calls before returning, what extra space is commonly needed for its active call frames?",
+    "options": [
+      "O(n)",
+      "O(1) in every case",
+      "O(log n) regardless of recursion depth",
+      "O(n²) for each call"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "The active calls remain on the call stack until they return, so maximum depth n uses O(n) stack space.",
+    "difficulty": "MEDIUM"
+  },
+{
+    "id": "q_lesson_iteration_recursion_4_2",
+    "topicId": "iteration_recursion",
+    "lessonId": "lesson_iteration_recursion_4",
+    "type": "CODE_OUTPUT",
+    "statement": "What sequence is printed?\n\n```pseudocode\nfunction show(n):\n    if n == 0: return\n    print(n)\n    show(n - 1)\nshow(3)\n```",
+    "options": [
+      "1, 2, 3",
+      "3, 2, 1",
+      "0, 1, 2, 3",
+      "3, 2, 1, 0"
+    ],
+    "correctOptionIndex": 1,
+    "explanation": "Each call prints n before calling show(n-1); the base case at zero returns without printing, so output is 3, 2, 1.",
+    "difficulty": "MEDIUM"
+  },
+{
+    "id": "q_lesson_iteration_recursion_4_3",
+    "topicId": "iteration_recursion",
+    "lessonId": "lesson_iteration_recursion_4",
+    "type": "TRUE_FALSE",
+    "statement": "If a recursive function neither reaches a base case nor makes progress toward one, its calls can continue until the call stack is exhausted.",
+    "options": [
+      "True",
+      "False"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "Without termination or progress, each call may create another active frame until the runtime runs out of stack space.",
+    "difficulty": "EASY"
+  },
+  {
+    "id": "q_stack_7",
+    "topicId": "stack",
+    "lessonId": null,
+    "type": "CODE_OUTPUT",
+    "statement": "What value does `peek` return after these operations?\n\n```pseudocode\ns = empty stack\npush(s, 1)\npush(s, 2)\npush(s, 3)\npush(s, 4)\npop(s)\npop(s)\npush(s, 5)\nprint(peek(s))\n```",
+    "options": [
+      "5",
+      "2",
+      "3",
+      "1"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "The two pops remove 4 and then 3, leaving 1 and 2. Pushing 5 places it at the top, so peek returns 5 without removing it.",
+    "difficulty": "MEDIUM"
+  },
+  {
+    "id": "q_stack_8",
+    "topicId": "stack",
+    "lessonId": null,
+    "type": "MULTIPLE_CHOICE",
+    "statement": "Which sequence best models a stack’s LIFO behavior?",
+    "options": [
+      "The most recently added undo action is reversed first",
+      "The oldest print job is handled first",
+      "The smallest value is always removed first",
+      "Items are removed in the order they were inserted"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "Undo commonly reverses the newest action first. That is last-in, first-out behavior: the most recently pushed action is on top.",
+    "difficulty": "EASY"
+  },
+  {
+    "id": "q_queues_1",
+    "topicId": "queues",
+    "lessonId": null,
+    "type": "CODE_OUTPUT",
+    "statement": "What value is printed by the final dequeue?\n\n```pseudocode\nq = empty queue\nenqueue(q, 10)\nenqueue(q, 20)\nenqueue(q, 30)\ndequeue(q)\nenqueue(q, 40)\nprint(dequeue(q))\n```",
+    "options": [
+      "10",
+      "20",
+      "30",
+      "40"
+    ],
+    "correctOptionIndex": 1,
+    "explanation": "The first dequeue removes 10. The remaining FIFO order is 20, 30, 40, so the next dequeue returns 20.",
+    "difficulty": "EASY"
+  },
+  {
+    "id": "q_queues_2",
+    "topicId": "queues",
+    "lessonId": null,
+    "type": "MULTIPLE_CHOICE",
+    "statement": "In a circular array queue of capacity 5, the rear index is 4. Where does the next enqueue place an item if a slot is available?",
+    "options": [
+      "Index 0, by wrapping around",
+      "Index 5, outside the array",
+      "Index 3, before the rear",
+      "At the front index, replacing the oldest item"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "Circular indexing advances with `(rear + 1) % capacity`. For rear 4 and capacity 5, the next index is 0; the queue must still have an available slot.",
+    "difficulty": "MEDIUM"
+  },
+  {
+    "id": "q_queues_3",
+    "topicId": "queues",
+    "lessonId": null,
+    "type": "MULTIPLE_CHOICE",
+    "statement": "With front and rear references, what is the time complexity of enqueue and dequeue in a linked queue when both operations update the appropriate end directly?",
+    "options": [
+      "O(1) for each operation",
+      "O(n) for enqueue and O(1) for dequeue",
+      "O(1) for enqueue and O(n) for dequeue",
+      "O(log n) for each operation"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "Enqueue links one node at the rear and dequeue removes the front node. With both references maintained, neither operation traverses the list, so both take O(1) time.",
+    "difficulty": "MEDIUM"
+  },
+  {
+    "id": "q_queues_4",
+    "topicId": "queues",
+    "lessonId": null,
+    "type": "MULTIPLE_CHOICE",
+    "statement": "What should `dequeue` do when a queue is empty?",
+    "options": [
+      "Report or return an empty-state result without removing an item",
+      "Return the most recently enqueued item",
+      "Create a default item and return it",
+      "Move the rear pointer backward"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "An empty queue has no front item to remove. An implementation should handle underflow explicitly, for example by returning an optional result or reporting an error according to its API.",
+    "difficulty": "EASY"
+  },
+  {
+    "id": "q_queues_5",
+    "topicId": "queues",
+    "lessonId": null,
+    "type": "MULTIPLE_CHOICE",
+    "statement": "Why is a queue useful for breadth-first search (BFS) on an unweighted graph?",
+    "options": [
+      "It processes discovered vertices in arrival order, layer by layer",
+      "It always selects the vertex with the smallest label",
+      "It revisits the newest vertex before older ones",
+      "It sorts all vertices before traversal"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "BFS enqueues newly discovered vertices and removes them in FIFO order. This processes vertices by increasing distance in edges from the starting vertex in an unweighted graph.",
+    "difficulty": "MEDIUM"
+  },
+  {
+    "id": "q_queues_6",
+    "topicId": "queues",
+    "lessonId": null,
+    "type": "MULTIPLE_CHOICE",
+    "statement": "In a circular buffer that uses front and rear indices, why might an implementation also store a `size` value?",
+    "options": [
+      "To distinguish full from empty when the indices alone can look the same",
+      "To keep all elements sorted",
+      "To make dequeue remove from the rear",
+      "To avoid wrapping indices at the end of the array"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "After wraparound, equal or adjacent index states can be ambiguous in some designs. A size count directly distinguishes size 0 (empty) from size equal to capacity (full).",
+    "difficulty": "MEDIUM"
+  },
+  {
+    "id": "q_queues_7",
+    "topicId": "queues",
+    "lessonId": null,
+    "type": "MULTIPLE_CHOICE",
+    "statement": "A standard FIFO queue receives A, then B, then C. Which item is removed first?",
+    "options": [
+      "A",
+      "B",
+      "C",
+      "The item with the shortest name"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "FIFO means first in, first out. A arrived before B and C, so A is at the front and is removed first.",
+    "difficulty": "EASY"
+  },
+  {
+    "id": "q_queues_8",
+    "topicId": "queues",
+    "lessonId": null,
+    "type": "MULTIPLE_CHOICE",
+    "statement": "Which statement correctly describes a queue with a fixed-capacity circular array?",
+    "options": [
+      "It can reuse freed slots by wrapping indices, but enqueue still needs a full-capacity policy",
+      "It grows without limit because its indices wrap",
+      "It must shift every item after each dequeue",
+      "It removes items from whichever end has fewer elements"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "A circular buffer reuses array positions freed by dequeue, avoiding shifts. Its capacity remains fixed unless the implementation adds a resizing strategy, so a full queue must be handled.",
+    "difficulty": "MEDIUM"
+  },
+  {
+    "id": "q_iteration_recursion_1",
+    "topicId": "iteration_recursion",
+    "lessonId": null,
+    "type": "CODE_OUTPUT",
+    "statement": "What does this loop print?\n\n```pseudocode\ntotal = 0\ni = 2\nwhile i <= 6:\n    total = total + i\n    i = i + 2\nprint(total)\n```",
+    "options": [
+      "6",
+      "8",
+      "12",
+      "20"
+    ],
+    "correctOptionIndex": 2,
+    "explanation": "The loop adds 2, then 4, then 6. The next value is 8, so the condition fails; the total printed is 12.",
+    "difficulty": "EASY"
+  },
+  {
+    "id": "q_iteration_recursion_2",
+    "topicId": "iteration_recursion",
+    "lessonId": null,
+    "type": "MULTIPLE_CHOICE",
+    "statement": "A loop starts with `i = 0`, continues while `i < n`, and increments `i` by 1 each pass. How many times does its body run for n >= 0?",
+    "options": [
+      "n times",
+      "n + 1 times",
+      "n - 1 times",
+      "Once, regardless of n"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "The values are 0 through n - 1, which gives n passes. When n is 0, the condition is initially false and the body runs zero times.",
+    "difficulty": "EASY"
+  },
+  {
+    "id": "q_iteration_recursion_3",
+    "topicId": "iteration_recursion",
+    "lessonId": null,
+    "type": "MULTIPLE_CHOICE",
+    "statement": "An outer loop runs 4 times and an inner loop runs 3 times for every outer pass. How many total inner-body executions occur?",
+    "options": [
+      "7",
+      "12",
+      "16",
+      "64"
+    ],
+    "correctOptionIndex": 1,
+    "explanation": "The inner body runs 3 times during each of 4 outer passes, for 4 × 3 = 12 total executions.",
+    "difficulty": "EASY"
+  },
+  {
+    "id": "q_iteration_recursion_4",
+    "topicId": "iteration_recursion",
+    "lessonId": null,
+    "type": "MULTIPLE_CHOICE",
+    "statement": "Inside a loop, what is the usual effect of `continue`?",
+    "options": [
+      "Skip the rest of the current pass and proceed to the next pass",
+      "Exit the program",
+      "Exit every enclosing loop",
+      "Restart the function from its first statement"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "Continue advances the nearest enclosing loop to its next iteration. It does not normally terminate the loop or the program.",
+    "difficulty": "EASY"
+  },
+  {
+    "id": "q_iteration_recursion_5",
+    "topicId": "iteration_recursion",
+    "lessonId": null,
+    "type": "MULTIPLE_CHOICE",
+    "statement": "What is essential for a recursive function to terminate for inputs in its intended domain?",
+    "options": [
+      "A reachable base case and recursive calls that make progress toward it",
+      "A loop nested inside every recursive call",
+      "A global variable shared by all calls",
+      "A call to itself with the same input"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "The base case stops recursion, and each recursive path must eventually reach it. Repeating the same state without progress can recurse indefinitely.",
+    "difficulty": "MEDIUM"
+  },
+  {
+    "id": "q_iteration_recursion_6",
+    "topicId": "iteration_recursion",
+    "lessonId": null,
+    "type": "CODE_OUTPUT",
+    "statement": "What value is returned by `countDown(3)`?\n\n```pseudocode\nfunction countDown(n):\n    if n == 0: return 0\n    return 1 + countDown(n - 1)\n```",
+    "options": [
+      "0",
+      "2",
+      "3",
+      "4"
+    ],
+    "correctOptionIndex": 2,
+    "explanation": "The calls are countDown(3), countDown(2), countDown(1), and countDown(0). The base returns 0; the three pending calls each add 1, giving 3.",
+    "difficulty": "MEDIUM"
+  },
+  {
+    "id": "q_iteration_recursion_7",
+    "topicId": "iteration_recursion",
+    "lessonId": null,
+    "type": "MULTIPLE_CHOICE",
+    "statement": "A recursive function makes one call for each integer from n down to 0, with no tail-call optimization. What is its maximum call-stack space in terms of n?",
+    "options": [
+      "O(n)",
+      "O(1)",
+      "O(log n)",
+      "O(n²)"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "There are n + 1 active calls at the deepest point, so the number of simultaneous call frames grows linearly: O(n) space.",
+    "difficulty": "MEDIUM"
+  },
+  {
+    "id": "q_iteration_recursion_8",
+    "topicId": "iteration_recursion",
+    "lessonId": null,
+    "type": "MULTIPLE_CHOICE",
+    "statement": "For a simple counting task with a clear loop, which comparison between iteration and recursion is generally accurate?",
+    "options": [
+      "Both can express the repetition, while recursion also uses call frames and needs a terminating base case",
+      "Recursion always uses less memory than iteration",
+      "Iteration always creates one call frame per pass",
+      "Only recursion can repeat an operation"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "A loop and a recursive function can both express repeated work. Recursion uses active call frames and must reach a base case; a loop usually keeps its control state without one frame per iteration.",
+    "difficulty": "MEDIUM"
+  }
 ]

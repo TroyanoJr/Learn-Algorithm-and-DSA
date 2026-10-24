@@ -246,5 +246,37 @@
     "order": 4,
     "xp": 30,
     "contentPath": "files/lessons/lesson_queues_4.md"
+  },
+  {
+    "id": "lesson_iteration_recursion_1",
+    "topicId": "iteration_recursion",
+    "title": "Iteration Fundamentals",
+    "order": 1,
+    "xp": 30,
+    "contentPath": "files/lessons/lesson_iteration_recursion_1.md"
+  },
+  {
+    "id": "lesson_iteration_recursion_2",
+    "topicId": "iteration_recursion",
+    "title": "Nested Iteration and Loop Control",
+    "order": 2,
+    "xp": 30,
+    "contentPath": "files/lessons/lesson_iteration_recursion_2.md"
+  },
+  {
+    "id": "lesson_iteration_recursion_3",
+    "topicId": "iteration_recursion",
+    "title": "Recursion Fundamentals",
+    "order": 3,
+    "xp": 30,
+    "contentPath": "files/lessons/lesson_iteration_recursion_3.md"
+  },
+  {
+    "id": "lesson_iteration_recursion_4",
+    "topicId": "iteration_recursion",
+    "title": "Recursion Patterns and Trade-offs",
+    "order": 4,
+    "xp": 30,
+    "contentPath": "files/lessons/lesson_iteration_recursion_4.md"
   }
 ]
