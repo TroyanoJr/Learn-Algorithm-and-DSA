@@ -182,5 +182,69 @@
     "order": 5,
     "xp": 30,
     "contentPath": "files/lessons/lesson_linked_list_5.md"
+  },
+  {
+    "id": "lesson_stack_1",
+    "topicId": "stack",
+    "title": "Stack Fundamentals and LIFO",
+    "order": 1,
+    "xp": 30,
+    "contentPath": "files/lessons/lesson_stack_1.md"
+  },
+  {
+    "id": "lesson_stack_2",
+    "topicId": "stack",
+    "title": "Stack Operations and Complexity",
+    "order": 2,
+    "xp": 30,
+    "contentPath": "files/lessons/lesson_stack_2.md"
+  },
+  {
+    "id": "lesson_stack_3",
+    "topicId": "stack",
+    "title": "Array and Linked Stack Implementations",
+    "order": 3,
+    "xp": 30,
+    "contentPath": "files/lessons/lesson_stack_3.md"
+  },
+  {
+    "id": "lesson_stack_4",
+    "topicId": "stack",
+    "title": "Call Stacks, Delimiters, and Applications",
+    "order": 4,
+    "xp": 30,
+    "contentPath": "files/lessons/lesson_stack_4.md"
+  },
+  {
+    "id": "lesson_queues_1",
+    "topicId": "queues",
+    "title": "Queue Fundamentals and FIFO",
+    "order": 1,
+    "xp": 30,
+    "contentPath": "files/lessons/lesson_queues_1.md"
+  },
+  {
+    "id": "lesson_queues_2",
+    "topicId": "queues",
+    "title": "Queue Operations and Complexity",
+    "order": 2,
+    "xp": 30,
+    "contentPath": "files/lessons/lesson_queues_2.md"
+  },
+  {
+    "id": "lesson_queues_3",
+    "topicId": "queues",
+    "title": "Array and Linked Queue Implementations",
+    "order": 3,
+    "xp": 30,
+    "contentPath": "files/lessons/lesson_queues_3.md"
+  },
+  {
+    "id": "lesson_queues_4",
+    "topicId": "queues",
+    "title": "Queue Applications and Circular Buffers",
+    "order": 4,
+    "xp": 30,
+    "contentPath": "files/lessons/lesson_queues_4.md"
   }
 ]

@@ -1295,7 +1295,7 @@
     "topicId": "linked_list",
     "lessonId": "lesson_linked_list_1",
     "type": "CODE_OUTPUT",
-  "statement": "What does this code print?\n\n```pseudocode\nhead = Node(4)\nhead.next = Node(9)\nprint(head.data)\nprint(head.next.data)\n```",
+    "statement": "What does this code print?\n\n```pseudocode\nhead = Node(4)\nhead.next = Node(9)\nprint(head.data)\nprint(head.next.data)\n```",
     "options": [
       "4 then 9",
       "9 then 4",
@@ -1325,7 +1325,7 @@
     "topicId": "linked_list",
     "lessonId": "lesson_linked_list_2",
     "type": "CODE_OUTPUT",
-  "statement": "What value is reached at zero-based position 2?\n\n```pseudocode\nhead = Node(12)\nhead.next = Node(7)\nhead.next.next = Node(19)\ncurrent = head\ncurrent = current.next\ncurrent = current.next\nprint(current.data)\n```",
+    "statement": "What value is reached at zero-based position 2?\n\n```pseudocode\nhead = Node(12)\nhead.next = Node(7)\nhead.next.next = Node(19)\ncurrent = head\ncurrent = current.next\ncurrent = current.next\nprint(current.data)\n```",
     "options": [
       "12",
       "7",
@@ -1355,7 +1355,7 @@
     "topicId": "linked_list",
     "lessonId": "lesson_linked_list_3",
     "type": "CODE_OUTPUT",
-  "statement": "What values are in the list after inserting 8 after the node containing 5?\n\n```pseudocode\nfirst = Node(5)\nlast = Node(9)\nfirst.next = last\nnewNode = Node(8)\nnewNode.next = first.next\nfirst.next = newNode\nprint(first.data, first.next.data, first.next.next.data)\n```",
+    "statement": "What values are in the list after inserting 8 after the node containing 5?\n\n```pseudocode\nfirst = Node(5)\nlast = Node(9)\nfirst.next = last\nnewNode = Node(8)\nnewNode.next = first.next\nfirst.next = newNode\nprint(first.data, first.next.data, first.next.next.data)\n```",
     "options": [
       "5, 8, 9",
       "5, 9, 8",
@@ -1385,7 +1385,7 @@
     "topicId": "linked_list",
     "lessonId": "lesson_linked_list_4",
     "type": "CODE_OUTPUT",
-  "statement": "What values remain after removing the node containing 7?\n\n```pseudocode\nfirst = Node(4)\nmiddle = Node(7)\nlast = Node(9)\nfirst.next = middle\nmiddle.next = last\nfirst.next = middle.next\nprint(first.data, first.next.data)\n```",
+    "statement": "What values remain after removing the node containing 7?\n\n```pseudocode\nfirst = Node(4)\nmiddle = Node(7)\nlast = Node(9)\nfirst.next = middle\nmiddle.next = last\nfirst.next = middle.next\nprint(first.data, first.next.data)\n```",
     "options": [
       "4, 9",
       "4, 7, 9",
@@ -1415,7 +1415,7 @@
     "topicId": "linked_list",
     "lessonId": "lesson_linked_list_5",
     "type": "CODE_OUTPUT",
-  "statement": "What does the backward traversal print?\n\n```pseudocode\nfirst = Node(4)\ntail = Node(9)\nfirst.prev = null\nfirst.next = tail\ntail.prev = first\ntail.next = null\ncurrent = tail\nwhile current != null do\n    print(current.data)\n    current = current.prev\nend while\n```",
+    "statement": "What does the backward traversal print?\n\n```pseudocode\nfirst = Node(4)\ntail = Node(9)\nfirst.prev = null\nfirst.next = tail\ntail.prev = first\ntail.next = null\ncurrent = tail\nwhile current != null do\n    print(current.data)\n    current = current.prev\nend while\n```",
     "options": [
       "9 then 4",
       "4 then 9",
@@ -1423,7 +1423,7 @@
       "Nothing"
     ],
     "correctOptionIndex": 0,
-  "explanation": "The tail node contains 9 and its prev reference points to the node containing 4. That node's prev reference is null, so the traversal prints 9 then 4 and stops.",
+    "explanation": "The tail node contains 9 and its prev reference points to the node containing 4. That node's prev reference is null, so the traversal prints 9 then 4 and stops.",
     "difficulty": "MEDIUM"
   },
   {
@@ -1438,6 +1438,463 @@
     ],
     "correctOptionIndex": 0,
     "explanation": "The lesson describes both references: head points to the first node and tail points to the last node.",
+    "difficulty": "EASY"
+  },
+  {
+    "id": "q_lesson_stack_1_1",
+    "topicId": "stack",
+    "lessonId": "lesson_stack_1",
+    "type": "MULTIPLE_CHOICE",
+    "statement": "A stack contains [A, B, C] from bottom to top. What does pop return?",
+    "options": [
+      "A",
+      "B",
+      "C",
+      "The stack is empty"
+    ],
+    "correctOptionIndex": 2,
+    "explanation": "LIFO removes the newest item, C.",
+    "difficulty": "EASY"
+  },
+  {
+    "id": "q_lesson_stack_1_2",
+    "topicId": "stack",
+    "lessonId": "lesson_stack_1",
+    "type": "CODE_OUTPUT",
+    "statement": "What remains after these operations?\n\n```pseudocode\npush(2); push(5); pop(); push(7)\n```",
+    "options": [
+      "[2, 5, 7]",
+      "[2, 7]",
+      "[5, 7]",
+      "[2]"
+    ],
+    "correctOptionIndex": 1,
+    "explanation": "Pop removes 5, then 7 is pushed; bottom to top is [2, 7].",
+    "difficulty": "MEDIUM"
+  },
+  {
+    "id": "q_lesson_stack_1_3",
+    "topicId": "stack",
+    "lessonId": "lesson_stack_1",
+    "type": "TRUE_FALSE",
+    "statement": "An empty stack has no top element to peek.",
+    "options": [
+      "True",
+      "False"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "There is no item to inspect until one has been pushed.",
+    "difficulty": "EASY"
+  },
+  {
+    "id": "q_lesson_stack_2_1",
+    "topicId": "stack",
+    "lessonId": "lesson_stack_2",
+    "type": "MULTIPLE_CHOICE",
+    "statement": "Which operation reads the top value without removing it?",
+    "options": [
+      "push",
+      "pop",
+      "peek",
+      "clear"
+    ],
+    "correctOptionIndex": 2,
+    "explanation": "Peek (or top) returns the current top and leaves the stack unchanged.",
+    "difficulty": "EASY"
+  },
+  {
+    "id": "q_lesson_stack_2_2",
+    "topicId": "stack",
+    "lessonId": "lesson_stack_2",
+    "type": "CODE_OUTPUT",
+    "statement": "What values are printed by these stack operations?\n\n```pseudocode\nstack = empty stack\npush(stack, 7)\npush(stack, 4)\nobserved = peek(stack)\nremoved = pop(stack)\nprint(observed, removed, peek(stack))\n```",
+    "options": [
+      "4, 4, 7",
+      "4, 7, 7",
+      "7, 4, 4",
+      "4, 4, empty"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "Peek observes 4 without removing it; pop then returns that same 4, leaving 7 at the top.",
+    "difficulty": "MEDIUM"
+  },
+  {
+    "id": "q_lesson_stack_2_3",
+    "topicId": "stack",
+    "lessonId": "lesson_stack_2",
+    "type": "TRUE_FALSE",
+    "statement": "Calling pop on an empty stack has no top item to return, so the caller must handle the API's empty-stack behavior.",
+    "options": [
+      "True",
+      "False"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "An empty stack has no top value; depending on the API, pop must report underflow or return a documented empty result.",
+    "difficulty": "EASY"
+  },
+  {
+    "id": "q_lesson_stack_3_1",
+    "topicId": "stack",
+    "lessonId": "lesson_stack_3",
+    "type": "MULTIPLE_CHOICE",
+    "statement": "In an array-backed stack, where is the efficient top usually kept?",
+    "options": [
+      "At the array end",
+      "At index 0 requiring shifts",
+      "In every array cell",
+      "Outside the array"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "Appending and removing at the end avoids shifting existing elements.",
+    "difficulty": "EASY"
+  },
+  {
+    "id": "q_lesson_stack_3_2",
+    "topicId": "stack",
+    "lessonId": "lesson_stack_3",
+    "type": "CODE_OUTPUT",
+    "statement": "What value does pop return, and what remains at the top?\n\n```pseudocode\ntop = null\npush(5)\npush(9)\nremoved = pop()\nprint(removed, top.value)\n```",
+    "options": [
+      "9, 5",
+      "5, 9",
+      "9, empty",
+      "5, empty"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "Push makes 9 the head above 5. Pop returns 9 and advances the head to the node containing 5.",
+    "difficulty": "MEDIUM"
+  },
+  {
+    "id": "q_lesson_stack_3_3",
+    "topicId": "stack",
+    "lessonId": "lesson_stack_3",
+    "type": "TRUE_FALSE",
+    "statement": "Each linked-list stack item needs a node link, while a dynamic array stores items compactly in contiguous slots.",
+    "options": [
+      "True",
+      "False"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "Linked nodes carry link and allocation overhead; arrays store elements compactly in contiguous storage.",
+    "difficulty": "EASY"
+  },
+  {
+    "id": "q_lesson_stack_4_1",
+    "topicId": "stack",
+    "lessonId": "lesson_stack_4",
+    "type": "MULTIPLE_CHOICE",
+    "statement": "When a function calls another function, what happens to the call stack?",
+    "options": [
+      "The caller frame is removed permanently",
+      "A new frame is placed above the caller",
+      "All frames are sorted",
+      "The stack becomes a queue"
+    ],
+    "correctOptionIndex": 1,
+    "explanation": "The callee frame is pushed; returning removes it and resumes the caller.",
+    "difficulty": "EASY"
+  },
+  {
+    "id": "q_lesson_stack_4_2",
+    "topicId": "stack",
+    "lessonId": "lesson_stack_4",
+    "type": "CODE_OUTPUT",
+    "statement": "What does this code print using the `isBalanced` algorithm from the lesson?\n\n```pseudocode\ntext = \"([{}])\"\nprint(isBalanced(text))\n```",
+    "options": [
+      "Yes; each closer matches the latest opener",
+      "No; different delimiter types cannot be nested",
+      "No; the stack ends non-empty",
+      "Yes; closers are ignored"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "The closing brace, bracket, and parenthesis match and pop their corresponding top openings in order.",
+    "difficulty": "MEDIUM"
+  },
+  {
+    "id": "q_lesson_stack_4_3",
+    "topicId": "stack",
+    "lessonId": "lesson_stack_4",
+    "type": "TRUE_FALSE",
+    "statement": "An undo history commonly uses LIFO behavior because the most recent action is undone first.",
+    "options": [
+      "True",
+      "False"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "Undo reverses the newest unfinished action before older actions, which is last in, first out.",
+    "difficulty": "EASY"
+  },
+  {
+    "id": "q_stack_1",
+    "topicId": "stack",
+    "type": "CODE_OUTPUT",
+    "statement": "After these stack operations, what does peek return?\n\n```pseudocode\npush(3)\npush(6)\npush(9)\npop()\npeek()\n```",
+    "options": [
+      "3",
+      "6",
+      "9",
+      "The stack is empty"
+    ],
+    "correctOptionIndex": 1,
+    "explanation": "Pop removes 9, leaving 6 at the top.",
+    "difficulty": "EASY"
+  },
+  {
+    "id": "q_stack_2",
+    "topicId": "stack",
+    "type": "MULTIPLE_CHOICE",
+    "statement": "A caller wants to remove the top item safely. What must it handle?",
+    "options": [
+      "Empty-stack underflow",
+      "Array indexing order",
+      "Sorting first",
+      "A mandatory traversal"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "Pop on an empty stack has no item to return; handle the API’s empty result/error.",
+    "difficulty": "EASY"
+  },
+  {
+    "id": "q_stack_3",
+    "topicId": "stack",
+    "type": "MULTIPLE_CHOICE",
+    "statement": "Which statement compares array and linked stacks accurately?",
+    "options": [
+      "Both can implement O(1) top operations; linked nodes use extra link storage",
+      "Arrays require one allocation per item",
+      "Linked stacks need shifting on every push",
+      "Only arrays can grow"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "Both can keep the top at an efficient endpoint; linked nodes add pointer overhead.",
+    "difficulty": "EASY"
+  },
+  {
+    "id": "q_stack_4",
+    "topicId": "stack",
+    "type": "TRUE_FALSE",
+    "statement": "Dynamic-array push is amortized O(1), though a resizing push can take O(n).",
+    "options": [
+      "True",
+      "False"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "Most pushes are constant time; occasional copying of n elements makes one push linear.",
+    "difficulty": "EASY"
+  },
+  {
+    "id": "q_stack_5",
+    "topicId": "stack",
+    "type": "MULTIPLE_CHOICE",
+    "statement": "During delimiter checking, a closing `]` arrives while `(` is on top. What should happen?",
+    "options": [
+      "Reject: delimiter types do not match",
+      "Pop and accept any opener",
+      "Push the closing bracket",
+      "Ignore it"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "A closer must match the most recent opener, so `]` cannot close `(`.",
+    "difficulty": "EASY"
+  },
+  {
+    "id": "q_stack_6",
+    "topicId": "stack",
+    "type": "MULTIPLE_CHOICE",
+    "statement": "When a nested function returns, what happens to its call frame?",
+    "options": [
+      "It is popped, resuming its caller",
+      "It remains top forever",
+      "It moves to the bottom",
+      "It is copied into every caller"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "Returning removes the active callee frame and restores the caller’s execution context.",
+    "difficulty": "EASY"
+  }
+,
+{
+    "id": "q_lesson_queues_1",
+    "topicId": "queues",
+    "lessonId": "lesson_queues_1",
+    "type": "MULTIPLE_CHOICE",
+    "statement": "Which rule describes a queue?",
+    "options": [
+      "First in, first out",
+      "Last in, first out",
+      "Remove the smallest value first",
+      "Items leave in random order"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "A queue removes items in arrival order: the earliest enqueued item leaves first.",
+    "difficulty": "EASY"
+  },
+{
+    "id": "q_lesson_queues_1_2",
+    "topicId": "queues",
+    "lessonId": "lesson_queues_1",
+    "type": "CODE_OUTPUT",
+    "statement": "What does the final print display?\n\n```pseudocode\nq = empty queue\nenqueue(q, 3)\nenqueue(q, 8)\ndequeue(q)\nprint(front(q))\n```",
+    "options": [
+      "3",
+      "8",
+      "3, 8",
+      "empty"
+    ],
+    "correctOptionIndex": 1,
+    "explanation": "Dequeue removes the first item, 3. The remaining front is 8.",
+    "difficulty": "MEDIUM"
+  },
+{
+    "id": "q_lesson_queues_1_3",
+    "topicId": "queues",
+    "lessonId": "lesson_queues_1",
+    "type": "TRUE_FALSE",
+    "statement": "A queue removes the earliest enqueued item before later items.",
+    "options": [
+      "True",
+      "False"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "FIFO means first in, first out, so the front item is the earliest one still waiting.",
+    "difficulty": "EASY"
+  },
+{
+    "id": "q_lesson_queues_2",
+    "topicId": "queues",
+    "lessonId": "lesson_queues_2",
+    "type": "MULTIPLE_CHOICE",
+    "statement": "With front and rear references maintained, what is the typical time for enqueue in a linked queue?",
+    "options": [
+      "O(1)",
+      "O(log n)",
+      "O(n)",
+      "O(n²)"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "A rear reference lets enqueue link the new node directly without traversing the queue.",
+    "difficulty": "EASY"
+  },
+{
+    "id": "q_lesson_queues_2_2",
+    "topicId": "queues",
+    "lessonId": "lesson_queues_2",
+    "type": "CODE_OUTPUT",
+    "statement": "What values are printed?\n\n```pseudocode\nq = empty queue\nenqueue(q, 7)\nenqueue(q, 4)\nfirst = front(q)\nremoved = dequeue(q)\nprint(first, removed, front(q))\n```",
+    "options": [
+      "7, 7, 4",
+      "7, 4, 7",
+      "4, 7, 4",
+      "7, 7, empty"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "Front observes 7. Dequeue then returns and removes 7, leaving 4 at the front.",
+    "difficulty": "MEDIUM"
+  },
+{
+    "id": "q_lesson_queues_2_3",
+    "topicId": "queues",
+    "lessonId": "lesson_queues_2",
+    "type": "TRUE_FALSE",
+    "statement": "Removing the front item from a basic array queue that shifts all remaining items can take O(n) time.",
+    "options": [
+      "True",
+      "False"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "After removing the front, shifting each of the remaining items takes time proportional to the queue length. A circular array avoids this shift.",
+    "difficulty": "EASY"
+  },
+{
+    "id": "q_lesson_queues_3",
+    "topicId": "queues",
+    "lessonId": "lesson_queues_3",
+    "type": "MULTIPLE_CHOICE",
+    "statement": "Why does a circular array queue track its size as well as its front index?",
+    "options": [
+      "To distinguish empty from full when the indices wrap to the same position",
+      "To sort items before dequeue",
+      "To make the array contiguous",
+      "To store the queue capacity twice"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "When front and rear positions coincide after wraparound, size distinguishes an empty queue from a full one.",
+    "difficulty": "MEDIUM"
+  },
+{
+    "id": "q_lesson_queues_3_2",
+    "topicId": "queues",
+    "lessonId": "lesson_queues_3",
+    "type": "CODE_OUTPUT",
+    "statement": "A circular queue has capacity 3. What does the final print show?\n\n```pseudocode\nq = new circular queue(3)\nenqueue(q, 4)\nenqueue(q, 5)\ndequeue(q)\nenqueue(q, 6)\nprint(front(q))\n```",
+    "options": [
+      "4",
+      "5",
+      "6",
+      "empty"
+    ],
+    "correctOptionIndex": 1,
+    "explanation": "Dequeue removes 4. Enqueueing 6 uses the freed slot; FIFO order is now 5, 6, so the front is 5.",
+    "difficulty": "MEDIUM"
+  },
+{
+    "id": "q_lesson_queues_3_3",
+    "topicId": "queues",
+    "lessonId": "lesson_queues_3",
+    "type": "TRUE_FALSE",
+    "statement": "When a linked queue removes its final node, its rear reference should also be set to null.",
+    "options": [
+      "True",
+      "False"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "Both ends must indicate the empty state; otherwise rear would point to a removed node.",
+    "difficulty": "EASY"
+  },
+{
+    "id": "q_lesson_queues_4",
+    "topicId": "queues",
+    "lessonId": "lesson_queues_4",
+    "type": "MULTIPLE_CHOICE",
+    "statement": "Which workload is naturally processed with FIFO ordering?",
+    "options": [
+      "Printer jobs handled in the order submitted",
+      "Undo actions reversed newest first",
+      "Selecting the smallest item repeatedly",
+      "Exploring the newest pending node first"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "A printer queue typically handles submitted jobs in arrival order.",
+    "difficulty": "EASY"
+  },
+{
+    "id": "q_lesson_queues_4_2",
+    "topicId": "queues",
+    "lessonId": "lesson_queues_4",
+    "type": "CODE_OUTPUT",
+    "statement": "What job is printed second?\n\n```pseudocode\njobs = empty queue\nenqueue(jobs, \"report\")\nenqueue(jobs, \"receipt\")\nprint(dequeue(jobs))\nprint(dequeue(jobs))\n```",
+    "options": [
+      "report",
+      "receipt",
+      "report and receipt on one line",
+      "nothing"
+    ],
+    "correctOptionIndex": 1,
+    "explanation": "The first dequeue prints report; receipt is next in FIFO order and is printed second.",
+    "difficulty": "MEDIUM"
+  },
+{
+    "id": "q_lesson_queues_4_3",
+    "topicId": "queues",
+    "lessonId": "lesson_queues_4",
+    "type": "TRUE_FALSE",
+    "statement": "A circular buffer can reuse array slots freed by dequeue while preserving the queue’s logical FIFO order.",
+    "options": [
+      "True",
+      "False"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "Wrapping the rear index reuses freed slots, while front and size preserve logical order.",
     "difficulty": "EASY"
   }
 ]

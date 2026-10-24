@@ -36,7 +36,9 @@ class ContentRepositoryTest {
         "lesson_arrays_1", "lesson_arrays_2", "lesson_arrays_3", "lesson_arrays_4", "lesson_arrays_5",
         "searching_1", "searching_2", "searching_3", "searching_4",
         "sorting_1", "sorting_2", "sorting_3", "sorting_4", "sorting_5",
-        "lesson_linked_list_1", "lesson_linked_list_2", "lesson_linked_list_3", "lesson_linked_list_4", "lesson_linked_list_5"
+        "lesson_linked_list_1", "lesson_linked_list_2", "lesson_linked_list_3", "lesson_linked_list_4", "lesson_linked_list_5",
+        "lesson_stack_1", "lesson_stack_2", "lesson_stack_3", "lesson_stack_4",
+        "lesson_queues_1", "lesson_queues_2", "lesson_queues_3", "lesson_queues_4"
     )
 
     @Test
@@ -53,14 +55,18 @@ class ContentRepositoryTest {
         val searchLessons = repository.getLessonsByTopic("linear_search")
         val sortingLessons = repository.getLessonsByTopic("sorting")
         val linkedListLessons = repository.getLessonsByTopic("linked_list")
-        val totalLessons = dsIntroLessons.size + algoIntroLessons.size + arraysLessons.size + searchLessons.size + sortingLessons.size + linkedListLessons.size
-        assertEquals(23, totalLessons, "Should load exactly 23 lessons total")
+        val stackLessons = repository.getLessonsByTopic("stack")
+        val queueLessons = repository.getLessonsByTopic("queues")
+        val totalLessons = dsIntroLessons.size + algoIntroLessons.size + arraysLessons.size + searchLessons.size + sortingLessons.size + linkedListLessons.size + stackLessons.size + queueLessons.size
+        assertEquals(31, totalLessons, "Should load exactly 31 lessons total")
         assertEquals(2, dsIntroLessons.size, "DS Intro should have 2 lessons")
         assertEquals(2, algoIntroLessons.size, "Algo Intro should have 2 lessons")
         assertEquals(5, arraysLessons.size, "Arrays should have 5 lessons")
         assertEquals(4, searchLessons.size, "Searching should have 4 lessons")
         assertEquals(5, sortingLessons.size, "Sorting should have 5 lessons")
         assertEquals(5, linkedListLessons.size, "Linked List should have 5 lessons")
+        assertEquals(4, stackLessons.size, "Stack should have 4 lessons")
+        assertEquals(4, queueLessons.size, "Queues should have 4 lessons")
     }
 
     @Test
@@ -271,27 +277,28 @@ class ContentRepositoryTest {
         val searchQuizQuestions = repository.getQuestionsByTopic("linear_search")
         val sortingQuizQuestions = repository.getQuestionsByTopic("sorting")
         val linkedListQuizQuestions = repository.getQuestionsByTopic("linked_list")
-        val quizTotal = arraysQuizQuestions.size + searchQuizQuestions.size + sortingQuizQuestions.size + linkedListQuizQuestions.size
-        assertEquals(29, quizTotal, "Topic quizzes should return exactly 29 questions with lessonId == null")
+        val stackQuizQuestions = repository.getQuestionsByTopic("stack")
+        val quizTotal = arraysQuizQuestions.size + searchQuizQuestions.size + sortingQuizQuestions.size + linkedListQuizQuestions.size + stackQuizQuestions.size
+        assertEquals(35, quizTotal, "Topic quizzes should return exactly 35 questions with lessonId == null")
 
         var lessonQuestionsTotal = 0
         allLessonIds.forEach { lessonId ->
             val lessonQs = repository.getQuestionsByLessonId(lessonId)
             lessonQuestionsTotal += lessonQs.size
         }
-        assertEquals(69, lessonQuestionsTotal, "Should load 69 lesson-specific questions")
-        assertEquals(98, quizTotal + lessonQuestionsTotal, "Total questions across quizzes and lessons must be 98")
+        assertEquals(93, lessonQuestionsTotal, "Should load 93 lesson-specific questions")
+        assertEquals(128, quizTotal + lessonQuestionsTotal, "Total questions across quizzes and lessons must be 128")
     }
 
     @Test
     fun testAllQuestionIdsAreUnique() = runBlocking {
-        val quizQuestions = listOf("arrays", "linear_search", "sorting", "linked_list").flatMap { repository.getQuestionsByTopic(it) }
+        val quizQuestions = listOf("arrays", "linear_search", "sorting", "linked_list", "stack").flatMap { repository.getQuestionsByTopic(it) }
         val lessonQuestions = allLessonIds.flatMap { repository.getQuestionsByLessonId(it) }
         val allQuestions = quizQuestions + lessonQuestions
 
-        assertEquals(98, allQuestions.size, "Total collected questions must be 98")
+        assertEquals(128, allQuestions.size, "Total collected questions must be 128")
         val uniqueIds = allQuestions.map { it.id }.toSet()
-        assertEquals(98, uniqueIds.size, "All question IDs must be unique")
+        assertEquals(128, uniqueIds.size, "All question IDs must be unique")
     }
 
     @Test
@@ -309,23 +316,23 @@ class ContentRepositoryTest {
 
     @Test
     fun testExpandedQuestionTypesAndLessonMappings() = runBlocking {
-        val topicQuestions = listOf("arrays", "linear_search", "sorting", "linked_list")
+        val topicQuestions = listOf("arrays", "linear_search", "sorting", "linked_list", "stack")
             .flatMap { repository.getQuestionsByTopic(it) }
-        assertEquals(29, topicQuestions.size)
+        assertEquals(35, topicQuestions.size)
         assertTrue(topicQuestions.all { it.lessonId == null })
 
         val lessonQuestions = allLessonIds.flatMap { repository.getQuestionsByLessonId(it) }
-        assertEquals(69, lessonQuestions.size)
+        assertEquals(93, lessonQuestions.size)
         assertTrue(lessonQuestions.all { it.lessonId in allLessonIds })
-        assertEquals(98, topicQuestions.size + lessonQuestions.size)
+        assertEquals(128, topicQuestions.size + lessonQuestions.size)
         val registeredTopicIds = repository.getTopics().map { it.id }.toSet()
         assertTrue((topicQuestions + lessonQuestions).all { it.topicId in registeredTopicIds })
 
         val addedIds = allLessonIds.filter { it != "lesson_arrays_1" }
             .flatMap { listOf("q_${it}_2", "q_${it}_3") }.toSet()
         val addedQuestions = lessonQuestions.filter { it.id in addedIds }
-        assertEquals(44, addedQuestions.size)
-        assertEquals(44, addedQuestions.map { it.id }.toSet().size)
+        assertEquals(60, addedQuestions.size)
+        assertEquals(60, addedQuestions.map { it.id }.toSet().size)
         addedQuestions.filter { it.type == QuestionType.TRUE_FALSE }.forEach { question ->
             assertEquals(listOf("True", "False"), question.options, question.id)
             assertTrue(question.correctOptionIndex in 0..1, question.id)
@@ -351,9 +358,9 @@ class ContentRepositoryTest {
             assertEquals(3, lessonSet.size, "Lesson '$lessonId' must have three questions")
         }
 
-        assertEquals(25, lessonQuestions.count { it.type == QuestionType.MULTIPLE_CHOICE })
-        assertEquals(23, lessonQuestions.count { it.type == QuestionType.TRUE_FALSE })
-        assertEquals(21, lessonQuestions.count { it.type == QuestionType.CODE_OUTPUT })
+        assertEquals(33, lessonQuestions.count { it.type == QuestionType.MULTIPLE_CHOICE })
+        assertEquals(31, lessonQuestions.count { it.type == QuestionType.TRUE_FALSE })
+        assertEquals(29, lessonQuestions.count { it.type == QuestionType.CODE_OUTPUT })
         assertEquals(QuestionType.MULTIPLE_CHOICE, lessonQuestions.single { it.id == "q_lesson_introduction_ds_1_2" }.type)
         assertEquals(QuestionType.MULTIPLE_CHOICE, lessonQuestions.single { it.id == "q_lesson_arrays_5_2" }.type)
 
@@ -445,11 +452,11 @@ class ContentRepositoryTest {
         assertTrue(lessonFiveTrace.explanation.contains("prints 9 then 4 and stops"))
 
         val allLessonQuestions = allLessonIds.flatMap { repository.getQuestionsByLessonId(it) }
-        val allTopicQuestions = listOf("arrays", "linear_search", "sorting", "linked_list")
+        val allTopicQuestions = listOf("arrays", "linear_search", "sorting", "linked_list", "stack")
             .flatMap { repository.getQuestionsByTopic(it) }
-        assertEquals(69, allLessonQuestions.size)
-        assertEquals(29, allTopicQuestions.size)
-        assertEquals(98, allLessonQuestions.size + allTopicQuestions.size)
+        assertEquals(93, allLessonQuestions.size)
+        assertEquals(35, allTopicQuestions.size)
+        assertEquals(128, allLessonQuestions.size + allTopicQuestions.size)
         allLessonIds.forEach { lessonId ->
             assertEquals(3, allLessonQuestions.count { it.lessonId == lessonId }, lessonId)
         }
@@ -511,7 +518,7 @@ class ContentRepositoryTest {
 
     @Test
     fun testValidCorrectOptionIndex() = runBlocking {
-        val quizQuestions = listOf("arrays", "linear_search", "sorting", "linked_list").flatMap { repository.getQuestionsByTopic(it) }
+        val quizQuestions = listOf("arrays", "linear_search", "sorting", "linked_list", "stack").flatMap { repository.getQuestionsByTopic(it) }
         val lessonQuestions = allLessonIds.flatMap { repository.getQuestionsByLessonId(it) }
         val allQuestions = quizQuestions + lessonQuestions
 
@@ -557,14 +564,16 @@ class ContentRepositoryTest {
         val searchQuiz = repository.getQuestionsByTopic("linear_search")
         val sortingQuiz = repository.getQuestionsByTopic("sorting")
         val linkedListQuiz = repository.getQuestionsByTopic("linked_list")
+        val stackQuiz = repository.getQuestionsByTopic("stack")
 
         assertEquals(8, arraysQuiz.size, "Arrays topic quiz must have 8 questions")
         assertEquals(8, searchQuiz.size, "Searching topic quiz must have 8 questions")
         assertEquals(8, sortingQuiz.size, "Sorting topic quiz must have 8 questions")
         assertEquals(5, linkedListQuiz.size, "Linked List topic quiz must have 5 questions")
 
-        val allQuizQuestions = arraysQuiz + searchQuiz + sortingQuiz + linkedListQuiz
-        assertEquals(29, allQuizQuestions.size, "Total topic quiz questions must be 29")
+        assertEquals(6, stackQuiz.size, "Stack topic quiz must have 6 questions")
+        val allQuizQuestions = arraysQuiz + searchQuiz + sortingQuiz + linkedListQuiz + stackQuiz
+        assertEquals(35, allQuizQuestions.size, "Total topic quiz questions must be 35")
         assertTrue(allQuizQuestions.all { it.lessonId == null }, "All topic quiz questions must have lessonId == null")
     }
 
