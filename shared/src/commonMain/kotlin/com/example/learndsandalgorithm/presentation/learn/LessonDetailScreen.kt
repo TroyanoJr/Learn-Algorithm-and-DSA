@@ -789,27 +789,40 @@ private fun SortingComparisonCard() {
 
 @Composable
 private fun ArrayVisualizationCard() {
-    var showFullView by remember { mutableStateOf(false) }
     val arrayItems = listOf(
-        Triple(0, "10", false),
-        Triple(1, "20", false),
-        Triple(2, "30", true),
-        Triple(3, "40", false),
-        Triple(4, "50", false),
-        Triple(5, "60", false),
-        Triple(6, "70", false),
-        Triple(7, "80", false),
-        Triple(8, "90", false),
-        Triple(9, "100", false)
+        "10", "20", "30", "40", "50", "60", "70", "80", "90", "100"
     )
 
-    ArrayWindowButton(text = "Open full array visualizer") { showFullView = true }
-
-    if (showFullView) {
-        ArrayBasicExpandedDialog(
-            arrayItems = arrayItems,
-            onClose = { showFullView = false }
-        )
+    Surface(
+        color = DarkCardBgColor,
+        shape = RoundedCornerShape(16.dp),
+        border = BorderStroke(1.dp, CardBorderColor),
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Column(
+            modifier = Modifier.fillMaxWidth().padding(12.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            Text(
+                text = "ARRAY INDEX EXAMPLE",
+                color = OrangeAccent,
+                fontSize = 11.sp,
+                fontWeight = FontWeight.Bold,
+                letterSpacing = 1.sp
+            )
+            Text(
+                text = "Each index labels the value in its cell. Index 2 contains 30, so numbers[2] returns 30 directly in O(1) time.",
+                color = TextPrimary,
+                fontSize = 13.sp,
+                lineHeight = 18.sp
+            )
+            ArrayElementRow(
+                values = arrayItems,
+                highlightedIndices = setOf(2),
+                cellHeight = 44.dp,
+                spacing = 6.dp
+            )
+        }
     }
 }
 
@@ -836,62 +849,6 @@ private fun ArrayWindowButton(
 }
 
 @Composable
-private fun ArrayBasicExpandedDialog(
-    arrayItems: List<Triple<Int, String, Boolean>>,
-    onClose: () -> Unit
-) {
-    Dialog(
-        onDismissRequest = onClose,
-        properties = DialogProperties(usePlatformDefaultWidth = false)
-    ) {
-        LandscapeOrientationEffect(enabled = true)
-        BoxWithConstraints(modifier = Modifier.fillMaxSize().padding(6.dp)) {
-            val scale = (maxHeight / 360.dp).coerceIn(0.7f, 1.08f)
-            val viewportHeight = maxHeight
-            Surface(
-                color = DarkCardBgColor,
-                shape = RoundedCornerShape(16.dp),
-                border = BorderStroke(1.dp, CardBorderColor),
-                modifier = Modifier.fillMaxSize()
-            ) {
-                Column(
-                    modifier = Modifier.fillMaxSize().padding(12.dp * scale),
-                    verticalArrangement = Arrangement.spacedBy(8.dp * scale)
-                ) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(
-                        text = "ARRAY VISUALIZATION",
-                        color = OrangeAccent,
-                        fontSize = 13.sp,
-                        fontWeight = FontWeight.Bold,
-                        letterSpacing = 1.2.sp
-                    )
-                    ArrayWindowButton(text = "Close", icon = "✕", onClick = onClose)
-                }
-
-                Text(
-                    text = "Each index labels the value in its cell. Index 2 maps to 30, so numbers[2] returns 30 directly in O(1) time.",
-                    color = TextPrimary,
-                    fontSize = 13.sp,
-                    lineHeight = 18.sp
-                )
-
-                ArrayElementRow(
-                    values = arrayItems.map { it.second },
-                    highlightedIndices = setOf(2),
-                    cellHeight = (viewportHeight * 0.18f).coerceIn(36.dp, 60.dp)
-                )
-            }
-        }
-        }
-    }
-}
-
-@Composable
 private fun ArrayElementRow(
     values: List<String?>,
     highlightedIndices: Set<Int> = emptySet(),
@@ -901,8 +858,8 @@ private fun ArrayElementRow(
 ) {
     BoxWithConstraints(modifier = Modifier.fillMaxWidth()) {
         val cellWidth = (maxWidth - spacing * (values.size - 1).toFloat()) / values.size.toFloat()
-        val valueFontSize = (cellWidth.value * 0.38f).coerceIn(10f, 22f).sp
-        val indexFontSize = (valueFontSize.value * 0.8f).coerceAtLeast(9f).sp
+        val valueFontSize = minOf(cellWidth.value * 0.4f, cellHeight.value * 0.6f).coerceIn(11f, 22f).sp
+        val indexFontSize = (valueFontSize.value * 0.85f).coerceAtLeast(10f).sp
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(spacing),
@@ -969,11 +926,11 @@ private fun ArrayStorageRow(
     highlightedIndices: Set<Int> = emptySet(),
     cellHeight: androidx.compose.ui.unit.Dp = 40.dp
 ) {
-    Column(verticalArrangement = Arrangement.spacedBy(3.dp)) {
+    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
         Text(
             text = "$label · capacity ${slots.size} · size ${slots.count { it != null }}",
             color = TextSecondary,
-            fontSize = 11.sp,
+            fontSize = 12.sp,
             fontWeight = FontWeight.Bold
         )
 
@@ -982,7 +939,7 @@ private fun ArrayStorageRow(
                 Text(
                     text = "Continue at index ${rowIndex * 11} ↓",
                     color = BlueAccent,
-                    fontSize = 10.sp,
+                    fontSize = 11.sp,
                     fontWeight = FontWeight.Bold
                 )
             }
@@ -991,28 +948,9 @@ private fun ArrayStorageRow(
                 highlightedIndices = highlightedIndices,
                 startIndex = rowIndex * 11,
                 cellHeight = cellHeight,
-                spacing = 3.dp
+                spacing = 4.dp
             )
         }
-    }
-}
-
-@Composable
-private fun ArrayResizeStorageBlock(
-    modifier: Modifier,
-    label: String,
-    slots: List<String?>,
-    highlightedIndices: Set<Int>,
-    cellHeight: androidx.compose.ui.unit.Dp,
-    spacing: androidx.compose.ui.unit.Dp
-) {
-    Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(spacing)) {
-        ArrayStorageRow(
-            label = label,
-            slots = slots,
-            highlightedIndices = highlightedIndices,
-            cellHeight = cellHeight
-        )
     }
 }
 
@@ -1069,7 +1007,7 @@ private fun ArrayStepControlsRow(
             Box(contentAlignment = Alignment.Center) {
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     Text(
                         if (isPlaying) "⏸" else "▶",
@@ -1116,26 +1054,20 @@ private fun ArrayResizeVisualizationCard() {
     val copiedArray = fullArray + List(11) { null }
     val resizeSteps: List<Pair<String, List<String?>>> = when (stepIndex) {
         0 -> listOf("CURRENT STORAGE" to (initialValues + null))
-        1 -> listOf("CURRENT STORAGE" to fullArray)
-        2 -> listOf(
-            "OLD STORAGE" to fullArray,
-            "NEW STORAGE ALLOCATED" to List(22) { null }
-        )
-        3 -> listOf(
-            "OLD STORAGE" to fullArray,
-            "NEW STORAGE AFTER COPY" to copiedArray
-        )
+        1 -> listOf("CAPACITY FULL" to fullArray)
+        2 -> listOf("NEW STORAGE" to List(22) { null })
+        3 -> listOf("11 VALUES COPIED" to copiedArray)
         else -> listOf(
-            "RESIZED STORAGE" to (fullArray + "120" + List(10) { null })
+            "120 APPENDED" to (fullArray + "120" + List(10) { null })
         )
     }
 
     val explanationText = when (stepIndex) {
-        0 -> "Ten values occupy ten of eleven allocated slots. Append 110 into the free slot at index 10."
-        1 -> "110 used the existing capacity. Size and capacity are now both 11."
-        2 -> "The next append (120) needs another slot, so allocate a larger block with capacity 22."
-        3 -> "Copy all 11 existing values into the new block. The append has not happened yet."
-        else -> "Append 120 at index 11. Size is 12 and capacity is 22; ten slots remain free."
+        0 -> "Ten values use ten of eleven slots. Append 110 into the free slot at index 10."
+        1 -> "All eleven slots are occupied. Appending 120 now requires a larger array."
+        2 -> "Allocate new storage with 22 slots. The old eleven-value array is still intact."
+        3 -> "Copy each of the eleven existing values to the same index in the new storage."
+        else -> "Append 120 at index 11. Size is 12 and capacity is 22."
     }
     val highlightedIndices = when (stepIndex) {
         0, 1 -> setOf(10)
@@ -1157,12 +1089,14 @@ private fun ArrayResizeVisualizationCard() {
     ArrayWindowButton(text = "Open resize visualizer") { isExpanded = true }
 
     if (isExpanded) {
+        val (stageLabel, storageSlots) = resizeSteps.single()
         ArrayResizeExpandedDialog(
             stepIndex = stepIndex,
             totalSteps = totalSteps,
             isPlaying = isPlaying,
             isCompleted = isCompleted,
-            resizeSteps = resizeSteps,
+            stageLabel = stageLabel,
+            storageSlots = storageSlots,
             highlightedIndices = highlightedIndices,
             explanationText = explanationText,
             onReset = {
@@ -1192,7 +1126,8 @@ private fun ArrayResizeExpandedDialog(
     totalSteps: Int,
     isPlaying: Boolean,
     isCompleted: Boolean,
-    resizeSteps: List<Pair<String, List<String?>>>,
+    stageLabel: String,
+    storageSlots: List<String?>,
     highlightedIndices: Set<Int>,
     explanationText: String,
     onReset: () -> Unit,
@@ -1207,9 +1142,9 @@ private fun ArrayResizeExpandedDialog(
     ) {
         LandscapeOrientationEffect(enabled = true)
         BoxWithConstraints(modifier = Modifier.fillMaxSize().padding(6.dp)) {
-            val scale = (maxHeight / 360.dp).coerceIn(0.72f, 1.15f)
-            val viewportWidth = maxWidth
+            val scale = minOf(maxWidth / 800.dp, maxHeight / 360.dp).coerceIn(0.68f, 1.05f)
             val viewportHeight = maxHeight
+            val cellHeight = (viewportHeight * 0.08f).coerceIn(20.dp, 30.dp)
             Surface(
                 color = DarkCardBgColor,
                 shape = RoundedCornerShape(16.dp),
@@ -1217,8 +1152,8 @@ private fun ArrayResizeExpandedDialog(
                 modifier = Modifier.fillMaxSize()
             ) {
                 Column(
-                    modifier = Modifier.fillMaxSize().padding(10.dp * scale),
-                    verticalArrangement = Arrangement.spacedBy(5.dp * scale)
+                    modifier = Modifier.fillMaxSize().padding(8.dp * scale),
+                    verticalArrangement = Arrangement.spacedBy(6.dp * scale)
                 ) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -1229,7 +1164,7 @@ private fun ArrayResizeExpandedDialog(
                         Text(
                             text = "DYNAMIC ARRAY RESIZE",
                             color = OrangeAccent,
-                            fontSize = 13.sp,
+                            fontSize = 12.sp,
                             fontWeight = FontWeight.Bold,
                             letterSpacing = 1.sp
                         )
@@ -1240,78 +1175,52 @@ private fun ArrayResizeExpandedDialog(
                                 else -> "STEP $stepIndex OF $totalSteps"
                             },
                             color = if (isCompleted) GreenAccent else BlueAccent,
-                            fontSize = 10.sp,
+                            fontSize = 11.sp,
                             fontWeight = FontWeight.Bold
                         )
                     }
                     ArrayWindowButton(text = "Close", icon = "✕", onClick = onClose)
                 }
 
-                Text(
-                    text = "Size counts occupied values; capacity counts allocated slots.",
-                    color = TextSecondary,
-                    fontSize = 11.sp,
-                    lineHeight = 14.sp
-                )
-
-                if (resizeSteps.size == 2) {
-                    val stageHeightFraction = if (viewportWidth >= 700.dp) 0.09f else 0.07f
-                    val stageCellHeight = (viewportHeight * stageHeightFraction).coerceIn(22.dp, 34.dp)
-                    if (viewportWidth >= 700.dp) {
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.spacedBy(10.dp * scale),
-                            verticalAlignment = Alignment.Top
-                        ) {
-                            resizeSteps.forEachIndexed { rowIndex, (label, slots) ->
-                                ArrayResizeStorageBlock(
-                                    modifier = Modifier.weight(1f),
-                                    label = label,
-                                    slots = slots,
-                                    highlightedIndices = highlightedIndices,
-                                    cellHeight = stageCellHeight,
-                                    spacing = 4.dp * scale
-                                )
-                            }
-                        }
-                    } else {
-                        Column(verticalArrangement = Arrangement.spacedBy(4.dp * scale)) {
-                            resizeSteps.forEachIndexed { rowIndex, (label, slots) ->
-                                ArrayResizeStorageBlock(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    label = label,
-                                    slots = slots,
-                                    highlightedIndices = highlightedIndices,
-                                    cellHeight = stageCellHeight,
-                                    spacing = 3.dp * scale
-                                )
-                            }
-                        }
-                    }
-                } else {
-                    resizeSteps.forEach { (label, slots) ->
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp * scale),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Column(modifier = Modifier.weight(1.8f)) {
                         ArrayStorageRow(
-                            label = label,
-                            slots = slots,
+                            label = stageLabel,
+                            slots = storageSlots,
                             highlightedIndices = highlightedIndices,
-                            cellHeight = (viewportHeight * 0.14f).coerceIn(34.dp, 48.dp)
+                            cellHeight = cellHeight
                         )
                     }
-                }
 
-                Surface(
-                    color = Color(0xFF13131C),
-                    shape = RoundedCornerShape(12.dp),
-                    border = BorderStroke(1.dp, CardBorderColor),
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Text(
-                        text = explanationText,
-                        color = TextPrimary,
-                        fontSize = 12.sp,
-                        lineHeight = 16.sp,
-                        modifier = Modifier.padding(8.dp * scale)
-                    )
+                    Surface(
+                        color = Color(0xFF13131C),
+                        shape = RoundedCornerShape(12.dp),
+                        border = BorderStroke(1.dp, CardBorderColor),
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        Column(
+                            modifier = Modifier.padding(9.dp * scale),
+                            verticalArrangement = Arrangement.spacedBy(6.dp * scale)
+                        ) {
+                            Text(
+                                text = "SIZE = values stored\nCAPACITY = allocated slots",
+                                color = TextSecondary,
+                                fontSize = 11.sp,
+                                lineHeight = 14.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+                            Text(
+                                text = explanationText,
+                                color = TextPrimary,
+                                fontSize = 13.sp,
+                                lineHeight = 17.sp
+                            )
+                        }
+                    }
                 }
 
                 ArrayStepControlsRow(
@@ -1437,8 +1346,9 @@ private fun ArrayTraversalExpandedDialog(
     ) {
         LandscapeOrientationEffect(enabled = true)
         BoxWithConstraints(modifier = Modifier.fillMaxSize().padding(6.dp)) {
-            val scale = (maxHeight / 360.dp).coerceIn(0.72f, 1.15f)
             val viewportHeight = maxHeight
+            val compact = viewportHeight < 300.dp
+            val scale = minOf(maxWidth / 800.dp, viewportHeight / 360.dp).coerceIn(0.68f, 1.05f)
             Surface(
                 color = DarkCardBgColor,
                 shape = RoundedCornerShape(16.dp),
@@ -1446,8 +1356,8 @@ private fun ArrayTraversalExpandedDialog(
                 modifier = Modifier.fillMaxSize()
             ) {
                 Column(
-                    modifier = Modifier.fillMaxSize().padding(12.dp * scale),
-                    verticalArrangement = Arrangement.spacedBy(8.dp * scale)
+                    modifier = Modifier.fillMaxSize().padding((if (compact) 8.dp else 11.dp) * scale),
+                    verticalArrangement = Arrangement.spacedBy((if (compact) 5.dp else 8.dp) * scale)
                 ) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -1458,7 +1368,7 @@ private fun ArrayTraversalExpandedDialog(
                         Text(
                             text = "ARRAY TRAVERSAL",
                             color = OrangeAccent,
-                            fontSize = 13.sp,
+                            fontSize = 12.sp,
                             fontWeight = FontWeight.Bold,
                             letterSpacing = 1.sp
                         )
@@ -1468,16 +1378,20 @@ private fun ArrayTraversalExpandedDialog(
                 }
 
                 Text(
-                    text = "The highlighted index identifies the value being visited. All ten values and their indices are shown together.",
+                    text = "Each index labels its value; orange marks the current visit.",
                     color = TextSecondary,
-                    fontSize = 12.sp,
-                    lineHeight = 17.sp
+                    fontSize = 11.sp,
+                    lineHeight = 14.sp
                 )
 
                 ArrayElementRow(
                     values = arrayData,
                     highlightedIndices = if (currentIndex in arrayData.indices) setOf(currentIndex) else emptySet(),
-                    cellHeight = (viewportHeight * 0.18f).coerceIn(40.dp, 60.dp)
+                    cellHeight = (viewportHeight * (if (compact) 0.15f else 0.18f)).coerceIn(
+                        if (compact) 32.dp else 40.dp,
+                        if (compact) 48.dp else 60.dp
+                    ),
+                    spacing = 6.dp
                 )
 
                 Surface(
@@ -1487,13 +1401,13 @@ private fun ArrayTraversalExpandedDialog(
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Column(
-                        modifier = Modifier.fillMaxWidth().padding(8.dp * scale),
-                        verticalArrangement = Arrangement.spacedBy(6.dp * scale)
+                        modifier = Modifier.fillMaxWidth().padding((if (compact) 6.dp else 8.dp) * scale),
+                        verticalArrangement = Arrangement.spacedBy((if (compact) 5.dp else 7.dp) * scale)
                     ) {
-                        Text(explanationText, color = TextPrimary, fontSize = 12.sp, lineHeight = 16.sp)
+                        Text(explanationText, color = TextPrimary, fontSize = 12.sp, lineHeight = 17.sp)
                         Row(
                             modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.spacedBy(12.dp),
+                            horizontalArrangement = Arrangement.spacedBy(10.dp * scale),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Box(
@@ -1513,7 +1427,7 @@ private fun ArrayTraversalExpandedDialog(
                             Text(
                                 "$visitedCount / $totalElements VISITED",
                                 color = TextSecondary,
-                                fontSize = 10.sp,
+                                fontSize = 11.sp,
                                 fontWeight = FontWeight.Bold
                             )
                         }
@@ -1708,8 +1622,9 @@ private fun ArrayInsertDeleteExpandedDialog(
     ) {
         LandscapeOrientationEffect(enabled = true)
         BoxWithConstraints(modifier = Modifier.fillMaxSize().padding(6.dp)) {
-            val scale = (maxHeight / 360.dp).coerceIn(0.72f, 1.15f)
             val viewportHeight = maxHeight
+            val compact = viewportHeight < 300.dp
+            val scale = minOf(maxWidth / 800.dp, viewportHeight / 360.dp).coerceIn(0.68f, 1.05f)
             Surface(
                 color = DarkCardBgColor,
                 shape = RoundedCornerShape(16.dp),
@@ -1717,19 +1632,22 @@ private fun ArrayInsertDeleteExpandedDialog(
                 modifier = Modifier.fillMaxSize()
             ) {
                 Column(
-                    modifier = Modifier.fillMaxSize().padding(12.dp * scale),
-                    verticalArrangement = Arrangement.spacedBy(7.dp * scale)
+                    modifier = Modifier.fillMaxSize().padding((if (compact) 8.dp else 11.dp) * scale),
+                    verticalArrangement = Arrangement.spacedBy((if (compact) 5.dp else 7.dp) * scale)
                 ) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp * scale),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                    Column(
+                        modifier = Modifier.weight(1f),
+                        verticalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
                         Text(
                             text = "INSERT & DELETE",
                             color = OrangeAccent,
-                            fontSize = 13.sp,
+                            fontSize = 12.sp,
                             fontWeight = FontWeight.Bold,
                             letterSpacing = 1.sp
                         )
@@ -1740,6 +1658,27 @@ private fun ArrayInsertDeleteExpandedDialog(
                             fontWeight = FontWeight.Bold
                         )
                     }
+                    Row(horizontalArrangement = Arrangement.spacedBy(6.dp * scale)) {
+                        listOf("INSERT", "DELETE").forEach { mode ->
+                            val isSelected = operationMode == mode
+                            Surface(
+                                color = if (isSelected) OrangeAccent else Color(0xFF22222E),
+                                shape = RoundedCornerShape(8.dp),
+                                modifier = Modifier.clickable { onOperationModeChange(mode) }
+                            ) {
+                                Text(
+                                    text = mode.lowercase().replaceFirstChar { it.uppercase() },
+                                    color = if (isSelected) DarkBgColor else TextSecondary,
+                                    fontSize = 11.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    modifier = Modifier.padding(
+                                        horizontal = 9.dp * scale,
+                                        vertical = 6.dp * scale
+                                    )
+                                )
+                            }
+                        }
+                    }
                     Surface(
                         color = Color(0xFF22222E),
                         shape = RoundedCornerShape(8.dp),
@@ -1749,37 +1688,15 @@ private fun ArrayInsertDeleteExpandedDialog(
                         Text(
                             text = "Close  ✕",
                             color = TextPrimary,
-                            fontSize = 12.sp,
+                            fontSize = 11.sp,
                             fontWeight = FontWeight.Bold,
                             modifier = Modifier.padding(horizontal = 10.dp * scale, vertical = 6.dp * scale)
                         )
                     }
                 }
 
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(6.dp * scale)
-                ) {
-                    listOf("INSERT", "DELETE").forEach { mode ->
-                        val isSelected = operationMode == mode
-                        Surface(
-                            color = if (isSelected) OrangeAccent else Color(0xFF22222E),
-                            shape = RoundedCornerShape(8.dp),
-                            modifier = Modifier.clickable { onOperationModeChange(mode) }
-                        ) {
-                            Text(
-                                text = mode.lowercase().replaceFirstChar { it.uppercase() },
-                                color = if (isSelected) DarkBgColor else TextSecondary,
-                                fontSize = 12.sp,
-                                fontWeight = FontWeight.Bold,
-                                modifier = Modifier.padding(horizontal = 10.dp * scale, vertical = 6.dp * scale)
-                            )
-                        }
-                    }
-                }
-
                 Text(
-                    text = "The complete array is shown in one horizontal row. Highlighted cells mark the positions changing in this step.",
+                    text = "Orange cells mark the position shifting in this step.",
                     color = TextSecondary,
                     fontSize = 11.sp,
                     lineHeight = 14.sp
@@ -1788,8 +1705,11 @@ private fun ArrayInsertDeleteExpandedDialog(
                 ArrayElementRow(
                     values = displayItems,
                     highlightedIndices = highlightedIndices,
-                    cellHeight = (viewportHeight * 0.13f).coerceIn(34.dp, 50.dp),
-                    spacing = 3.dp * scale
+                    cellHeight = (viewportHeight * (if (compact) 0.12f else 0.13f)).coerceIn(
+                        if (compact) 30.dp else 34.dp,
+                        if (compact) 44.dp else 50.dp
+                    ),
+                    spacing = 4.dp * scale
                 )
 
                 Surface(
@@ -1799,14 +1719,14 @@ private fun ArrayInsertDeleteExpandedDialog(
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Column(
-                        modifier = Modifier.fillMaxWidth().padding(8.dp * scale),
-                        verticalArrangement = Arrangement.spacedBy(6.dp * scale)
+                        modifier = Modifier.fillMaxWidth().padding((if (compact) 6.dp else 8.dp) * scale),
+                        verticalArrangement = Arrangement.spacedBy((if (compact) 4.dp else 6.dp) * scale)
                     ) {
                         Text(
                             text = explanationText,
                             color = TextPrimary,
-                            fontSize = 12.sp,
-                            lineHeight = 15.sp
+                            fontSize = if (compact) 12.sp else 13.sp,
+                            lineHeight = if (compact) 16.sp else 18.sp
                         )
                         Row(
                             modifier = Modifier.fillMaxWidth(),
@@ -1827,12 +1747,6 @@ private fun ArrayInsertDeleteExpandedDialog(
                                         .background(OrangeAccent, RoundedCornerShape(2.dp))
                                 )
                             }
-                            Text(
-                                text = "STEP $stepIndex / $totalSteps",
-                                color = TextSecondary,
-                                fontSize = 10.sp,
-                                fontWeight = FontWeight.Bold
-                            )
                         }
                     }
                 }
