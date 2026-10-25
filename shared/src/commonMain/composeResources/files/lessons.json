@@ -494,5 +494,69 @@
     "order": 5,
     "xp": 30,
     "contentPath": "files/lessons/lesson_heap_5.md"
+  },
+  {
+    "id": "lesson_graphs_1",
+    "topicId": "graphs",
+    "title": "Graph Fundamentals and Terminology",
+    "order": 1,
+    "xp": 30,
+    "contentPath": "files/lessons/lesson_graphs_1.md"
+  },
+  {
+    "id": "lesson_graphs_2",
+    "topicId": "graphs",
+    "title": "Graph Representations",
+    "order": 2,
+    "xp": 30,
+    "contentPath": "files/lessons/lesson_graphs_2.md"
+  },
+  {
+    "id": "lesson_graphs_3",
+    "topicId": "graphs",
+    "title": "Breadth-First Search (BFS)",
+    "order": 3,
+    "xp": 30,
+    "contentPath": "files/lessons/lesson_graphs_3.md"
+  },
+  {
+    "id": "lesson_graphs_4",
+    "topicId": "graphs",
+    "title": "Depth-First Search (DFS)",
+    "order": 4,
+    "xp": 30,
+    "contentPath": "files/lessons/lesson_graphs_4.md"
+  },
+  {
+    "id": "lesson_graphs_5",
+    "topicId": "graphs",
+    "title": "Connected Components and Cycle Detection",
+    "order": 5,
+    "xp": 30,
+    "contentPath": "files/lessons/lesson_graphs_5.md"
+  },
+  {
+    "id": "lesson_graphs_6",
+    "topicId": "graphs",
+    "title": "Shortest Paths in Unweighted Graphs",
+    "order": 6,
+    "xp": 30,
+    "contentPath": "files/lessons/lesson_graphs_6.md"
+  },
+  {
+    "id": "lesson_graphs_7",
+    "topicId": "graphs",
+    "title": "Dijkstra's Algorithm",
+    "order": 7,
+    "xp": 30,
+    "contentPath": "files/lessons/lesson_graphs_7.md"
+  },
+  {
+    "id": "lesson_graphs_8",
+    "topicId": "graphs",
+    "title": "Topological Sorting",
+    "order": 8,
+    "xp": 30,
+    "contentPath": "files/lessons/lesson_graphs_8.md"
   }
 ]
