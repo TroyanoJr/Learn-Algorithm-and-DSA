@@ -44,7 +44,6 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
@@ -361,10 +360,12 @@ fun LessonDetailScreen(
 private fun SortingBarVisualizationCard(
     title: String,
     algorithmBadge: String,
-    steps: List<SortingStep>
+    steps: List<SortingStep>,
+    launchButtonText: String
 ) {
     var stepIndex by remember(steps) { mutableStateOf(0) }
     var isPlaying by remember(steps) { mutableStateOf(false) }
+    var isExpanded by remember { mutableStateOf(false) }
 
     val totalSteps = steps.size
     val currentStep = steps.getOrElse(stepIndex) { steps.last() }
@@ -384,22 +385,35 @@ private fun SortingBarVisualizationCard(
         }
     }
 
-    Surface(
-        color = DarkCardBgColor,
-        shape = RoundedCornerShape(16.dp),
-        border = BorderStroke(1.dp, CardBorderColor),
-        modifier = Modifier.fillMaxWidth()
-    ) {
+    ArrayWindowButton(text = launchButtonText) { isExpanded = true }
+
+    if (isExpanded) {
+        Dialog(
+            onDismissRequest = {
+                isPlaying = false
+                isExpanded = false
+            },
+            properties = DialogProperties(usePlatformDefaultWidth = false)
+        ) {
+            LandscapeOrientationEffect(enabled = true)
+            BoxWithConstraints(modifier = Modifier.fillMaxSize().padding(6.dp)) {
+                val scale = minOf(maxWidth / 800.dp, maxHeight / 320.dp).coerceIn(0.85f, 1f)
+                Surface(
+                    color = DarkCardBgColor,
+                    shape = RoundedCornerShape(16.dp),
+                    border = BorderStroke(1.dp, CardBorderColor),
+                    modifier = Modifier.fillMaxSize()
+                ) {
         Column(
             modifier = Modifier
-                .fillMaxWidth()
-                .padding(12.dp),
-            verticalArrangement = Arrangement.spacedBy(10.dp)
+                .fillMaxSize()
+                .padding(12.dp * scale),
+            verticalArrangement = Arrangement.spacedBy(10.dp * scale)
         ) {
             // Header Row with Title and Badge
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
+                horizontalArrangement = Arrangement.spacedBy(8.dp * scale),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
@@ -407,7 +421,8 @@ private fun SortingBarVisualizationCard(
                     color = OrangeAccent,
                     fontSize = 11.sp,
                     fontWeight = FontWeight.Bold,
-                    letterSpacing = 1.2.sp
+                    letterSpacing = 1.2.sp,
+                    modifier = Modifier.weight(1f)
                 )
 
                 val badgeText = when {
@@ -434,13 +449,17 @@ private fun SortingBarVisualizationCard(
                         fontWeight = FontWeight.Bold
                     )
                 }
+                ArrayWindowButton(text = "Close", icon = "✕") {
+                    isPlaying = false
+                    isExpanded = false
+                }
             }
 
             // Shared Bars & Array Elements Row
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(90.dp),
+                    .height(90.dp * scale),
                 horizontalArrangement = Arrangement.SpaceEvenly,
                 verticalAlignment = Alignment.Bottom
             ) {
@@ -469,7 +488,7 @@ private fun SortingBarVisualizationCard(
                         Box(
                             modifier = Modifier
                                 .fillMaxWidth(0.7f)
-                                .height((value * 8).dp)
+                                .height((value * 6).dp * scale)
                                 .clip(RoundedCornerShape(topStart = 6.dp, topEnd = 6.dp))
                                 .background(barColor)
                                 .border(
@@ -492,16 +511,14 @@ private fun SortingBarVisualizationCard(
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(12.dp),
-                    verticalArrangement = Arrangement.spacedBy(10.dp)
+                        .padding(12.dp * scale),
+                    verticalArrangement = Arrangement.spacedBy(10.dp * scale)
                 ) {
                     Text(
                         text = currentStep.message,
                         color = if (isFinished) GreenAccent else TextPrimary,
                         fontSize = 13.sp,
-                        lineHeight = 18.sp,
-                        maxLines = 2,
-                        overflow = TextOverflow.Ellipsis
+                        lineHeight = 18.sp
                     )
 
                     // Track & Step Indicator Row
@@ -540,7 +557,7 @@ private fun SortingBarVisualizationCard(
             // Controls Row (Reset, Previous, Play/Pause, Next)
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp * scale),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 // Reset (↻)
@@ -549,7 +566,7 @@ private fun SortingBarVisualizationCard(
                     shape = RoundedCornerShape(12.dp),
                     border = BorderStroke(1.dp, CardBorderColor),
                     modifier = Modifier
-                        .size(44.dp)
+                        .size((44.dp * scale).coerceAtLeast(38.dp))
                         .clickable {
                             isPlaying = false
                             stepIndex = 0
@@ -571,7 +588,7 @@ private fun SortingBarVisualizationCard(
                     shape = RoundedCornerShape(12.dp),
                     border = BorderStroke(1.dp, CardBorderColor),
                     modifier = Modifier
-                        .size(44.dp)
+                        .size((44.dp * scale).coerceAtLeast(38.dp))
                         .clickable(enabled = stepIndex > 0) {
                             isPlaying = false
                             if (stepIndex > 0) {
@@ -595,7 +612,7 @@ private fun SortingBarVisualizationCard(
                     shape = RoundedCornerShape(12.dp),
                     modifier = Modifier
                         .weight(1f)
-                        .height(44.dp)
+                        .height((44.dp * scale).coerceAtLeast(38.dp))
                         .clickable(enabled = !isFinished) {
                             if (!isFinished) {
                                 isPlaying = !isPlaying
@@ -605,7 +622,7 @@ private fun SortingBarVisualizationCard(
                     Box(contentAlignment = Alignment.Center) {
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(6.dp)
+                            horizontalArrangement = Arrangement.spacedBy(6.dp * scale)
                         ) {
                             Text(
                                 text = if (isPlaying) "⏸" else "▶",
@@ -628,7 +645,7 @@ private fun SortingBarVisualizationCard(
                     shape = RoundedCornerShape(12.dp),
                     border = BorderStroke(1.dp, CardBorderColor),
                     modifier = Modifier
-                        .size(44.dp)
+                        .size((44.dp * scale).coerceAtLeast(38.dp))
                         .clickable(enabled = !isFinished) {
                             isPlaying = false
                             if (stepIndex < totalSteps - 1) {
@@ -648,68 +665,110 @@ private fun SortingBarVisualizationCard(
             }
         }
     }
-}
+            }
+        }
+        }
+    }
 
 // --- SPECIFIC SORTING ALGORITHM STEP GENERATORS USING SHARED RENDERER ---
 
 @Composable
 private fun BubbleSortVisualizationCard() {
     val steps = listOf(
-        SortingStep(listOf(5, 3, 8, 4, 2), listOf(0, 1), emptyList(), "Compare 5 & 3 → 5 > 3, swap needed"),
-        SortingStep(listOf(3, 5, 8, 4, 2), listOf(1, 2), emptyList(), "Compare 5 & 8 → 5 < 8, no swap"),
-        SortingStep(listOf(3, 5, 8, 4, 2), listOf(2, 3), emptyList(), "Compare 8 & 4 → 8 > 4, swap needed"),
-        SortingStep(listOf(3, 5, 4, 8, 2), listOf(3, 4), emptyList(), "Compare 8 & 2 → 8 > 2, swap needed"),
-        SortingStep(listOf(3, 5, 4, 2, 8), emptyList(), listOf(4), "8 bubbled to the end! Pass 1 complete"),
-        SortingStep(listOf(3, 5, 4, 2, 8), listOf(0, 1), listOf(4), "Pass 2: Compare 3 & 5 → 3 < 5, no swap"),
-        SortingStep(listOf(3, 5, 4, 2, 8), listOf(1, 2), listOf(4), "Compare 5 & 4 → 5 > 4, swap needed"),
-        SortingStep(listOf(3, 4, 5, 2, 8), listOf(2, 3), listOf(4), "Compare 5 & 2 → 5 > 2, swap needed"),
-        SortingStep(listOf(3, 4, 2, 5, 8), emptyList(), listOf(3, 4), "Pass 2 complete: 5 joins 8 at the end"),
-        SortingStep(listOf(3, 4, 2, 5, 8), listOf(0, 1), listOf(3, 4), "Pass 3: Compare 3 & 4 → 3 < 4, no swap"),
-        SortingStep(listOf(3, 4, 2, 5, 8), listOf(1, 2), listOf(3, 4), "Compare 4 & 2 → 4 > 2, swap needed"),
-        SortingStep(listOf(3, 2, 4, 5, 8), emptyList(), listOf(2, 3, 4), "Pass 3 complete: 4, 5, and 8 are in place"),
-        SortingStep(listOf(3, 2, 4, 5, 8), listOf(0, 1), listOf(2, 3, 4), "Pass 4: Compare 3 & 2 → 3 > 2, swap needed"),
-        SortingStep(listOf(2, 3, 4, 5, 8), emptyList(), listOf(0, 1, 2, 3, 4), "Array is fully sorted! ✓")
+        SortingStep(listOf(1, 2, 3, 4, 5, 6, 7, 9, 8, 10), listOf(0, 1), emptyList(), "Pass 1: Compare 1 & 2 → no swap"),
+        SortingStep(listOf(1, 2, 3, 4, 5, 6, 7, 9, 8, 10), listOf(1, 2), emptyList(), "Compare 2 & 3 → no swap"),
+        SortingStep(listOf(1, 2, 3, 4, 5, 6, 7, 9, 8, 10), listOf(2, 3), emptyList(), "Compare 3 & 4 → no swap"),
+        SortingStep(listOf(1, 2, 3, 4, 5, 6, 7, 9, 8, 10), listOf(3, 4), emptyList(), "Compare 4 & 5 → no swap"),
+        SortingStep(listOf(1, 2, 3, 4, 5, 6, 7, 9, 8, 10), listOf(4, 5), emptyList(), "Compare 5 & 6 → no swap"),
+        SortingStep(listOf(1, 2, 3, 4, 5, 6, 7, 9, 8, 10), listOf(5, 6), emptyList(), "Compare 6 & 7 → no swap"),
+        SortingStep(listOf(1, 2, 3, 4, 5, 6, 7, 9, 8, 10), listOf(6, 7), emptyList(), "Compare 7 & 9 → no swap"),
+        SortingStep(listOf(1, 2, 3, 4, 5, 6, 7, 9, 8, 10), listOf(7, 8), emptyList(), "Compare 9 & 8 → swap needed"),
+        SortingStep(listOf(1, 2, 3, 4, 5, 6, 7, 8, 9, 10), listOf(8, 9), listOf(9), "Swap 9 & 8. Then compare 9 & 10 → no swap; pass 1 ends."),
+        SortingStep(listOf(1, 2, 3, 4, 5, 6, 7, 8, 9, 10), listOf(0, 1), listOf(9), "Pass 2: Compare 1 & 2 → no swap"),
+        SortingStep(listOf(1, 2, 3, 4, 5, 6, 7, 8, 9, 10), listOf(1, 2), listOf(9), "Compare 2 & 3 → no swap"),
+        SortingStep(listOf(1, 2, 3, 4, 5, 6, 7, 8, 9, 10), listOf(2, 3), listOf(9), "Compare 3 & 4 → no swap"),
+        SortingStep(listOf(1, 2, 3, 4, 5, 6, 7, 8, 9, 10), listOf(3, 4), listOf(9), "Compare 4 & 5 → no swap"),
+        SortingStep(listOf(1, 2, 3, 4, 5, 6, 7, 8, 9, 10), listOf(4, 5), listOf(9), "Compare 5 & 6 → no swap"),
+        SortingStep(listOf(1, 2, 3, 4, 5, 6, 7, 8, 9, 10), listOf(5, 6), listOf(9), "Compare 6 & 7 → no swap"),
+        SortingStep(listOf(1, 2, 3, 4, 5, 6, 7, 8, 9, 10), listOf(6, 7), listOf(9), "Compare 7 & 8 → no swap"),
+        SortingStep(listOf(1, 2, 3, 4, 5, 6, 7, 8, 9, 10), emptyList(), listOf(0, 1, 2, 3, 4, 5, 6, 7, 8, 9), "Compare 8 & 9 → no swap. No swaps this pass; array sorted! ✓")
     )
 
     SortingBarVisualizationCard(
         title = "BUBBLE SORT VISUALIZATION",
         algorithmBadge = "O(n²) Worst Case",
-        steps = steps
+        steps = steps,
+        launchButtonText = "Open bubble sort visualizer"
     )
 }
 
 @Composable
 private fun SelectionSortVisualizationCard() {
     val steps = listOf(
-        SortingStep(listOf(5, 3, 8, 4, 2), listOf(4), emptyList(), "Scan unsorted region → Minimum is 2 at index 4"),
-        SortingStep(listOf(2, 3, 8, 4, 5), emptyList(), listOf(0), "Swap 2 into index 0 → Sorted: [2]"),
-        SortingStep(listOf(2, 3, 8, 4, 5), listOf(1), listOf(0, 1), "Minimum in remaining is 3 → Already in place"),
-        SortingStep(listOf(2, 3, 4, 8, 5), emptyList(), listOf(0, 1, 2), "Swap 4 into index 2 → Sorted: [2, 3, 4]"),
-        SortingStep(listOf(2, 3, 4, 5, 8), emptyList(), listOf(0, 1, 2, 3, 4), "Swap 5 into index 3 → Array is fully sorted! ✓")
+        SortingStep(listOf(5, 3, 8, 4, 2, 9, 7, 10, 6, 1), listOf(9), emptyList(), "Scan indices 0–9; minimum 1 is at index 9."),
+        SortingStep(listOf(1, 3, 8, 4, 2, 9, 7, 10, 6, 5), emptyList(), listOf(0), "Swap 1 into index 0; sorted prefix: [1]."),
+        SortingStep(listOf(1, 3, 8, 4, 2, 9, 7, 10, 6, 5), listOf(4), listOf(0), "Scan indices 1–9; minimum 2 is at index 4."),
+        SortingStep(listOf(1, 2, 8, 4, 3, 9, 7, 10, 6, 5), emptyList(), listOf(0, 1), "Swap 2 into index 1; sorted prefix: [1, 2]."),
+        SortingStep(listOf(1, 2, 8, 4, 3, 9, 7, 10, 6, 5), listOf(4), listOf(0, 1), "Scan indices 2–9; minimum 3 is at index 4."),
+        SortingStep(listOf(1, 2, 3, 4, 8, 9, 7, 10, 6, 5), emptyList(), listOf(0, 1, 2), "Swap 3 into index 2; sorted prefix: [1, 2, 3]."),
+        SortingStep(listOf(1, 2, 3, 4, 8, 9, 7, 10, 6, 5), listOf(3), listOf(0, 1, 2), "Scan indices 3–9; minimum 4 is already at index 3."),
+        SortingStep(listOf(1, 2, 3, 4, 8, 9, 7, 10, 6, 5), emptyList(), listOf(0, 1, 2, 3), "Keep 4 at index 3; sorted prefix: [1, 2, 3, 4]."),
+        SortingStep(listOf(1, 2, 3, 4, 8, 9, 7, 10, 6, 5), listOf(9), listOf(0, 1, 2, 3), "Scan indices 4–9; minimum 5 is at index 9."),
+        SortingStep(listOf(1, 2, 3, 4, 5, 9, 7, 10, 6, 8), emptyList(), listOf(0, 1, 2, 3, 4), "Swap 5 into index 4; sorted prefix ends at index 4."),
+        SortingStep(listOf(1, 2, 3, 4, 5, 9, 7, 10, 6, 8), listOf(8), listOf(0, 1, 2, 3, 4), "Scan indices 5–9; minimum 6 is at index 8."),
+        SortingStep(listOf(1, 2, 3, 4, 5, 6, 7, 10, 9, 8), emptyList(), listOf(0, 1, 2, 3, 4, 5), "Swap 6 into index 5; sorted prefix ends at index 5."),
+        SortingStep(listOf(1, 2, 3, 4, 5, 6, 7, 10, 9, 8), listOf(6), listOf(0, 1, 2, 3, 4, 5), "Scan indices 6–9; minimum 7 is already at index 6."),
+        SortingStep(listOf(1, 2, 3, 4, 5, 6, 7, 10, 9, 8), emptyList(), listOf(0, 1, 2, 3, 4, 5, 6), "Keep 7 at index 6; sorted prefix ends at index 6."),
+        SortingStep(listOf(1, 2, 3, 4, 5, 6, 7, 10, 9, 8), listOf(9), listOf(0, 1, 2, 3, 4, 5, 6), "Scan indices 7–9; minimum 8 is at index 9."),
+        SortingStep(listOf(1, 2, 3, 4, 5, 6, 7, 8, 9, 10), emptyList(), listOf(0, 1, 2, 3, 4, 5, 6, 7), "Swap 8 into index 7; sorted prefix ends at index 7."),
+        SortingStep(listOf(1, 2, 3, 4, 5, 6, 7, 8, 9, 10), listOf(8), listOf(0, 1, 2, 3, 4, 5, 6, 7), "Scan indices 8–9; minimum 9 is already at index 8."),
+        SortingStep(listOf(1, 2, 3, 4, 5, 6, 7, 8, 9, 10), emptyList(), listOf(0, 1, 2, 3, 4, 5, 6, 7, 8, 9), "Keep 9 at index 8. All 10 values are now sorted! ✓")
     )
 
     SortingBarVisualizationCard(
         title = "SELECTION SORT VISUALIZATION",
         algorithmBadge = "O(n²) Comparisons",
-        steps = steps
+        steps = steps,
+        launchButtonText = "Open selection sort visualizer"
     )
 }
 
 @Composable
 private fun InsertionSortVisualizationCard() {
     val steps = listOf(
-        SortingStep(listOf(5, 3, 8, 4, 2), listOf(1), listOf(0), "Take key 3 → Compare with 5 in sorted region"),
-        SortingStep(listOf(3, 5, 8, 4, 2), emptyList(), listOf(0, 1), "Shift 5 right & insert 3 → Sorted: [3, 5]"),
-        SortingStep(listOf(3, 5, 8, 4, 2), listOf(2), listOf(0, 1), "Take key 8 → 8 > 5, already in place"),
-        SortingStep(listOf(3, 5, 4, 8, 2), listOf(2), listOf(0, 1), "Take key 4 → 8 has shifted right; shift 5 right, then insert 4"),
-        SortingStep(listOf(3, 4, 5, 8, 2), emptyList(), listOf(0, 1, 2, 3), "Insert 4 at index 1 → Sorted: [3, 4, 5, 8]"),
-        SortingStep(listOf(2, 3, 4, 5, 8), emptyList(), listOf(0, 1, 2, 3, 4), "Insert 2 at index 0 → Array is fully sorted! ✓")
+        SortingStep(listOf(5, 3, 8, 4, 2, 6, 7, 9, 10, 11), listOf(0, 1), emptyList(), "Key 3 at index 1 is smaller than 5 at index 0, so it must move left."),
+        SortingStep(listOf(3, 5, 8, 4, 2, 6, 7, 9, 10, 11), emptyList(), listOf(0, 1), "Move key 3 left, shifting 5 right. The sorted prefix is [3, 5]."),
+        SortingStep(listOf(3, 5, 8, 4, 2, 6, 7, 9, 10, 11), listOf(1, 2), listOf(0), "Compare key 8 at index 2 with 5 at index 1. Since 8 is larger, it stays in place."),
+        SortingStep(listOf(3, 5, 8, 4, 2, 6, 7, 9, 10, 11), listOf(3), listOf(0, 1, 2), "The sorted prefix is [3, 5, 8]. Take key 4 from index 3."),
+        SortingStep(listOf(3, 5, 8, 4, 2, 6, 7, 9, 10, 11), listOf(2, 3), listOf(0, 1), "Compare key 4 at index 3 with 8 at index 2. Since 4 is smaller, move it left."),
+        SortingStep(listOf(3, 5, 4, 8, 2, 6, 7, 9, 10, 11), listOf(2, 3), listOf(0, 1), "Move key 4 left one position and shift 8 right to index 3."),
+        SortingStep(listOf(3, 5, 4, 8, 2, 6, 7, 9, 10, 11), listOf(1, 2), listOf(0), "Compare key 4 at index 2 with 5 at index 1. Since 4 is smaller, move it left."),
+        SortingStep(listOf(3, 4, 5, 8, 2, 6, 7, 9, 10, 11), emptyList(), listOf(0, 1, 2, 3), "Move key 4 left and shift 5 right. The sorted prefix is [3, 4, 5, 8]."),
+        SortingStep(listOf(3, 4, 5, 8, 2, 6, 7, 9, 10, 11), listOf(3, 4), listOf(0, 1, 2), "Take key 2 at index 4 and compare it with 8 at index 3. Move 2 left."),
+        SortingStep(listOf(3, 4, 5, 2, 8, 6, 7, 9, 10, 11), listOf(3, 4), listOf(0, 1, 2), "Move key 2 left one position and shift 8 right to index 4."),
+        SortingStep(listOf(3, 4, 5, 2, 8, 6, 7, 9, 10, 11), listOf(2, 3), listOf(0, 1), "Compare key 2 at index 3 with 5 at index 2. Since 2 is smaller, move it left."),
+        SortingStep(listOf(3, 4, 2, 5, 8, 6, 7, 9, 10, 11), listOf(2, 3), listOf(0, 1), "Move key 2 left one position and shift 5 right to index 3."),
+        SortingStep(listOf(3, 4, 2, 5, 8, 6, 7, 9, 10, 11), listOf(1, 2), listOf(0), "Compare key 2 at index 2 with 4 at index 1. Since 2 is smaller, move it left."),
+        SortingStep(listOf(3, 2, 4, 5, 8, 6, 7, 9, 10, 11), listOf(1, 2), listOf(0), "Move key 2 left one position and shift 4 right to index 2."),
+        SortingStep(listOf(3, 2, 4, 5, 8, 6, 7, 9, 10, 11), listOf(0, 1), emptyList(), "Compare key 2 at index 1 with 3 at index 0. Since 2 is smaller, move it left."),
+        SortingStep(listOf(2, 3, 4, 5, 8, 6, 7, 9, 10, 11), emptyList(), listOf(0, 1, 2, 3, 4), "Insert 2 at index 0. The sorted prefix is [2, 3, 4, 5, 8]."),
+        SortingStep(listOf(2, 3, 4, 5, 8, 6, 7, 9, 10, 11), listOf(4, 5), listOf(0, 1, 2, 3), "Compare key 6 at index 5 with 8 at index 4. Since 6 is smaller, move it left."),
+        SortingStep(listOf(2, 3, 4, 5, 6, 8, 7, 9, 10, 11), emptyList(), listOf(0, 1, 2, 3, 4), "Shift 8 right and insert 6 at index 4; 6 is greater than 5."),
+        SortingStep(listOf(2, 3, 4, 5, 6, 8, 7, 9, 10, 11), listOf(5, 6), listOf(0, 1, 2, 3, 4), "Compare key 7 at index 6 with 8 at index 5. Since 7 is smaller, move it left."),
+        SortingStep(listOf(2, 3, 4, 5, 6, 7, 8, 9, 10, 11), emptyList(), listOf(0, 1, 2, 3, 4, 5, 6), "Shift 8 right and insert 7 at index 5; 7 is greater than 6."),
+        SortingStep(listOf(2, 3, 4, 5, 6, 7, 8, 9, 10, 11), listOf(6, 7), listOf(0, 1, 2, 3, 4, 5), "Compare key 9 at index 7 with 8 at index 6. Since 9 is larger, it stays."),
+        SortingStep(listOf(2, 3, 4, 5, 6, 7, 8, 9, 10, 11), emptyList(), listOf(0, 1, 2, 3, 4, 5, 6, 7), "Keep 9 at index 7; the sorted prefix is [2, 3, 4, 5, 6, 7, 8, 9]."),
+        SortingStep(listOf(2, 3, 4, 5, 6, 7, 8, 9, 10, 11), listOf(7, 8), listOf(0, 1, 2, 3, 4, 5, 6), "Compare key 10 at index 8 with 9 at index 7. Since 10 is larger, it stays."),
+        SortingStep(listOf(2, 3, 4, 5, 6, 7, 8, 9, 10, 11), emptyList(), listOf(0, 1, 2, 3, 4, 5, 6, 7, 8), "Keep 10 at index 8; the sorted prefix now has 9 values."),
+        SortingStep(listOf(2, 3, 4, 5, 6, 7, 8, 9, 10, 11), listOf(8, 9), listOf(0, 1, 2, 3, 4, 5, 6, 7), "Compare key 11 at index 9 with 10 at index 8. Since 11 is larger, it stays."),
+        SortingStep(listOf(2, 3, 4, 5, 6, 7, 8, 9, 10, 11), emptyList(), listOf(0, 1, 2, 3, 4, 5, 6, 7, 8, 9), "Keep 11 at index 9. All 10 values are sorted: [2, 3, 4, 5, 6, 7, 8, 9, 10, 11].")
     )
 
     SortingBarVisualizationCard(
         title = "INSERTION SORT VISUALIZATION",
         algorithmBadge = "O(n) Best Case",
-        steps = steps
+        steps = steps,
+        launchButtonText = "Open insertion sort visualizer"
     )
 }
 
@@ -1097,6 +1156,7 @@ private fun ArrayResizeVisualizationCard() {
             isCompleted = isCompleted,
             stageLabel = stageLabel,
             storageSlots = storageSlots,
+            preservedStorageSlots = fullArray.takeIf { stepIndex == 2 },
             highlightedIndices = highlightedIndices,
             explanationText = explanationText,
             onReset = {
@@ -1128,6 +1188,7 @@ private fun ArrayResizeExpandedDialog(
     isCompleted: Boolean,
     stageLabel: String,
     storageSlots: List<String?>,
+    preservedStorageSlots: List<String?>?,
     highlightedIndices: Set<Int>,
     explanationText: String,
     onReset: () -> Unit,
@@ -1188,12 +1249,28 @@ private fun ArrayResizeExpandedDialog(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Column(modifier = Modifier.weight(1.8f)) {
-                        ArrayStorageRow(
-                            label = stageLabel,
-                            slots = storageSlots,
-                            highlightedIndices = highlightedIndices,
-                            cellHeight = cellHeight
-                        )
+                        if (preservedStorageSlots != null) {
+                            Column(verticalArrangement = Arrangement.spacedBy(4.dp * scale)) {
+                                ArrayStorageRow(
+                                    label = "OLD ARRAY (PRESERVED)",
+                                    slots = preservedStorageSlots,
+                                    cellHeight = cellHeight
+                                )
+                                ArrayStorageRow(
+                                    label = stageLabel,
+                                    slots = storageSlots,
+                                    highlightedIndices = highlightedIndices,
+                                    cellHeight = cellHeight
+                                )
+                            }
+                        } else {
+                            ArrayStorageRow(
+                                label = stageLabel,
+                                slots = storageSlots,
+                                highlightedIndices = highlightedIndices,
+                                cellHeight = cellHeight
+                            )
+                        }
                     }
 
                     Surface(
@@ -3417,12 +3494,13 @@ private fun LinkedListPlaybackControls(
 
 @Composable
 private fun LinearSearchVisualizationCard() {
-    val arrayData = listOf("4", "8", "2", "7", "5")
-    val target = 7
+    val arrayData = listOf("4", "8", "2", "7", "5", "9", "1", "6", "3", "10")
+    val target = 10
     val totalItems = arrayData.size
 
     var currentIndex by remember { mutableStateOf(-1) }
     var isPlaying by remember { mutableStateOf(false) }
+    var isExpanded by remember { mutableStateOf(false) }
 
     val isFound = currentIndex in arrayData.indices && arrayData[currentIndex].toInt() == target
     val isFinished = isFound || currentIndex >= totalItems
@@ -3444,22 +3522,35 @@ private fun LinearSearchVisualizationCard() {
         }
     }
 
-    Surface(
-        color = DarkCardBgColor,
-        shape = RoundedCornerShape(16.dp),
-        border = BorderStroke(1.dp, CardBorderColor),
-        modifier = Modifier.fillMaxWidth()
-    ) {
+    ArrayWindowButton(text = "Open linear search visualizer") { isExpanded = true }
+
+    if (isExpanded) {
+        Dialog(
+            onDismissRequest = {
+                isPlaying = false
+                isExpanded = false
+            },
+            properties = DialogProperties(usePlatformDefaultWidth = false)
+        ) {
+            LandscapeOrientationEffect(enabled = true)
+            BoxWithConstraints(modifier = Modifier.fillMaxSize().padding(6.dp)) {
+                val scale = minOf(maxWidth / 800.dp, maxHeight / 340.dp).coerceIn(0.85f, 1f)
+                Surface(
+                    color = DarkCardBgColor,
+                    shape = RoundedCornerShape(16.dp),
+                    border = BorderStroke(1.dp, CardBorderColor),
+                    modifier = Modifier.fillMaxSize()
+                ) {
         Column(
             modifier = Modifier
-                .fillMaxWidth()
-                .padding(12.dp),
-            verticalArrangement = Arrangement.spacedBy(10.dp)
+                .fillMaxSize()
+                .padding(12.dp * scale),
+            verticalArrangement = Arrangement.spacedBy(10.dp * scale)
         ) {
             // Header Row
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
+                horizontalArrangement = Arrangement.spacedBy(8.dp * scale),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
@@ -3467,7 +3558,8 @@ private fun LinearSearchVisualizationCard() {
                     color = OrangeAccent,
                     fontSize = 11.sp,
                     fontWeight = FontWeight.Bold,
-                    letterSpacing = 1.2.sp
+                    letterSpacing = 1.2.sp,
+                    modifier = Modifier.weight(1f)
                 )
 
                 val badgeText = when {
@@ -3502,9 +3594,13 @@ private fun LinearSearchVisualizationCard() {
                         fontWeight = FontWeight.Bold
                     )
                 }
+                ArrayWindowButton(text = "Close", icon = "✕") {
+                    isPlaying = false
+                    isExpanded = false
+                }
             }
 
-            // Array Cells Row (Indices 0..4)
+            // Array Cells Row (Indices 0..9)
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceEvenly,
@@ -3536,11 +3632,11 @@ private fun LinearSearchVisualizationCard() {
 
                     Column(
                         horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.spacedBy(4.dp)
+                        verticalArrangement = Arrangement.spacedBy(4.dp * scale)
                     ) {
                         Box(
                             modifier = Modifier
-                                .size(46.dp)
+                                .size(46.dp * scale)
                                 .clip(RoundedCornerShape(10.dp))
                                 .background(cellBg)
                                 .border(
@@ -3578,8 +3674,8 @@ private fun LinearSearchVisualizationCard() {
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(12.dp),
-                    verticalArrangement = Arrangement.spacedBy(10.dp)
+                        .padding(12.dp * scale),
+                    verticalArrangement = Arrangement.spacedBy(10.dp * scale)
                 ) {
                     val explanationText = when {
                         currentIndex < 0 -> "Target = $target. Inspect elements sequentially from index 0 until found."
@@ -3599,7 +3695,7 @@ private fun LinearSearchVisualizationCard() {
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                        horizontalArrangement = Arrangement.spacedBy(12.dp * scale)
                     ) {
                         Box(
                             modifier = Modifier
@@ -3631,7 +3727,7 @@ private fun LinearSearchVisualizationCard() {
             // Controls Row (Reset, Previous, Play/Pause, Next)
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp * scale),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 // Reset (↻)
@@ -3640,7 +3736,7 @@ private fun LinearSearchVisualizationCard() {
                     shape = RoundedCornerShape(12.dp),
                     border = BorderStroke(1.dp, CardBorderColor),
                     modifier = Modifier
-                        .size(44.dp)
+                        .size((44.dp * scale).coerceAtLeast(38.dp))
                         .clickable {
                             isPlaying = false
                             currentIndex = -1
@@ -3662,7 +3758,7 @@ private fun LinearSearchVisualizationCard() {
                     shape = RoundedCornerShape(12.dp),
                     border = BorderStroke(1.dp, CardBorderColor),
                     modifier = Modifier
-                        .size(44.dp)
+                        .size((44.dp * scale).coerceAtLeast(38.dp))
                         .clickable(enabled = currentIndex >= 0) {
                             isPlaying = false
                             if (currentIndex > 0) {
@@ -3688,7 +3784,7 @@ private fun LinearSearchVisualizationCard() {
                     shape = RoundedCornerShape(12.dp),
                     modifier = Modifier
                         .weight(1f)
-                        .height(44.dp)
+                        .height((44.dp * scale).coerceAtLeast(38.dp))
                         .clickable(enabled = !isFinished) {
                             if (!isFinished) {
                                 if (currentIndex < 0) {
@@ -3701,7 +3797,7 @@ private fun LinearSearchVisualizationCard() {
                     Box(contentAlignment = Alignment.Center) {
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(6.dp)
+                            horizontalArrangement = Arrangement.spacedBy(6.dp * scale)
                         ) {
                             Text(
                                 text = if (isPlaying) "⏸" else "▶",
@@ -3724,7 +3820,7 @@ private fun LinearSearchVisualizationCard() {
                     shape = RoundedCornerShape(12.dp),
                     border = BorderStroke(1.dp, CardBorderColor),
                     modifier = Modifier
-                        .size(44.dp)
+                        .size((44.dp * scale).coerceAtLeast(38.dp))
                         .clickable(enabled = !isFinished) {
                             isPlaying = false
                             if (currentIndex < 0) {
@@ -3746,26 +3842,24 @@ private fun LinearSearchVisualizationCard() {
             }
         }
     }
-}
+            }
+        }
+        }
+    }
 
 @Composable
 private fun BinarySearchVisualizationCard() {
-    val arrayData = listOf("1", "3", "5", "7", "9", "11", "13")
-    val target = 11
-    val totalSteps = 2
+    val target = BinarySearchTrace.target
+    val totalSteps = BinarySearchTrace.steps.size
 
     var stepIndex by remember { mutableStateOf(-1) } // -1: READY, 0: Step 1, 1: Step 2
     var isPlaying by remember { mutableStateOf(false) }
+    var isExpanded by remember { mutableStateOf(false) }
 
     val isCompleted = stepIndex >= totalSteps - 1
-    val isFound = stepIndex == 1
-
-    // Step parameters: (Left, Right, Mid)
-    val (left, right, mid) = when (stepIndex) {
-        0 -> Triple(0, 6, 3)
-        1 -> Triple(4, 6, 5)
-        else -> Triple(0, 6, -1)
-    }
+    val currentStep = BinarySearchTrace.steps.getOrNull(stepIndex)
+    val arrayData = currentStep?.values ?: BinarySearchTrace.values
+    val isFound = currentStep?.foundIndex != null
 
     // Auto-play timer mechanism
     LaunchedEffect(isPlaying, stepIndex) {
@@ -3783,22 +3877,35 @@ private fun BinarySearchVisualizationCard() {
         }
     }
 
-    Surface(
-        color = DarkCardBgColor,
-        shape = RoundedCornerShape(16.dp),
-        border = BorderStroke(1.dp, CardBorderColor),
-        modifier = Modifier.fillMaxWidth()
-    ) {
+    ArrayWindowButton(text = "Open binary search visualizer") { isExpanded = true }
+
+    if (isExpanded) {
+        Dialog(
+            onDismissRequest = {
+                isPlaying = false
+                isExpanded = false
+            },
+            properties = DialogProperties(usePlatformDefaultWidth = false)
+        ) {
+            LandscapeOrientationEffect(enabled = true)
+            BoxWithConstraints(modifier = Modifier.fillMaxSize().padding(6.dp)) {
+                val scale = minOf(maxWidth / 800.dp, maxHeight / 360.dp).coerceIn(0.85f, 1f)
+                Surface(
+                    color = DarkCardBgColor,
+                    shape = RoundedCornerShape(16.dp),
+                    border = BorderStroke(1.dp, CardBorderColor),
+                    modifier = Modifier.fillMaxSize()
+                ) {
         Column(
             modifier = Modifier
-                .fillMaxWidth()
-                .padding(12.dp),
-            verticalArrangement = Arrangement.spacedBy(10.dp)
+                .fillMaxSize()
+                .padding(12.dp * scale),
+            verticalArrangement = Arrangement.spacedBy(10.dp * scale)
         ) {
             // Header Row
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
+                horizontalArrangement = Arrangement.spacedBy(8.dp * scale),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
@@ -3806,12 +3913,13 @@ private fun BinarySearchVisualizationCard() {
                     color = OrangeAccent,
                     fontSize = 11.sp,
                     fontWeight = FontWeight.Bold,
-                    letterSpacing = 1.2.sp
+                    letterSpacing = 1.2.sp,
+                    modifier = Modifier.weight(1f)
                 )
 
                 val badgeText = when {
                     stepIndex < 0 -> "TARGET: $target (SORTED)"
-                    isFound -> "FOUND AT INDEX 5 ✓"
+                    isFound -> "FOUND AT INDEX ${currentStep?.foundIndex} ✓"
                     else -> "STEP ${stepIndex + 1} OF $totalSteps"
                 }
 
@@ -3838,6 +3946,10 @@ private fun BinarySearchVisualizationCard() {
                         fontWeight = FontWeight.Bold
                     )
                 }
+                ArrayWindowButton(text = "Close", icon = "✕") {
+                    isPlaying = false
+                    isExpanded = false
+                }
             }
 
             // Array Cells Row with L, M, R indicators & Index labels
@@ -3847,10 +3959,11 @@ private fun BinarySearchVisualizationCard() {
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 arrayData.forEachIndexed { index, value ->
-                    val isMid = stepIndex >= 0 && index == mid
-                    val isLeft = stepIndex >= 0 && index == left
-                    val isRight = stepIndex >= 0 && index == right
-                    val isEliminated = stepIndex >= 0 && (index < left || index > right)
+                    val isMid = currentStep?.midIndex == index
+                    val isLeft = currentStep?.leftIndex == index
+                    val isRight = currentStep?.rightIndex == index
+                    val isEliminated = currentStep != null && index !in currentStep.activeRange
+                    val isHighlighted = currentStep?.highlightedIndices?.contains(index) == true
 
                     val pointerLabel = when {
                         isMid -> "M"
@@ -3861,29 +3974,29 @@ private fun BinarySearchVisualizationCard() {
                     }
 
                     val cellBg = when {
-                        isFound && isMid -> Color(0xFF092317)
-                        isMid -> Color(0xFF2A1C12)
+                        isFound && isHighlighted -> Color(0xFF092317)
+                        isHighlighted -> Color(0xFF2A1C12)
                         isEliminated -> Color(0xFF0F0F14)
                         else -> Color(0xFF13131C)
                     }
 
                     val borderColor = when {
-                        isFound && isMid -> GreenAccent
-                        isMid -> OrangeAccent
+                        isFound && isHighlighted -> GreenAccent
+                        isHighlighted -> OrangeAccent
                         isEliminated -> Color(0xFF1E1E26)
                         else -> CardBorderColor
                     }
 
                     val textColor = when {
-                        isFound && isMid -> GreenAccent
-                        isMid -> OrangeAccent
+                        isFound && isHighlighted -> GreenAccent
+                        isHighlighted -> OrangeAccent
                         isEliminated -> Color(0xFF4B5563)
                         else -> TextPrimary
                     }
 
                     Column(
                         horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.spacedBy(4.dp)
+                        verticalArrangement = Arrangement.spacedBy(4.dp * scale)
                     ) {
                         Text(
                             text = pointerLabel,
@@ -3893,18 +4006,18 @@ private fun BinarySearchVisualizationCard() {
                         )
                         Box(
                             modifier = Modifier
-                                .size(40.dp)
+                                .size(40.dp * scale)
                                 .clip(RoundedCornerShape(10.dp))
                                 .background(cellBg)
                                 .border(
-                                    width = if (isMid) 1.5.dp else 1.dp,
+                                    width = if (isHighlighted) 1.5.dp else 1.dp,
                                     color = borderColor,
                                     shape = RoundedCornerShape(10.dp)
                                 ),
                             contentAlignment = Alignment.Center
                         ) {
                             Text(
-                                text = value,
+                                text = value.toString(),
                                 color = textColor,
                                 fontSize = 14.sp,
                                 fontWeight = FontWeight.Bold
@@ -3913,9 +4026,9 @@ private fun BinarySearchVisualizationCard() {
 
                         Text(
                             text = index.toString(),
-                            color = if (isFound && isMid) GreenAccent else if (isMid) OrangeAccent else TextSecondary,
+                            color = if (isFound && isHighlighted) GreenAccent else if (isHighlighted) OrangeAccent else TextSecondary,
                             fontSize = 10.sp,
-                            fontWeight = if (isMid) FontWeight.Bold else FontWeight.Normal
+                            fontWeight = if (isHighlighted) FontWeight.Bold else FontWeight.Normal
                         )
                     }
                 }
@@ -3931,14 +4044,11 @@ private fun BinarySearchVisualizationCard() {
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(12.dp),
-                    verticalArrangement = Arrangement.spacedBy(10.dp)
+                        .padding(12.dp * scale),
+                    verticalArrangement = Arrangement.spacedBy(10.dp * scale)
                 ) {
-                    val explanationText = when {
-                        stepIndex < 0 -> "Target = $target (Sorted array). Compare midpoint with target to eliminate half."
-                        stepIndex == 0 -> "Mid = index 3 (val 7) < 11. Target is greater → Eliminate left half [1, 3, 5, 7]."
-                        else -> "Mid = index 5 (val 11) == 11. Target 11 found at index 5! Binary Search complete. ✓"
-                    }
+                    val explanationText = currentStep?.explanation
+                        ?: "Target = $target (Sorted array). Compare midpoint with target to eliminate half."
 
                     Text(
                         text = explanationText,
@@ -3951,7 +4061,7 @@ private fun BinarySearchVisualizationCard() {
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                        horizontalArrangement = Arrangement.spacedBy(12.dp * scale)
                     ) {
                         Box(
                             modifier = Modifier
@@ -3960,7 +4070,7 @@ private fun BinarySearchVisualizationCard() {
                                 .clip(RoundedCornerShape(2.dp))
                                 .background(Color(0xFF262634))
                         ) {
-                            val progressFloat = if (stepIndex < 0) 0f else (stepIndex + 1) / 2f
+                            val progressFloat = if (stepIndex < 0) 0f else (stepIndex + 1) / totalSteps.toFloat()
                             Box(
                                 modifier = Modifier
                                     .fillMaxWidth(progressFloat)
@@ -3984,7 +4094,7 @@ private fun BinarySearchVisualizationCard() {
             // Controls Row (Reset, Previous, Play/Pause, Next)
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp * scale),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 // Reset (↻)
@@ -3993,7 +4103,7 @@ private fun BinarySearchVisualizationCard() {
                     shape = RoundedCornerShape(12.dp),
                     border = BorderStroke(1.dp, CardBorderColor),
                     modifier = Modifier
-                        .size(44.dp)
+                        .size((44.dp * scale).coerceAtLeast(38.dp))
                         .clickable {
                             isPlaying = false
                             stepIndex = -1
@@ -4015,7 +4125,7 @@ private fun BinarySearchVisualizationCard() {
                     shape = RoundedCornerShape(12.dp),
                     border = BorderStroke(1.dp, CardBorderColor),
                     modifier = Modifier
-                        .size(44.dp)
+                        .size((44.dp * scale).coerceAtLeast(38.dp))
                         .clickable(enabled = stepIndex >= 0) {
                             isPlaying = false
                             stepIndex--
@@ -4037,7 +4147,7 @@ private fun BinarySearchVisualizationCard() {
                     shape = RoundedCornerShape(12.dp),
                     modifier = Modifier
                         .weight(1f)
-                        .height(44.dp)
+                        .height((44.dp * scale).coerceAtLeast(38.dp))
                         .clickable(enabled = !isCompleted) {
                             if (!isCompleted) {
                                 if (stepIndex < 0) {
@@ -4050,7 +4160,7 @@ private fun BinarySearchVisualizationCard() {
                     Box(contentAlignment = Alignment.Center) {
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(6.dp)
+                            horizontalArrangement = Arrangement.spacedBy(6.dp * scale)
                         ) {
                             Text(
                                 text = if (isPlaying) "⏸" else "▶",
@@ -4073,7 +4183,7 @@ private fun BinarySearchVisualizationCard() {
                     shape = RoundedCornerShape(12.dp),
                     border = BorderStroke(1.dp, CardBorderColor),
                     modifier = Modifier
-                        .size(44.dp)
+                        .size((44.dp * scale).coerceAtLeast(38.dp))
                         .clickable(enabled = !isCompleted) {
                             isPlaying = false
                             if (stepIndex < 0) {
@@ -4095,7 +4205,10 @@ private fun BinarySearchVisualizationCard() {
             }
         }
     }
-}
+            }
+        }
+        }
+    }
 
 @Composable
 private fun SearchComparisonCard() {
