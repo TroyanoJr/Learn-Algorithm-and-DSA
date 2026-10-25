@@ -13,7 +13,7 @@ When exploring a 2D grid from cell `(r, c)`:
 
 ### Code Example: Grid Path Existence Search
 
-The following code checks if a valid path exists from `(0, 0)` to `(1, 1)` in a $2 \times 2$ grid with open cells `1` and wall `0`.
+The following code checks if a valid path exists from `(0, 0)` to `(1, 1)` in a `2 x 2` grid with open cells `1` and wall `0`.
 
 ```pseudocode
 function hasPath(grid, r, c, targetR, targetC)

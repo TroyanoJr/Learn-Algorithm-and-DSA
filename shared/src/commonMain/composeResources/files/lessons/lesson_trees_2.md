@@ -7,13 +7,13 @@ A **binary tree** is a specialized type of tree in which every node has at most 
 - **Binary Tree**: A tree where each node has 0, 1, or 2 children (`left` and `right`).
 - **Full Binary Tree**: Every node other than the leaves has exactly two children.
 - **Complete Binary Tree**: All levels except possibly the last are completely filled, and all nodes in the last level are as far left as possible.
-- **Balanced vs. Skewed**: A balanced binary tree has its left and right subtrees roughly equal in height ($O(\log N)$ height), whereas a skewed binary tree degenerates into a linear chain resembling a linked list ($O(N)$ height).
+- **Balanced vs. Skewed**: A balanced binary tree has its left and right subtrees roughly equal in height (`O(log N)` height), whereas a skewed binary tree degenerates into a linear chain resembling a linked list (`O(N)` height).
 
 ## Binary Search Tree (BST) Property
 
 A **Binary Search Tree** is a binary tree that satisfies the strict **BST ordering property**:
-1. For any node $X$, all values in its **left subtree** are strictly less than $X$'s value ($<\text{value}$).
-2. For any node $X$, all values in its **right subtree** are strictly greater than $X$'s value ($>\text{value}$).
+1. For any node `X`, all values in its **left subtree** are strictly less than `X`'s value (`< value`).
+2. For any node `X`, all values in its **right subtree** are strictly greater than `X`'s value (`> value`).
 3. Both the left and right subtrees must also be binary search trees.
 
 *Important Distinction*: Not every binary tree is a Binary Search Tree! A standard binary tree has no ordering rules between parents and children; a BST enforces strict left-less-than, right-greater-than ordering.

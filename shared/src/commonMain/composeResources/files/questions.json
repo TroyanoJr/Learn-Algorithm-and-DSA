@@ -5315,5 +5315,315 @@
     "correctOptionIndex": 0,
     "explanation": "Space optimization works when state transitions require only recent prior rows/states, allowing old states to be discarded.",
     "difficulty": "MEDIUM"
+  },
+  {
+    "id": "q_lesson_branch_bound_1_1",
+    "topicId": "branch_bound",
+    "lessonId": "lesson_branch_bound_1",
+    "type": "MULTIPLE_CHOICE",
+    "statement": "What is the primary objective of Branch and Bound compared to standard Backtracking?",
+    "options": [
+      "Finding an optimal (minimum or maximum) solution by pruning suboptimal subtrees using bounds",
+      "Sorting all candidate inputs in linear time",
+      "Solving decision problems without cost metrics",
+      "Converting recursion into dynamic programming tables"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "Branch and Bound focuses on optimization, using cost bounds to prune subtrees that cannot improve upon the incumbent.",
+    "difficulty": "EASY"
+  },
+  {
+    "id": "q_lesson_branch_bound_1_2",
+    "topicId": "branch_bound",
+    "lessonId": "lesson_branch_bound_1",
+    "type": "CODE_OUTPUT",
+    "statement": "What is returned by this state-space search function when node cost is 8 and incumbent cost is 10?\n\n```pseudocode\nfunction searchBranchBound(node, incumbentCost)\n    if node.cost < incumbentCost then return node.cost\n    return incumbentCost\nend function\nprint(searchBranchBound({cost: 8}, 10))\n```",
+    "options": [
+      "8",
+      "10",
+      "18",
+      "-1"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "Since node.cost (8) < incumbentCost (10), the new better cost 8 is returned as the updated incumbent.",
+    "difficulty": "MEDIUM"
+  },
+  {
+    "id": "q_lesson_branch_bound_1_3",
+    "topicId": "branch_bound",
+    "lessonId": "lesson_branch_bound_1",
+    "type": "TRUE_FALSE",
+    "statement": "Branch and Bound models combinatorial optimization problems using an implicit state-space tree.",
+    "options": [
+      "True",
+      "False"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "True. Like backtracking, decisions branch downward into an implicit state-space tree.",
+    "difficulty": "EASY"
+  },
+  {
+    "id": "q_lesson_branch_bound_2_1",
+    "topicId": "branch_bound",
+    "lessonId": "lesson_branch_bound_2",
+    "type": "MULTIPLE_CHOICE",
+    "statement": "In a minimization problem, under what condition can a subtree be safely pruned?",
+    "options": [
+      "When the node's lower bound is greater than or equal to the current incumbent cost",
+      "When the node's upper bound is zero",
+      "When the node has no children",
+      "When the depth of the tree exceeds 10"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "If a partial state's lower bound already meets or exceeds the best solution found so far, exploring further cannot yield a strictly better minimum.",
+    "difficulty": "MEDIUM"
+  },
+  {
+    "id": "q_lesson_branch_bound_2_2",
+    "topicId": "branch_bound",
+    "lessonId": "lesson_branch_bound_2",
+    "type": "CODE_OUTPUT",
+    "statement": "What does this pruning evaluation function return for lower bound 15 and incumbent cost 12?\n\n```pseudocode\nfunction shouldPrune(nodeLowerBound, incumbentCost)\n    if nodeLowerBound >= incumbentCost then return true\n    return false\nend function\nprint(shouldPrune(15, 12))\n```",
+    "options": [
+      "true",
+      "false",
+      "15",
+      "12"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "15 >= 12 evaluates to true, so the pruning condition triggers.",
+    "difficulty": "EASY"
+  },
+  {
+    "id": "q_lesson_branch_bound_2_3",
+    "topicId": "branch_bound",
+    "lessonId": "lesson_branch_bound_2",
+    "type": "TRUE_FALSE",
+    "statement": "For maximization problems, subtrees are pruned when their optimistic upper bound is less than or equal to the current incumbent value.",
+    "options": [
+      "True",
+      "False"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "True. If the maximum possible value down a branch cannot surpass the incumbent, the branch is suboptimal and pruned.",
+    "difficulty": "EASY"
+  },
+  {
+    "id": "q_lesson_branch_bound_3_1",
+    "topicId": "branch_bound",
+    "lessonId": "lesson_branch_bound_3",
+    "type": "MULTIPLE_CHOICE",
+    "statement": "What data structure is commonly used in Best-First Branch and Bound to always expand the most promising node next?",
+    "options": [
+      "Priority queue (min-heap or max-heap)",
+      "Standard FIFO queue",
+      "LIFO stack",
+      "Hash map"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "A priority queue orders active nodes by their bounds, allowing Best-First Search to explore the most promising state immediately.",
+    "difficulty": "EASY"
+  },
+  {
+    "id": "q_lesson_branch_bound_3_2",
+    "topicId": "branch_bound",
+    "lessonId": "lesson_branch_bound_3",
+    "type": "CODE_OUTPUT",
+    "statement": "A min-heap priority queue holds states with bounds [12, 8, 15]. Which bound is polled first?\n\n```pseudocode\n// pq initialized with bounds 12, 8, 15 in min-heap\nprint(pq.poll())\n```",
+    "options": [
+      "8",
+      "12",
+      "15",
+      "None"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "A min-heap prioritizes the smallest value, so 8 is extracted first.",
+    "difficulty": "EASY"
+  },
+  {
+    "id": "q_lesson_branch_bound_3_3",
+    "topicId": "branch_bound",
+    "lessonId": "lesson_branch_bound_3",
+    "type": "TRUE_FALSE",
+    "statement": "The priority queue ordering in Best-First Search affects search efficiency, but correctness relies solely on valid bounding functions.",
+    "options": [
+      "True",
+      "False"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "True. Queue order determines how quickly good solutions are found, but bounding correctness guarantees optimal results.",
+    "difficulty": "MEDIUM"
+  },
+  {
+    "id": "q_lesson_branch_bound_4_1",
+    "topicId": "branch_bound",
+    "lessonId": "lesson_branch_bound_4",
+    "type": "MULTIPLE_CHOICE",
+    "statement": "What does fractional knapsack relaxation provide when solving the 0/1 Knapsack problem with Branch and Bound?",
+    "options": [
+      "An optimistic upper bound on total value",
+      "An exact integer solution instantly",
+      "The minimum possible weight",
+      "A greedy local minimum"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "Allowing fractional item inclusion provides an upper bound that cannot be exceeded by any valid 0/1 integer solution.",
+    "difficulty": "MEDIUM"
+  },
+  {
+    "id": "q_lesson_branch_bound_4_2",
+    "topicId": "branch_bound",
+    "lessonId": "lesson_branch_bound_4",
+    "type": "CODE_OUTPUT",
+    "statement": "What upper bound is computed if items are [weight 2, value 40] and capacity is 2 with current value 0?\n\n```pseudocode\n// capacity=2, item(weight=2, value=40)\nprint(computeUpperBound(2.0, 0.0, 0.0, items, 0))\n```",
+    "options": [
+      "40.0",
+      "20.0",
+      "80.0",
+      "0.0"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "The item fits entirely (weight 2 <= capacity 2), adding value 40.0.",
+    "difficulty": "MEDIUM"
+  },
+  {
+    "id": "q_lesson_branch_bound_4_3",
+    "topicId": "branch_bound",
+    "lessonId": "lesson_branch_bound_4",
+    "type": "TRUE_FALSE",
+    "statement": "Fractional knapsack upper bounds for 0/1 knapsack are computed by sorting items in nonincreasing order of value-to-weight ratio.",
+    "options": [
+      "True",
+      "False"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "True. Sorting by value-to-weight ratio maximizes value per capacity unit during fractional relaxation.",
+    "difficulty": "EASY"
+  },
+  {
+    "id": "q_branch_bound_1",
+    "topicId": "branch_bound",
+    "lessonId": null,
+    "type": "MULTIPLE_CHOICE",
+    "statement": "What is the primary role of an incumbent solution in Branch and Bound?",
+    "options": [
+      "To store the best feasible solution found so far and provide a cutoff threshold for pruning",
+      "To track the total number of visited leaf nodes",
+      "To store unvisited child nodes in a queue",
+      "To calculate fractional relaxations in O(1) time"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "The incumbent represents the best valid solution objective, acting as the pruning threshold.",
+    "difficulty": "EASY"
+  },
+  {
+    "id": "q_branch_bound_2",
+    "topicId": "branch_bound",
+    "lessonId": null,
+    "type": "MULTIPLE_CHOICE",
+    "statement": "How does Branch and Bound differ from pure Brute Force search?",
+    "options": [
+      "It uses bounding functions to prune entire subtrees that cannot improve the incumbent",
+      "It never visits leaf nodes",
+      "It requires dynamic programming table memoization",
+      "It only operates on sorted arrays"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "Pruning via bounds allows Branch and Bound to skip exploring massive unpromising subtrees.",
+    "difficulty": "EASY"
+  },
+  {
+    "id": "q_branch_bound_3",
+    "topicId": "branch_bound",
+    "lessonId": null,
+    "type": "MULTIPLE_CHOICE",
+    "statement": "When is a node pruned in a Branch and Bound minimization problem?",
+    "options": [
+      "When its lower bound is >= current incumbent cost",
+      "When its lower bound is <= current incumbent cost",
+      "When its depth is odd",
+      "When its weight is zero"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "For minimization, if a subtree's best possible lower bound meets or exceeds the incumbent cost, it is pruned.",
+    "difficulty": "MEDIUM"
+  },
+  {
+    "id": "q_branch_bound_4",
+    "topicId": "branch_bound",
+    "lessonId": null,
+    "type": "CODE_OUTPUT",
+    "statement": "What does this bounding check return for node bound 25 and incumbent 20?\n\n```pseudocode\nfunction pruneMin(bound, incumbent)\n    return bound >= incumbent\nend function\nprint(pruneMin(25, 20))\n```",
+    "options": [
+      "true",
+      "false",
+      "25",
+      "20"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "25 >= 20 is true, so the node is pruned.",
+    "difficulty": "EASY"
+  },
+  {
+    "id": "q_branch_bound_5",
+    "topicId": "branch_bound",
+    "lessonId": null,
+    "type": "TRUE_FALSE",
+    "statement": "In Best-First Branch and Bound, using a priority queue guarantees that the optimal solution is always found without exploring any other nodes.",
+    "options": [
+      "True",
+      "False"
+    ],
+    "correctOptionIndex": 1,
+    "explanation": "False. While priority queues guide the search efficiently, other nodes may still need exploration or bounding verification before optimality is proven.",
+    "difficulty": "MEDIUM"
+  },
+  {
+    "id": "q_branch_bound_6",
+    "topicId": "branch_bound",
+    "lessonId": null,
+    "type": "MULTIPLE_CHOICE",
+    "statement": "Why is fractional knapsack relaxation effective as an upper bound for 0/1 Knapsack?",
+    "options": [
+      "It provides an upper bound in O(N log N) time that no integer 0/1 solution can exceed",
+      "It requires exponential time to calculate",
+      "It guarantees that all items are taken as integers",
+      "It eliminates the need for an incumbent"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "Fractional relaxation is an optimistic upper bound computable quickly via greedy ratio sorting.",
+    "difficulty": "MEDIUM"
+  },
+  {
+    "id": "q_branch_bound_7",
+    "topicId": "branch_bound",
+    "lessonId": null,
+    "type": "CODE_OUTPUT",
+    "statement": "What is the priority queue poll order for min-heap bounds [14, 6, 19, 10]?\n\n```pseudocode\n// Min-heap priority queue with values [14, 6, 19, 10]\n// Poll all elements sequentially\nprint(poll(), poll())\n```",
+    "options": [
+      "6, 10",
+      "14, 6",
+      "19, 14",
+      "6, 19"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "Min-heap extracts smallest elements first: 6, then 10, then 14, then 19. First two polled are 6 and 10.",
+    "difficulty": "MEDIUM"
+  },
+  {
+    "id": "q_branch_bound_8",
+    "topicId": "branch_bound",
+    "lessonId": null,
+    "type": "MULTIPLE_CHOICE",
+    "statement": "What is the main advantage of Best-First search over Depth-First search in Branch and Bound?",
+    "options": [
+      "It tends to find high-quality feasible solutions earlier, enabling earlier pruning of subtrees",
+      "It requires zero auxiliary memory",
+      "It avoids using priority queues",
+      "It prevents all recursive function calls"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "Best-First search targets the most promising bounds first, rapidly improving the incumbent and pruning ineffective branches.",
+    "difficulty": "MEDIUM"
   }
 ]

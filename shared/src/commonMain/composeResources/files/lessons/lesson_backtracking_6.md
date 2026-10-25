@@ -5,11 +5,11 @@ Backtracking explores decision spaces that are inherently exponential or factori
 ## Time and Space Complexity
 
 - **Worst-Case Time Complexity**: Exponential or factorial depending on decision choices per level:
-  - Subsets / Combination Sum: $O(2^N)$
-  - Permutations: $O(N!)$
-  - N-Queens: $O(N!)$
-  - 4-directional 2D Grid Search: $O(4^{R \times C})$
-- **Space Complexity**: Auxiliary call-stack space is proportional to maximum tree depth $H$: $O(H)$ (typically $O(N)$ for $N$ decision levels).
+  - Subsets / Combination Sum: `O(2^N)`
+  - Permutations: `O(N!)`
+  - N-Queens: `O(N!)`
+  - 4-directional 2D Grid Search: `O(4^(R x C))`
+- **Space Complexity**: Auxiliary call-stack space is proportional to maximum tree depth `H`: `O(H)` (typically `O(N)` for `N` decision levels).
 
 ## Paradigm Comparisons
 
@@ -22,7 +22,7 @@ Backtracking explores decision spaces that are inherently exponential or factori
 
 ### Code Example: Comparing Explored Nodes With and Without Pruning
 
-The following code traces the total recursive calls executed with vs without early constraint pruning when searching for values $\le 2$.
+The following code traces the total recursive calls executed with vs without early constraint pruning when searching for values `<= 2`.
 
 ```pseudocode
 function searchPruned(arr, index, limit)
@@ -80,9 +80,9 @@ print(search_pruned(arr, 0, 2))
 
 ## Remember
 
-- Backtracking time complexity is worst-case exponential $O(2^N)$ or factorial $O(N!)$.
+- Backtracking time complexity is worst-case exponential `O(2^N)` or factorial `O(N!)`.
 - **Pruning** discards invalid branches early, dramatically accelerating search times in practice.
-- Auxiliary call-stack space is $O(N)$, matching the height of the state-space tree.
+- Auxiliary call-stack space is `O(N)`, matching the height of the state-space tree.
 
 ## Summary
 

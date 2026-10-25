@@ -1,6 +1,6 @@
 # Permutations and Unique Arrangements
 
-A **permutation** is an ordered arrangement of all elements in a set. For $N$ unique elements, there are $N!$ (N factorial) possible permutations. Backtracking is the standard approach for generating all permutations.
+A **permutation** is an ordered arrangement of all elements in a set. For `N` unique elements, there are `N!` (N factorial) possible permutations. Backtracking is the standard approach for generating all permutations.
 
 ## Generating Permutations via Swapping
 
@@ -101,10 +101,10 @@ print()
 
 ## Remember
 
-- Generating permutations explores $N!$ leaf choices in the state-space tree.
+- Generating permutations explores `N!` leaf choices in the state-space tree.
 - Element swapping fixes one item at `start` and restores order via a second swap (**backtrack**).
 - Restoring state after recursive calls ensures the array remains intact for subsequent branches.
 
 ## Summary
 
-Permutation generation uses backtracking to fix elements at each index, recurse on remaining indices, and undo swaps to explore all $N!$ orderings.
+Permutation generation uses backtracking to fix elements at each index, recurse on remaining indices, and undo swaps to explore all `N!` orderings.

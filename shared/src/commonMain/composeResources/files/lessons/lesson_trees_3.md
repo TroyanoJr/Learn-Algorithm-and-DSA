@@ -106,9 +106,9 @@ in_order(root)
 
 ## Remember
 
-- **Pre-order**: Root $\to$ Left $\to$ Right.
-- **In-order**: Left $\to$ Root $\to$ Right (visits BST nodes in sorted order).
-- **Post-order**: Left $\to$ Right $\to$ Root.
+- **Pre-order**: Root -> Left -> Right.
+- **In-order**: Left -> Root -> Right (visits BST nodes in sorted order).
+- **Post-order**: Left -> Right -> Root.
 - **Level-order**: Top to bottom, left to right (uses a Queue).
 
 ## Summary

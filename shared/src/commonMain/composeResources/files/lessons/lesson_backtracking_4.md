@@ -1,6 +1,6 @@
 # Constraint Satisfaction: The N-Queens Problem
 
-The **N-Queens problem** is a classic constraint satisfaction problem: place $N$ chess queens on an $N \times N$ chessboard such that no two queens attack each other. A queen attacks any piece in the same row, column, or diagonal.
+The **N-Queens problem** is a classic constraint satisfaction problem: place `N` chess queens on an `N x N` chessboard such that no two queens attack each other. A queen attacks any piece in the same row, column, or diagonal.
 
 ## Formulating Backtracking for N-Queens
 
@@ -16,7 +16,7 @@ The **N-Queens problem** is a classic constraint satisfaction problem: place $N$
 
 ### Code Example: N-Queens Solution Count (N = 4)
 
-The following code calculates the total number of valid solutions for placing $N=4$ queens on a $4 \times 4$ chessboard.
+The following code calculates the total number of valid solutions for placing `N = 4` queens on a `4 x 4` chessboard.
 
 ```pseudocode
 function solveNQueens(row, n, cols, diag1, diag2)
@@ -110,8 +110,8 @@ print(solve_n_queens(0, n, [False]*n, [False]*(2*n), [False]*(2*n)))
 
 - N-Queens places one queen per row, checking column and diagonal safety.
 - Diagonals are tracked using `row - col + N` (main) and `row + col` (anti-diagonal).
-- For $N=4$, there are exactly **2 valid solutions**.
+- For `N = 4`, there are exactly **2 valid solutions**.
 
 ## Summary
 
-N-Queens demonstrates constraint satisfaction using row-by-row backtracking and fast $O(1)$ column/diagonal safety checks.
+N-Queens demonstrates constraint satisfaction using row-by-row backtracking and fast `O(1)` column/diagonal safety checks.

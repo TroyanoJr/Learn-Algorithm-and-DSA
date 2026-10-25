@@ -12,12 +12,12 @@ Backtracking explores a decision space modeled as an implicit **state-space tree
 
 ## Base Cases and Pruning
 
-- **Base Case (Valid Solution)**: Reaching the target depth or satisfying all constraints (e.g. constructing a subset of length $N$). The complete candidate is recorded or printed.
+- **Base Case (Valid Solution)**: Reaching the target depth or satisfying all constraints (e.g. constructing a subset of length `N`). The complete candidate is recorded or printed.
 - **Dead End (Pruning)**: Reaching a state that violates problem constraints. Instead of exploring further down that invalid branch, the algorithm immediately backtracks to save computation.
 
 ### Code Example: Generating Binary Strings of Length N
 
-The following code generates all binary strings of length $N$ by trying `'0'`, recursing, and then backtracking to try `'1'`.
+The following code generates all binary strings of length `N` by trying `'0'`, recursing, and then backtracking to try `'1'`.
 
 ```pseudocode
 function generateBinary(n, current)
@@ -92,7 +92,7 @@ print()
 
 ## Remember
 
-- Backtracking explores candidates incrementally using the **Choice $\to$ Explore $\to$ Undo** pattern.
+- Backtracking explores candidates incrementally using the **Choice -> Explore -> Undo** pattern.
 - The decision space forms an implicit **state-space tree**.
 - Reaching a dead end triggers a return (backtrack) to try alternative choices at earlier decision levels.
 

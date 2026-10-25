@@ -654,5 +654,37 @@
     "order": 6,
     "xp": 30,
     "contentPath": "files/lessons/lesson_dynamic_programming_6.md"
+  },
+  {
+    "id": "lesson_branch_bound_1",
+    "topicId": "branch_bound",
+    "title": "Branch and Bound Fundamentals and State-Space Search",
+    "order": 1,
+    "xp": 30,
+    "contentPath": "files/lessons/lesson_branch_bound_1.md"
+  },
+  {
+    "id": "lesson_branch_bound_2",
+    "topicId": "branch_bound",
+    "title": "Bounds, Incumbents, and Pruning",
+    "order": 2,
+    "xp": 30,
+    "contentPath": "files/lessons/lesson_branch_bound_2.md"
+  },
+  {
+    "id": "lesson_branch_bound_3",
+    "topicId": "branch_bound",
+    "title": "Best-First Search and Priority Queues",
+    "order": 3,
+    "xp": 30,
+    "contentPath": "files/lessons/lesson_branch_bound_3.md"
+  },
+  {
+    "id": "lesson_branch_bound_4",
+    "topicId": "branch_bound",
+    "title": "0/1 Knapsack with Branch and Bound",
+    "order": 4,
+    "xp": 30,
+    "contentPath": "files/lessons/lesson_branch_bound_4.md"
   }
 ]

@@ -11,7 +11,7 @@ To generate unique combinations without duplicates:
 ## Bounding Functions and Pruning
 
 **Pruning** is the act of stopping recursion down a branch that cannot possibly lead to a valid solution.
-- For example, in **Combination Sum** (finding elements that sum to target $T$):
+- For example, in **Combination Sum** (finding elements that sum to target `T`):
   - If `currentSum == T`, record the combination (valid base case).
   - If `currentSum > T`, stop recursing and backtrack immediately (**prune**).
 
