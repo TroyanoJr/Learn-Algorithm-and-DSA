@@ -606,5 +606,53 @@
     "order": 6,
     "xp": 30,
     "contentPath": "files/lessons/lesson_backtracking_6.md"
+  },
+  {
+    "id": "lesson_dynamic_programming_1",
+    "topicId": "dynamic_programming",
+    "title": "Dynamic Programming Fundamentals and Memoization",
+    "order": 1,
+    "xp": 30,
+    "contentPath": "files/lessons/lesson_dynamic_programming_1.md"
+  },
+  {
+    "id": "lesson_dynamic_programming_2",
+    "topicId": "dynamic_programming",
+    "title": "Bottom-Up Tabulation and Space Optimization",
+    "order": 2,
+    "xp": 30,
+    "contentPath": "files/lessons/lesson_dynamic_programming_2.md"
+  },
+  {
+    "id": "lesson_dynamic_programming_3",
+    "topicId": "dynamic_programming",
+    "title": "Unbounded vs 0/1 Choice: Coin Change",
+    "order": 3,
+    "xp": 30,
+    "contentPath": "files/lessons/lesson_dynamic_programming_3.md"
+  },
+  {
+    "id": "lesson_dynamic_programming_4",
+    "topicId": "dynamic_programming",
+    "title": "2D Subproblem Grids: Unique Paths in a Grid",
+    "order": 4,
+    "xp": 30,
+    "contentPath": "files/lessons/lesson_dynamic_programming_4.md"
+  },
+  {
+    "id": "lesson_dynamic_programming_5",
+    "topicId": "dynamic_programming",
+    "title": "0/1 Knapsack Problem",
+    "order": 5,
+    "xp": 30,
+    "contentPath": "files/lessons/lesson_dynamic_programming_5.md"
+  },
+  {
+    "id": "lesson_dynamic_programming_6",
+    "topicId": "dynamic_programming",
+    "title": "Sequence Alignment: Longest Common Subsequence",
+    "order": 6,
+    "xp": 30,
+    "contentPath": "files/lessons/lesson_dynamic_programming_6.md"
   }
 ]

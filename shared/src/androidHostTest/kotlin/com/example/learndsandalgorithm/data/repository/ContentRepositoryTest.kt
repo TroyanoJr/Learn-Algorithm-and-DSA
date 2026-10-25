@@ -68,7 +68,8 @@ class ContentRepositoryTest {
         "lesson_greedy_1", "lesson_greedy_2", "lesson_greedy_3", "lesson_greedy_4", "lesson_greedy_5",
         "lesson_heap_1", "lesson_heap_2", "lesson_heap_3", "lesson_heap_4", "lesson_heap_5",
         "lesson_graphs_1", "lesson_graphs_2", "lesson_graphs_3", "lesson_graphs_4", "lesson_graphs_5", "lesson_graphs_6", "lesson_graphs_7", "lesson_graphs_8",
-        "lesson_backtracking_1", "lesson_backtracking_2", "lesson_backtracking_3", "lesson_backtracking_4", "lesson_backtracking_5", "lesson_backtracking_6"
+        "lesson_backtracking_1", "lesson_backtracking_2", "lesson_backtracking_3", "lesson_backtracking_4", "lesson_backtracking_5", "lesson_backtracking_6",
+        "lesson_dynamic_programming_1", "lesson_dynamic_programming_2", "lesson_dynamic_programming_3", "lesson_dynamic_programming_4", "lesson_dynamic_programming_5", "lesson_dynamic_programming_6"
     )
 
     @Test
@@ -179,7 +180,8 @@ class ContentRepositoryTest {
         val heapLessons = repository.getLessonsByTopic("heap")
         val graphLessons = repository.getLessonsByTopic("graphs")
         val backtrackingLessons = repository.getLessonsByTopic("backtracking")
-        assertEquals(76, totalLessons + iterationLessons.size + hashTablesLessons.size + treesLessons.size + divideConquerLessons.size + bruteForceLessons.size + greedyLessons.size + heapLessons.size + graphLessons.size + backtrackingLessons.size, "Should load exactly 76 lessons total")
+        val dpLessons = repository.getLessonsByTopic("dynamic_programming")
+        assertEquals(82, totalLessons + iterationLessons.size + hashTablesLessons.size + treesLessons.size + divideConquerLessons.size + bruteForceLessons.size + greedyLessons.size + heapLessons.size + graphLessons.size + backtrackingLessons.size + dpLessons.size, "Should load exactly 82 lessons total")
         assertEquals(2, dsIntroLessons.size, "DS Intro should have 2 lessons")
         assertEquals(2, algoIntroLessons.size, "Algo Intro should have 2 lessons")
         assertEquals(5, arraysLessons.size, "Arrays should have 5 lessons")
@@ -197,6 +199,7 @@ class ContentRepositoryTest {
         assertEquals(5, heapLessons.size, "Heap should have 5 lessons")
         assertEquals(8, graphLessons.size, "Graphs should have 8 lessons")
         assertEquals(6, backtrackingLessons.size, "Backtracking should have 6 lessons")
+        assertEquals(6, dpLessons.size, "Dynamic Programming should have 6 lessons")
     }
 
     @Test
@@ -418,27 +421,28 @@ class ContentRepositoryTest {
         val heapQuizQuestions = repository.getQuestionsByTopic("heap")
         val graphQuizQuestions = repository.getQuestionsByTopic("graphs")
         val backtrackingQuizQuestions = repository.getQuestionsByTopic("backtracking")
-        val quizTotal = arraysQuizQuestions.size + searchQuizQuestions.size + sortingQuizQuestions.size + linkedListQuizQuestions.size + stackQuizQuestions.size + queueQuizQuestions.size + iterationQuizQuestions.size + hashTablesQuizQuestions.size + treesQuizQuestions.size + divideConquerQuizQuestions.size + bruteForceQuizQuestions.size + greedyQuizQuestions.size + heapQuizQuestions.size + graphQuizQuestions.size + backtrackingQuizQuestions.size
-        assertEquals(117, quizTotal, "Topic quizzes should return exactly 117 questions with lessonId == null")
+        val dpQuizQuestions = repository.getQuestionsByTopic("dynamic_programming")
+        val quizTotal = arraysQuizQuestions.size + searchQuizQuestions.size + sortingQuizQuestions.size + linkedListQuizQuestions.size + stackQuizQuestions.size + queueQuizQuestions.size + iterationQuizQuestions.size + hashTablesQuizQuestions.size + treesQuizQuestions.size + divideConquerQuizQuestions.size + bruteForceQuizQuestions.size + greedyQuizQuestions.size + heapQuizQuestions.size + graphQuizQuestions.size + backtrackingQuizQuestions.size + dpQuizQuestions.size
+        assertEquals(125, quizTotal, "Topic quizzes should return exactly 125 questions with lessonId == null")
 
         var lessonQuestionsTotal = 0
         allLessonIds.forEach { lessonId ->
             val lessonQs = repository.getQuestionsByLessonId(lessonId)
             lessonQuestionsTotal += lessonQs.size
         }
-        assertEquals(228, lessonQuestionsTotal, "Should load 228 lesson-specific questions")
-        assertEquals(345, quizTotal + lessonQuestionsTotal, "Total questions across quizzes and lessons must be 345")
+        assertEquals(246, lessonQuestionsTotal, "Should load 246 lesson-specific questions")
+        assertEquals(371, quizTotal + lessonQuestionsTotal, "Total questions across quizzes and lessons must be 371")
     }
 
     @Test
     fun testAllQuestionIdsAreUnique() = runBlocking {
-        val quizQuestions = listOf("arrays", "linear_search", "sorting", "linked_list", "stack", "queues", "iteration_recursion", "hash_tables", "trees", "divide_conquer", "brute_force", "greedy", "heap", "graphs", "backtracking").flatMap { repository.getQuestionsByTopic(it) }
+        val quizQuestions = listOf("arrays", "linear_search", "sorting", "linked_list", "stack", "queues", "iteration_recursion", "hash_tables", "trees", "divide_conquer", "brute_force", "greedy", "heap", "graphs", "backtracking", "dynamic_programming").flatMap { repository.getQuestionsByTopic(it) }
         val lessonQuestions = allLessonIds.flatMap { repository.getQuestionsByLessonId(it) }
         val allQuestions = quizQuestions + lessonQuestions
 
-        assertEquals(345, allQuestions.size, "Total collected questions must be 345")
+        assertEquals(371, allQuestions.size, "Total collected questions must be 371")
         val uniqueIds = allQuestions.map { it.id }.toSet()
-        assertEquals(345, uniqueIds.size, "All question IDs must be unique")
+        assertEquals(371, uniqueIds.size, "All question IDs must be unique")
     }
 
     @Test
@@ -456,23 +460,23 @@ class ContentRepositoryTest {
 
     @Test
     fun testExpandedQuestionTypesAndLessonMappings() = runBlocking {
-        val topicQuestions = listOf("arrays", "linear_search", "sorting", "linked_list", "stack", "queues", "iteration_recursion", "hash_tables", "trees", "divide_conquer", "brute_force", "greedy", "heap", "graphs", "backtracking")
+        val topicQuestions = listOf("arrays", "linear_search", "sorting", "linked_list", "stack", "queues", "iteration_recursion", "hash_tables", "trees", "divide_conquer", "brute_force", "greedy", "heap", "graphs", "backtracking", "dynamic_programming")
             .flatMap { repository.getQuestionsByTopic(it) }
-        assertEquals(117, topicQuestions.size)
+        assertEquals(125, topicQuestions.size)
         assertTrue(topicQuestions.all { it.lessonId == null })
 
         val lessonQuestions = allLessonIds.flatMap { repository.getQuestionsByLessonId(it) }
-        assertEquals(228, lessonQuestions.size)
+        assertEquals(246, lessonQuestions.size)
         assertTrue(lessonQuestions.all { it.lessonId in allLessonIds })
-        assertEquals(345, topicQuestions.size + lessonQuestions.size)
+        assertEquals(371, topicQuestions.size + lessonQuestions.size)
         val registeredTopicIds = repository.getTopics().map { it.id }.toSet()
         assertTrue((topicQuestions + lessonQuestions).all { it.topicId in registeredTopicIds })
 
         val addedIds = allLessonIds.filter { it != "lesson_arrays_1" }
             .flatMap { listOf("q_${it}_2", "q_${it}_3") }.toSet()
         val addedQuestions = lessonQuestions.filter { it.id in addedIds }
-        assertEquals(150, addedQuestions.size)
-        assertEquals(150, addedQuestions.map { it.id }.toSet().size)
+        assertEquals(162, addedQuestions.size)
+        assertEquals(162, addedQuestions.map { it.id }.toSet().size)
         addedQuestions.filter { it.type == QuestionType.TRUE_FALSE }.forEach { question ->
             assertEquals(listOf("True", "False"), question.options, question.id)
             assertTrue(question.correctOptionIndex in 0..1, question.id)
@@ -498,9 +502,9 @@ class ContentRepositoryTest {
             assertEquals(3, lessonSet.size, "Lesson '$lessonId' must have three questions")
         }
 
-        assertEquals(79, lessonQuestions.count { it.type == QuestionType.MULTIPLE_CHOICE })
-        assertEquals(76, lessonQuestions.count { it.type == QuestionType.TRUE_FALSE })
-        assertEquals(73, lessonQuestions.count { it.type == QuestionType.CODE_OUTPUT })
+        assertEquals(85, lessonQuestions.count { it.type == QuestionType.MULTIPLE_CHOICE })
+        assertEquals(82, lessonQuestions.count { it.type == QuestionType.TRUE_FALSE })
+        assertEquals(79, lessonQuestions.count { it.type == QuestionType.CODE_OUTPUT })
         assertEquals(QuestionType.MULTIPLE_CHOICE, lessonQuestions.single { it.id == "q_lesson_introduction_ds_1_2" }.type)
         assertEquals(QuestionType.MULTIPLE_CHOICE, lessonQuestions.single { it.id == "q_lesson_arrays_5_2" }.type)
 
@@ -597,11 +601,11 @@ class ContentRepositoryTest {
         assertTrue(lessonFiveTrace.explanation.contains("prints 9 then 4 and stops"))
 
         val allLessonQuestions = allLessonIds.flatMap { repository.getQuestionsByLessonId(it) }
-        val allTopicQuestions = listOf("arrays", "linear_search", "sorting", "linked_list", "stack", "queues", "iteration_recursion", "hash_tables", "trees", "divide_conquer", "brute_force", "greedy", "heap", "graphs", "backtracking")
+        val allTopicQuestions = listOf("arrays", "linear_search", "sorting", "linked_list", "stack", "queues", "iteration_recursion", "hash_tables", "trees", "divide_conquer", "brute_force", "greedy", "heap", "graphs", "backtracking", "dynamic_programming")
             .flatMap { repository.getQuestionsByTopic(it) }
-        assertEquals(228, allLessonQuestions.size)
-        assertEquals(117, allTopicQuestions.size)
-        assertEquals(345, allLessonQuestions.size + allTopicQuestions.size)
+        assertEquals(246, allLessonQuestions.size)
+        assertEquals(125, allTopicQuestions.size)
+        assertEquals(371, allLessonQuestions.size + allTopicQuestions.size)
         allLessonIds.forEach { lessonId ->
             assertEquals(3, allLessonQuestions.count { it.lessonId == lessonId }, lessonId)
         }

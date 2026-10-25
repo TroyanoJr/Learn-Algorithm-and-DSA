@@ -4913,5 +4913,407 @@
     "correctOptionIndex": 0,
     "explanation": "Backtracking prunes decision spaces; DP reuses solutions to overlapping subproblems.",
     "difficulty": "MEDIUM"
+  },
+  {
+    "id": "q_lesson_dynamic_programming_1_1",
+    "topicId": "dynamic_programming",
+    "lessonId": "lesson_dynamic_programming_1",
+    "type": "MULTIPLE_CHOICE",
+    "statement": "What two core properties must a problem exhibit to be efficiently solvable by Dynamic Programming?",
+    "options": [
+      "Optimal substructure and overlapping subproblems",
+      "Randomized state transitions and linear memory",
+      "Greedy choice property and sorting",
+      "Divide and conquer with zero recombination work"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "DP requires optimal substructure (optimal solution composed of optimal subproblem solutions) and overlapping subproblems (subproblems solved repeatedly).",
+    "difficulty": "EASY"
+  },
+  {
+    "id": "q_lesson_dynamic_programming_1_2",
+    "topicId": "dynamic_programming",
+    "lessonId": "lesson_dynamic_programming_1",
+    "type": "CODE_OUTPUT",
+    "statement": "What value does top-down memoized Fibonacci return for n=5?\n\n```pseudocode\nfunction fibMemo(n, memo)\n    if n <= 1 then return n\n    if memo[n] != -1 then return memo[n]\n    memo[n] = fibMemo(n - 1, memo) + fibMemo(n - 2, memo)\n    return memo[n]\nend function\nprint(fibMemo(5, [-1, -1, -1, -1, -1, -1]))\n```",
+    "options": [
+      "5",
+      "8",
+      "3",
+      "13"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "Fibonacci numbers are 0, 1, 1, 2, 3, 5. For n=5, fibMemo(5) returns 5.",
+    "difficulty": "MEDIUM"
+  },
+  {
+    "id": "q_lesson_dynamic_programming_1_3",
+    "topicId": "dynamic_programming",
+    "lessonId": "lesson_dynamic_programming_1",
+    "type": "TRUE_FALSE",
+    "statement": "Top-down Dynamic Programming with memoization caches recursive subproblem results to avoid redundant calculations.",
+    "options": [
+      "True",
+      "False"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "True. Memoization stores computed subproblem states in a lookup table so subsequent requests return instantly in O(1) time.",
+    "difficulty": "EASY"
+  },
+  {
+    "id": "q_lesson_dynamic_programming_2_1",
+    "topicId": "dynamic_programming",
+    "lessonId": "lesson_dynamic_programming_2",
+    "type": "MULTIPLE_CHOICE",
+    "statement": "What is the primary operational difference between Bottom-Up Tabulation and Top-Down Memoization?",
+    "options": [
+      "Tabulation builds solutions iteratively from base cases up, while Memoization recurses from target down",
+      "Tabulation requires exponential time while Memoization is linear",
+      "Tabulation uses a recursive call stack",
+      "Memoization cannot cache results"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "Tabulation is iterative and fills tables from base cases upward, whereas memoization is recursive and caches results top-down.",
+    "difficulty": "EASY"
+  },
+  {
+    "id": "q_lesson_dynamic_programming_2_2",
+    "topicId": "dynamic_programming",
+    "lessonId": "lesson_dynamic_programming_2",
+    "type": "CODE_OUTPUT",
+    "statement": "What result does space-optimized climbing stairs return for n=4 (steps 1 or 2)?\n\n```pseudocode\nprev2 = 1\nprev1 = 2\nfor i from 3 to 4 do\n    curr = prev1 + prev2\n    prev2 = prev1\n    prev1 = curr\nend for\nprint(prev1)\n```",
+    "options": [
+      "5",
+      "3",
+      "8",
+      "2"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "For n=4, stair ways are 1, 2, 3, 5. prev1 computes 5.",
+    "difficulty": "MEDIUM"
+  },
+  {
+    "id": "q_lesson_dynamic_programming_2_3",
+    "topicId": "dynamic_programming",
+    "lessonId": "lesson_dynamic_programming_2",
+    "type": "TRUE_FALSE",
+    "statement": "When a DP state dp[i] depends only on a fixed constant number of previous states, auxiliary space can often be optimized from O(N) to O(1).",
+    "options": [
+      "True",
+      "False"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "True. Rolling variables maintain only the required preceding states, reducing space complexity to O(1).",
+    "difficulty": "EASY"
+  },
+  {
+    "id": "q_lesson_dynamic_programming_3_1",
+    "topicId": "dynamic_programming",
+    "lessonId": "lesson_dynamic_programming_3",
+    "type": "MULTIPLE_CHOICE",
+    "statement": "In the Coin Change problem, what is the initial value assigned to unreachable DP amount states before computing transitions?",
+    "options": [
+      "Infinity (or a sentinel larger than any possible coin count)",
+      "Zero",
+      "Negative one",
+      "The coin denomination"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "Unreachable amount states are initialized to infinity so min transitions can correctly overwrite them.",
+    "difficulty": "EASY"
+  },
+  {
+    "id": "q_lesson_dynamic_programming_3_2",
+    "topicId": "dynamic_programming",
+    "lessonId": "lesson_dynamic_programming_3",
+    "type": "CODE_OUTPUT",
+    "statement": "What is the minimum coins needed to make amount 3 using coin denominations [1, 2]?\n\n```pseudocode\n// dp[0]=0, coins=[1, 2], amount=3\n// dp[1]=1, dp[2]=1, dp[3] = min(dp[3-1]+1, dp[3-2]+1) = min(2, 2) = 2\nprint(dp[3])\n```",
+    "options": [
+      "2",
+      "1",
+      "3",
+      "-1"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "Amount 3 can be made using two coins (1 + 2 = 3), so minimum coins is 2.",
+    "difficulty": "MEDIUM"
+  },
+  {
+    "id": "q_lesson_dynamic_programming_3_3",
+    "topicId": "dynamic_programming",
+    "lessonId": "lesson_dynamic_programming_3",
+    "type": "TRUE_FALSE",
+    "statement": "Coin Change is an unbounded knapsack variation where each coin denomination can be reused infinitely.",
+    "options": [
+      "True",
+      "False"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "True. Each coin can be used multiple times, distinguishing it from 0/1 knapsack problems.",
+    "difficulty": "EASY"
+  },
+  {
+    "id": "q_lesson_dynamic_programming_4_1",
+    "topicId": "dynamic_programming",
+    "lessonId": "lesson_dynamic_programming_4",
+    "type": "MULTIPLE_CHOICE",
+    "statement": "What are the valid movement transitions when computing unique paths in an R x C grid DP?",
+    "options": [
+      "Down (r+1, c) and Right (r, c+1)",
+      "Up and Left only",
+      "Diagonal only",
+      "Any arbitrary direction"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "Grid unique paths restrict movement strictly to Down and Right.",
+    "difficulty": "EASY"
+  },
+  {
+    "id": "q_lesson_dynamic_programming_4_2",
+    "topicId": "dynamic_programming",
+    "lessonId": "lesson_dynamic_programming_4",
+    "type": "CODE_OUTPUT",
+    "statement": "What value is computed at dp[2] in a 1D rolling array after 1 row of transitions for a 3x3 grid?\n\n```pseudocode\n// Initial row: [1, 1, 1]\n// Update row: dp[1] += dp[0], dp[2] += dp[1]\nprint(dp[2])\n```",
+    "options": [
+      "3",
+      "1",
+      "2",
+      "6"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "After updating: row becomes [1, 2, 3], so dp[2] is 3.",
+    "difficulty": "MEDIUM"
+  },
+  {
+    "id": "q_lesson_dynamic_programming_4_3",
+    "topicId": "dynamic_programming",
+    "lessonId": "lesson_dynamic_programming_4",
+    "type": "TRUE_FALSE",
+    "statement": "The space complexity of grid unique paths can be optimized from O(R x C) to O(C) using a 1D rolling row array.",
+    "options": [
+      "True",
+      "False"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "True. Computing row r only requires values from the current row (left) and previous row (top), so a 1D array of size C suffices.",
+    "difficulty": "EASY"
+  },
+  {
+    "id": "q_lesson_dynamic_programming_5_1",
+    "topicId": "dynamic_programming",
+    "lessonId": "lesson_dynamic_programming_5",
+    "type": "MULTIPLE_CHOICE",
+    "statement": "In the 0/1 Knapsack problem, why must capacity weights be iterated backwards in a 1D space-optimized DP array?",
+    "options": [
+      "To prevent using the same item multiple times in the same row update",
+      "To sort weights in descending order",
+      "To ensure time complexity is O(1)",
+      "To avoid negative array indices"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "Iterating backwards ensures that `dp[c - w]` references values from the previous item's state rather than the already-updated current item's state.",
+    "difficulty": "MEDIUM"
+  },
+  {
+    "id": "q_lesson_dynamic_programming_5_2",
+    "topicId": "dynamic_programming",
+    "lessonId": "lesson_dynamic_programming_5",
+    "type": "CODE_OUTPUT",
+    "statement": "What is the maximum knapsack value for weights [2, 3] and values [3, 4] with capacity 5?\n\n```pseudocode\n// Weights [2, 3], Values [3, 4], Capacity 5\n// Max value choosing items (weight 2+3=5, value 3+4=7)\nprint(knapsack)\n```",
+    "options": [
+      "7",
+      "6",
+      "4",
+      "3"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "Taking both items has total weight 2 + 3 = 5 and total value 3 + 4 = 7.",
+    "difficulty": "MEDIUM"
+  },
+  {
+    "id": "q_lesson_dynamic_programming_5_3",
+    "topicId": "dynamic_programming",
+    "lessonId": "lesson_dynamic_programming_5",
+    "type": "TRUE_FALSE",
+    "statement": "In 0/1 Knapsack, each item can either be included entirely or excluded, whereas Fractional Knapsack allows taking item fractions.",
+    "options": [
+      "True",
+      "False"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "True. 0/1 items are indivisible, while fractional items can be divided.",
+    "difficulty": "EASY"
+  },
+  {
+    "id": "q_lesson_dynamic_programming_6_1",
+    "topicId": "dynamic_programming",
+    "lessonId": "lesson_dynamic_programming_6",
+    "type": "MULTIPLE_CHOICE",
+    "statement": "In the Longest Common Subsequence (LCS) problem, what is the recurrence relation when characters match (`text1[i-1] == text2[j-1]`)?",
+    "options": [
+      "1 + dp[i-1][j-1]",
+      "dp[i-1][j] + dp[i][j-1]",
+      "0",
+      "1 + max(dp[i-1][j], dp[i][j-1])"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "When characters match, they contribute 1 to the subsequence length added to the optimal alignment of preceding prefixes.",
+    "difficulty": "EASY"
+  },
+  {
+    "id": "q_lesson_dynamic_programming_6_2",
+    "topicId": "dynamic_programming",
+    "lessonId": "lesson_dynamic_programming_6",
+    "type": "CODE_OUTPUT",
+    "statement": "What is the LCS length for 'abcde' and 'ace'?\n\n```pseudocode\nprint(lcs(\"abcde\", \"ace\"))\n```",
+    "options": [
+      "3",
+      "5",
+      "2",
+      "1"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "The longest common subsequence is 'ace', which has length 3.",
+    "difficulty": "MEDIUM"
+  },
+  {
+    "id": "q_lesson_dynamic_programming_6_3",
+    "topicId": "dynamic_programming",
+    "lessonId": "lesson_dynamic_programming_6",
+    "type": "TRUE_FALSE",
+    "statement": "Longest Common Subsequence requires subsequence characters to be contiguous in both strings.",
+    "options": [
+      "True",
+      "False"
+    ],
+    "correctOptionIndex": 1,
+    "explanation": "False. Subsequences preserve relative order but do not need to be contiguous (unlike substrings).",
+    "difficulty": "EASY"
+  },
+  {
+    "id": "q_dynamic_programming_1",
+    "topicId": "dynamic_programming",
+    "lessonId": null,
+    "type": "MULTIPLE_CHOICE",
+    "statement": "What defines optimal substructure in a dynamic programming problem?",
+    "options": [
+      "An optimal solution to the problem contains optimal solutions to its subproblems",
+      "Subproblems never overlap",
+      "The problem can be solved greedily without recursion",
+      "The input data is always sorted"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "Optimal substructure means global optimality is achieved by combining optimal subproblem choices.",
+    "difficulty": "EASY"
+  },
+  {
+    "id": "q_dynamic_programming_2",
+    "topicId": "dynamic_programming",
+    "lessonId": null,
+    "type": "MULTIPLE_CHOICE",
+    "statement": "What is the key difference between Memoization and Tabulation?",
+    "options": [
+      "Memoization is top-down recursive with caching; Tabulation is bottom-up iterative",
+      "Tabulation uses recursion while Memoization uses loops",
+      "Memoization is always slower than Tabulation",
+      "Tabulation requires hash tables"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "Memoization evaluates top-down recursively with a cache, while tabulation builds bottom-up iteratively.",
+    "difficulty": "EASY"
+  },
+  {
+    "id": "q_dynamic_programming_3",
+    "topicId": "dynamic_programming",
+    "lessonId": null,
+    "type": "MULTIPLE_CHOICE",
+    "statement": "Why does LCS use a 2D table of size (M+1) x (N+1)?",
+    "options": [
+      "To store subproblem match lengths for all prefix combinations of both strings",
+      "To sort the characters alphabetically",
+      "To track visited graph nodes",
+      "To implement binary search"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "A 2D DP table stores prefix alignment lengths for every index combination (i, j) of text1 and text2.",
+    "difficulty": "MEDIUM"
+  },
+  {
+    "id": "q_dynamic_programming_4",
+    "topicId": "dynamic_programming",
+    "lessonId": null,
+    "type": "CODE_OUTPUT",
+    "statement": "What is fibMemo(4) using top-down memoization starting from [-1, -1, -1, -1, -1]?\n\n```pseudocode\n// fib(4) = fib(3) + fib(2) = 2 + 1 = 3\nprint(fibMemo(4, memo))\n```",
+    "options": [
+      "3",
+      "5",
+      "2",
+      "4"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "Fibonacci sequence values: 0, 1, 1, 2, 3. For n=4, fib(4) is 3.",
+    "difficulty": "EASY"
+  },
+  {
+    "id": "q_dynamic_programming_5",
+    "topicId": "dynamic_programming",
+    "lessonId": null,
+    "type": "TRUE_FALSE",
+    "statement": "In 0/1 Knapsack, iterating capacity weights backwards in a 1D array prevents reusing the same item multiple times.",
+    "options": [
+      "True",
+      "False"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "True. Backward iteration ensures that `dp[c - w]` uses results from before item `i` was included.",
+    "difficulty": "EASY"
+  },
+  {
+    "id": "q_dynamic_programming_6",
+    "topicId": "dynamic_programming",
+    "lessonId": null,
+    "type": "MULTIPLE_CHOICE",
+    "statement": "What is the time complexity of the 0/1 Knapsack problem with N items and capacity W?",
+    "options": [
+      "O(N * W)",
+      "O(2^N)",
+      "O(N log N)",
+      "O(N + W)"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "Filling the 2D or 1D table takes N items multiplied by W capacity steps, resulting in O(N * W) pseudo-polynomial time.",
+    "difficulty": "MEDIUM"
+  },
+  {
+    "id": "q_dynamic_programming_7",
+    "topicId": "dynamic_programming",
+    "lessonId": null,
+    "type": "CODE_OUTPUT",
+    "statement": "What is uniquePaths(2, 2) in a 2x2 grid?\n\n```pseudocode\n// 2x2 grid unique paths\nprint(uniquePaths(2, 2))\n```",
+    "options": [
+      "2",
+      "1",
+      "4",
+      "3"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "In a 2x2 grid, paths from (0,0) to (1,1) are Right->Down and Down->Right, totaling 2 unique paths.",
+    "difficulty": "EASY"
+  },
+  {
+    "id": "q_dynamic_programming_8",
+    "topicId": "dynamic_programming",
+    "lessonId": null,
+    "type": "MULTIPLE_CHOICE",
+    "statement": "When is space optimization applicable to a dynamic programming table?",
+    "options": [
+      "When current state transitions depend only on a constant number of preceding rows or values",
+      "When the input array is sorted",
+      "When recursion depth is zero",
+      "When there are no base cases"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "Space optimization works when state transitions require only recent prior rows/states, allowing old states to be discarded.",
+    "difficulty": "MEDIUM"
   }
 ]
