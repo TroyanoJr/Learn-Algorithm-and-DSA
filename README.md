@@ -26,6 +26,10 @@ Use the run button in your IDE's editor gutter, or run tests using Gradle tasks:
 - Android tests: `./gradlew :shared:testAndroidHostTest`
 - iOS tests: `./gradlew :shared:iosSimulatorArm64Test`
 
+### Visualization authoring
+
+Algorithm visualizers belong in dedicated, horizontally designed windows or screens opened by a button in the lesson. Lesson content should not embed visualization cards or animations. Use 10 meaningful elements where appropriate, and keep the complete process and its essential indices visible together.
+
 ---
 
 Learn more about [Kotlin Multiplatform](https://www.jetbrains.com/help/kotlin-multiplatform-dev/get-started.html)…

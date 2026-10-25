@@ -18,18 +18,16 @@ In a right shift, work from the last element down toward the insertion point so 
 
 ## Step-by-Step Example
 
-Suppose we have array `[10, 20, 30, 40]` with capacity for 5 items:
-1. **Insert 25 at index 2** (there is one free slot):
-   - Shift `40` from index 3 to 4.
-   - Shift `30` from index 2 to 3.
-   - Place `25` at index 2.
-   - Result: `[10, 20, 25, 30, 40]`.
+The Insert and Delete controls in the visualizer are independent examples. Each starts from the same base array `[10, 20, 30, 40, 50, 60, 70, 80]`.
 
-2. **Delete element at index 1 (20)**:
-   - Shift `25` from index 2 to 1.
-   - Shift `30` from index 3 to 2.
-   - Shift `40` from index 4 to 3.
-   - Result: `[10, 25, 30, 40]`.
+1. **Insert 25 at index 2** (assume one free slot is available):
+   - Shift `80` from index 7 to 8, `70` from 6 to 7, `60` from 5 to 6, `50` from 4 to 5, `40` from 3 to 4, and `30` from 2 to 3.
+   - Place `25` at index 2.
+   - Result: `[10, 20, 25, 30, 40, 50, 60, 70, 80]`.
+
+2. **Separately, delete element at index 1 (20) from the original base array**:
+   - Shift `30` from index 2 to 1, `40` from 3 to 2, `50` from 4 to 3, `60` from 5 to 4, `70` from 6 to 5, and `80` from 7 to 6.
+   - Result: `[10, 30, 40, 50, 60, 70, 80]`.
 
 Insertion at index `0` shifts every existing element; insertion at `size` needs no shifts. Deleting index `0` shifts all later elements left; deleting the last index needs no shifts.
 
