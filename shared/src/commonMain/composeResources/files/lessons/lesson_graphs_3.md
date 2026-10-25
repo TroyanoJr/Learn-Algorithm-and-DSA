@@ -17,9 +17,7 @@ The visit order is `A, B, C, D, E`. If neighbor order changes, the order within 
 
 ### Code Example: Breadth-First Search
 
-The following versions all run BFS from A on the same graph, examine neighbors alphabetically, and produce `A, B, C, D, E`.
-
-**Pseudocode**
+The following versions all run BFS from A on the same graph, examine neighbors alphabetically, and produce `A, B, C, D, E`. The C++ and Java versions store the vertices as indices A=0 through E=4, in the same alphabetical neighbor order as the Python lists.
 
 ```pseudocode
 procedure BFS(graph, start)
@@ -37,11 +35,6 @@ procedure BFS(graph, start)
     end while
 end procedure
 ```
-
-The C++ and Java versions store the vertices as indices A=0 through E=4, in the same alphabetical neighbor order as the Python lists.
-
-**C++**
-
 ```cpp
 #include <iostream>
 #include <queue>
@@ -62,9 +55,6 @@ int main() {
     }
 }
 ```
-
-**Java**
-
 ```java
 import java.util.*;
 class BfsExample {
@@ -84,9 +74,6 @@ class BfsExample {
     }
 }
 ```
-
-**Python**
-
 ```python
 from collections import deque
 

@@ -20,8 +20,6 @@ Other valid orderings can exist. If fewer than V vertices are output, some verti
 
 Each version computes in-degrees from the same directed edges, initially queues zero-in-degree vertices in alphabetical order, and produces `A, B, C, D, E`. Other valid topological orders may also exist.
 
-**Pseudocode**
-
 ```pseudocode
 compute each vertex's in-degree
 queue = all vertices with in-degree 0
@@ -39,9 +37,6 @@ end while
 if length(order) < V: report directed cycle
 else: return order
 ```
-
-**C++**
-
 ```cpp
 #include <iostream>
 #include <queue>
@@ -67,9 +62,6 @@ int main() {
     }
 }
 ```
-
-**Java**
-
 ```java
 import java.util.*;
 class TopologicalSortExample {
@@ -94,9 +86,6 @@ class TopologicalSortExample {
     }
 }
 ```
-
-**Python**
-
 ```python
 from collections import deque
 

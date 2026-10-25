@@ -18,8 +18,6 @@ When BFS processes C, D is already discovered through B at distance 2, so its pr
 
 Each version uses the same undirected adjacency lists, starts at A, marks a vertex when enqueuing it, and records distance and predecessor on first discovery. Distances in A-to-E order are `[0, 1, 1, 2, 3]`; with alphabetical neighbors, the reconstructed path to E is `A-B-D-E`.
 
-**Pseudocode**
-
 ```pseudocode
 distance[start] = 0
 predecessor[start] = none
@@ -35,9 +33,6 @@ while queue is not empty
     end for
 end while
 ```
-
-**C++**
-
 ```cpp
 #include <algorithm>
 #include <iostream>
@@ -67,9 +62,6 @@ int main() {
         std::cout << char('A' + path[i]) << (i + 1 == static_cast<int>(path.size()) ? '\n' : '-');
 }
 ```
-
-**Java**
-
 ```java
 import java.util.*;
 class UnweightedShortestPath {
@@ -99,9 +91,6 @@ class UnweightedShortestPath {
     }
 }
 ```
-
-**Python**
-
 ```python
 from collections import deque
 

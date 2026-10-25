@@ -6,9 +6,7 @@ Use the same undirected graph as the BFS lesson, start at A, and examine neighbo
 
 ### Code Example: Depth-First Search
 
-The following versions run recursive DFS from A on the same graph, examine neighbors alphabetically, and produce `A, B, D, C, E`.
-
-**Pseudocode**
+The following versions all run recursive DFS from A on the same graph, examine neighbors alphabetically, and produce `A, B, D, C, E`. The C++ and Java versions use integer labels A=0 through E=4, in the same alphabetical neighbor order as the Python lists.
 
 ```pseudocode
 procedure DFS(graph, v, visited)
@@ -21,11 +19,6 @@ procedure DFS(graph, v, visited)
     end for
 end procedure
 ```
-
-The C++ and Java versions use integer labels A=0 through E=4, in the same alphabetical neighbor order as the Python lists.
-
-**C++**
-
 ```cpp
 #include <iostream>
 #include <vector>
@@ -43,9 +36,6 @@ int main() {
     dfs(graph, 0, visited);
 }
 ```
-
-**Java**
-
 ```java
 class DfsExample {
     static void dfs(int[][] graph, int v, boolean[] visited) {
@@ -59,9 +49,6 @@ class DfsExample {
     }
 }
 ```
-
-**Python**
-
 ```python
 def dfs(graph, start):
     visited = set()

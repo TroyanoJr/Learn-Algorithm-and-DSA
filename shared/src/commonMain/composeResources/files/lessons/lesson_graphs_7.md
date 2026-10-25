@@ -20,8 +20,6 @@ The order of processed vertices is A, C, B, D. The shortest route to D is `A-C-B
 
 Each version uses the directed graph in the trace, starts at A, and stores a predecessor when a shorter distance is found. The final distances in A, B, C, D order are `[0, 3, 1, 4]`, with path `A-C-B-D` to D. All edge weights must be non-negative. Unreachable vertices keep the infinity value and have no predecessor. The C++ and Java examples use `MAX_VALUE / 4` as a sentinel, guard additions against overflow, and assume valid shortest distances are smaller than that sentinel.
 
-**Pseudocode**
-
 ```pseudocode
 for each vertex v
     distance[v] = infinity
@@ -56,9 +54,6 @@ function reconstructPath(target)
     return path
 end function
 ```
-
-**C++**
-
 ```cpp
 #include <algorithm>
 #include <functional>
@@ -110,9 +105,6 @@ int main() {
     }
 }
 ```
-
-**Java**
-
 ```java
 import java.util.*;
 class DijkstraExample {
@@ -163,9 +155,6 @@ class DijkstraExample {
     }
 }
 ```
-
-**Python**
-
 ```python
 import heapq
 from math import inf
