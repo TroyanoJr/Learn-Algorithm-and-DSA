@@ -16,8 +16,6 @@ The outer loop is important: a single traversal finds only the component contain
 
 Each version uses the undirected graph `AB, BC, DE` with isolated vertex F and returns the same components: `{A,B,C}`, `{D,E}`, `{F}`. Vertices use alphabetical order.
 
-**Pseudocode**
-
 ```pseudocode
 procedure collect(graph)
     visited = empty set
@@ -42,9 +40,6 @@ procedure explore(v, graph, visited, component)
     end for
 end procedure
 ```
-
-**C++**
-
 ```cpp
 #include <iostream>
 #include <vector>
@@ -68,9 +63,6 @@ int main() {
     }
 }
 ```
-
-**Java**
-
 ```java
 import java.util.*;
 class ComponentsExample {
@@ -92,9 +84,6 @@ class ComponentsExample {
     }
 }
 ```
-
-**Python**
-
 ```python
 def components(graph):
     visited = set()
@@ -129,8 +118,6 @@ In an undirected DFS, an edge to a visited vertex indicates a cycle only when th
 
 These versions test the triangle `AB, BC, CA` and return `true`. They assume a simple undirected graph (no parallel edges); the parent vertex is skipped while all other visited neighbors indicate a cycle.
 
-**Pseudocode**
-
 ```pseudocode
 function hasUndirectedCycle(graph)
     visited = empty set
@@ -154,9 +141,6 @@ function search(v, parent, graph, visited)
     return false
 end function
 ```
-
-**C++**
-
 ```cpp
 #include <iostream>
 #include <vector>
@@ -181,9 +165,6 @@ int main() {
     std::cout << std::boolalpha << cycle << '\n';
 }
 ```
-
-**Java**
-
 ```java
 class UndirectedCycleExample {
     static boolean search(int[][] graph, int v, int parent, boolean[] visited) {
@@ -205,9 +186,6 @@ class UndirectedCycleExample {
     }
 }
 ```
-
-**Python**
-
 ```python
 def has_undirected_cycle(graph):
     visited = set()
@@ -238,8 +216,6 @@ Do not reuse the undirected parent rule for directed graphs. In a directed DFS, 
 
 This separate DFS uses three states: unvisited, active on the current recursion path, and finished. The directed triangle `A→B→C→A` returns `true`.
 
-**Pseudocode**
-
 ```pseudocode
 function hasDirectedCycle(graph)
     state[v] = unvisited for every vertex v
@@ -261,9 +237,6 @@ function search(v, graph, state)
     return false
 end function
 ```
-
-**C++**
-
 ```cpp
 #include <iostream>
 #include <vector>
@@ -288,9 +261,6 @@ int main() {
     std::cout << std::boolalpha << cycle << '\n';
 }
 ```
-
-**Java**
-
 ```java
 class DirectedCycleExample {
     static boolean search(int[][] graph, int v, int[] state) {
@@ -312,9 +282,6 @@ class DirectedCycleExample {
     }
 }
 ```
-
-**Python**
-
 ```python
 def has_directed_cycle(graph):
     state = {vertex: 0 for vertex in graph}  # 0=unvisited, 1=active, 2=finished
