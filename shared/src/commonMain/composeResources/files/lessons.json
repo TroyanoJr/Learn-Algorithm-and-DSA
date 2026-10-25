@@ -454,5 +454,45 @@
     "order": 5,
     "xp": 30,
     "contentPath": "files/lessons/lesson_greedy_5.md"
+  },
+  {
+    "id": "lesson_heap_1",
+    "topicId": "heap",
+    "title": "Heap Properties and Array Representation",
+    "order": 1,
+    "xp": 30,
+    "contentPath": "files/lessons/lesson_heap_1.md"
+  },
+  {
+    "id": "lesson_heap_2",
+    "topicId": "heap",
+    "title": "Heap Insertion and Sift Up",
+    "order": 2,
+    "xp": 30,
+    "contentPath": "files/lessons/lesson_heap_2.md"
+  },
+  {
+    "id": "lesson_heap_3",
+    "topicId": "heap",
+    "title": "Extracting the Root and Sift Down",
+    "order": 3,
+    "xp": 30,
+    "contentPath": "files/lessons/lesson_heap_3.md"
+  },
+  {
+    "id": "lesson_heap_4",
+    "topicId": "heap",
+    "title": "Building a Heap",
+    "order": 4,
+    "xp": 30,
+    "contentPath": "files/lessons/lesson_heap_4.md"
+  },
+  {
+    "id": "lesson_heap_5",
+    "topicId": "heap",
+    "title": "Priority Queues and Heap Sort",
+    "order": 5,
+    "xp": 30,
+    "contentPath": "files/lessons/lesson_heap_5.md"
   }
 ]
