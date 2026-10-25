@@ -558,5 +558,53 @@
     "order": 8,
     "xp": 30,
     "contentPath": "files/lessons/lesson_graphs_8.md"
+  },
+  {
+    "id": "lesson_backtracking_1",
+    "topicId": "backtracking",
+    "title": "Backtracking Fundamentals and State-Space Trees",
+    "order": 1,
+    "xp": 30,
+    "contentPath": "files/lessons/lesson_backtracking_1.md"
+  },
+  {
+    "id": "lesson_backtracking_2",
+    "topicId": "backtracking",
+    "title": "Permutations and Unique Arrangements",
+    "order": 2,
+    "xp": 30,
+    "contentPath": "files/lessons/lesson_backtracking_2.md"
+  },
+  {
+    "id": "lesson_backtracking_3",
+    "topicId": "backtracking",
+    "title": "Combinations and Subsets with Pruning",
+    "order": 3,
+    "xp": 30,
+    "contentPath": "files/lessons/lesson_backtracking_3.md"
+  },
+  {
+    "id": "lesson_backtracking_4",
+    "topicId": "backtracking",
+    "title": "Constraint Satisfaction: The N-Queens Problem",
+    "order": 4,
+    "xp": 30,
+    "contentPath": "files/lessons/lesson_backtracking_4.md"
+  },
+  {
+    "id": "lesson_backtracking_5",
+    "topicId": "backtracking",
+    "title": "Grid Pathfinding and Matrix Backtracking",
+    "order": 5,
+    "xp": 30,
+    "contentPath": "files/lessons/lesson_backtracking_5.md"
+  },
+  {
+    "id": "lesson_backtracking_6",
+    "topicId": "backtracking",
+    "title": "Backtracking Complexity, Pruning, and Trade-offs",
+    "order": 6,
+    "xp": 30,
+    "contentPath": "files/lessons/lesson_backtracking_6.md"
   }
 ]
