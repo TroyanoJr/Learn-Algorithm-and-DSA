@@ -261,6 +261,8 @@ fun LessonDetailScreen(
 
                         // Lesson Specific Visualizations
                         when (state.lesson.id) {
+                            "lesson_stack_1", "lesson_stack_2", "lesson_stack_3", "lesson_stack_4" -> StackVisualizationCard()
+                            "lesson_queues_1", "lesson_queues_2", "lesson_queues_3", "lesson_queues_4" -> QueueVisualizationCard()
                             "lesson_arrays_1" -> ArrayVisualizationCard()
                             "lesson_arrays_2" -> ArrayResizeVisualizationCard()
                             "lesson_arrays_3" -> ArrayTraversalVisualizationCard()
@@ -674,25 +676,14 @@ private fun SortingBarVisualizationCard(
 
 @Composable
 private fun BubbleSortVisualizationCard() {
-    val steps = listOf(
-        SortingStep(listOf(1, 2, 3, 4, 5, 6, 7, 9, 8, 10), listOf(0, 1), emptyList(), "Pass 1: Compare 1 & 2 → no swap"),
-        SortingStep(listOf(1, 2, 3, 4, 5, 6, 7, 9, 8, 10), listOf(1, 2), emptyList(), "Compare 2 & 3 → no swap"),
-        SortingStep(listOf(1, 2, 3, 4, 5, 6, 7, 9, 8, 10), listOf(2, 3), emptyList(), "Compare 3 & 4 → no swap"),
-        SortingStep(listOf(1, 2, 3, 4, 5, 6, 7, 9, 8, 10), listOf(3, 4), emptyList(), "Compare 4 & 5 → no swap"),
-        SortingStep(listOf(1, 2, 3, 4, 5, 6, 7, 9, 8, 10), listOf(4, 5), emptyList(), "Compare 5 & 6 → no swap"),
-        SortingStep(listOf(1, 2, 3, 4, 5, 6, 7, 9, 8, 10), listOf(5, 6), emptyList(), "Compare 6 & 7 → no swap"),
-        SortingStep(listOf(1, 2, 3, 4, 5, 6, 7, 9, 8, 10), listOf(6, 7), emptyList(), "Compare 7 & 9 → no swap"),
-        SortingStep(listOf(1, 2, 3, 4, 5, 6, 7, 9, 8, 10), listOf(7, 8), emptyList(), "Compare 9 & 8 → swap needed"),
-        SortingStep(listOf(1, 2, 3, 4, 5, 6, 7, 8, 9, 10), listOf(8, 9), listOf(9), "Swap 9 & 8. Then compare 9 & 10 → no swap; pass 1 ends."),
-        SortingStep(listOf(1, 2, 3, 4, 5, 6, 7, 8, 9, 10), listOf(0, 1), listOf(9), "Pass 2: Compare 1 & 2 → no swap"),
-        SortingStep(listOf(1, 2, 3, 4, 5, 6, 7, 8, 9, 10), listOf(1, 2), listOf(9), "Compare 2 & 3 → no swap"),
-        SortingStep(listOf(1, 2, 3, 4, 5, 6, 7, 8, 9, 10), listOf(2, 3), listOf(9), "Compare 3 & 4 → no swap"),
-        SortingStep(listOf(1, 2, 3, 4, 5, 6, 7, 8, 9, 10), listOf(3, 4), listOf(9), "Compare 4 & 5 → no swap"),
-        SortingStep(listOf(1, 2, 3, 4, 5, 6, 7, 8, 9, 10), listOf(4, 5), listOf(9), "Compare 5 & 6 → no swap"),
-        SortingStep(listOf(1, 2, 3, 4, 5, 6, 7, 8, 9, 10), listOf(5, 6), listOf(9), "Compare 6 & 7 → no swap"),
-        SortingStep(listOf(1, 2, 3, 4, 5, 6, 7, 8, 9, 10), listOf(6, 7), listOf(9), "Compare 7 & 8 → no swap"),
-        SortingStep(listOf(1, 2, 3, 4, 5, 6, 7, 8, 9, 10), emptyList(), listOf(0, 1, 2, 3, 4, 5, 6, 7, 8, 9), "Compare 8 & 9 → no swap. No swaps this pass; array sorted! ✓")
-    )
+    val steps = BubbleSortTrace.steps.map { step ->
+        SortingStep(
+            array = step.array,
+            highlightedIndices = step.highlightedIndices,
+            sortedIndices = step.sortedIndices,
+            message = step.message
+        )
+    }
 
     SortingBarVisualizationCard(
         title = "BUBBLE SORT VISUALIZATION",
@@ -704,26 +695,14 @@ private fun BubbleSortVisualizationCard() {
 
 @Composable
 private fun SelectionSortVisualizationCard() {
-    val steps = listOf(
-        SortingStep(listOf(5, 3, 8, 4, 2, 9, 7, 10, 6, 1), listOf(9), emptyList(), "Scan indices 0–9; minimum 1 is at index 9."),
-        SortingStep(listOf(1, 3, 8, 4, 2, 9, 7, 10, 6, 5), emptyList(), listOf(0), "Swap 1 into index 0; sorted prefix: [1]."),
-        SortingStep(listOf(1, 3, 8, 4, 2, 9, 7, 10, 6, 5), listOf(4), listOf(0), "Scan indices 1–9; minimum 2 is at index 4."),
-        SortingStep(listOf(1, 2, 8, 4, 3, 9, 7, 10, 6, 5), emptyList(), listOf(0, 1), "Swap 2 into index 1; sorted prefix: [1, 2]."),
-        SortingStep(listOf(1, 2, 8, 4, 3, 9, 7, 10, 6, 5), listOf(4), listOf(0, 1), "Scan indices 2–9; minimum 3 is at index 4."),
-        SortingStep(listOf(1, 2, 3, 4, 8, 9, 7, 10, 6, 5), emptyList(), listOf(0, 1, 2), "Swap 3 into index 2; sorted prefix: [1, 2, 3]."),
-        SortingStep(listOf(1, 2, 3, 4, 8, 9, 7, 10, 6, 5), listOf(3), listOf(0, 1, 2), "Scan indices 3–9; minimum 4 is already at index 3."),
-        SortingStep(listOf(1, 2, 3, 4, 8, 9, 7, 10, 6, 5), emptyList(), listOf(0, 1, 2, 3), "Keep 4 at index 3; sorted prefix: [1, 2, 3, 4]."),
-        SortingStep(listOf(1, 2, 3, 4, 8, 9, 7, 10, 6, 5), listOf(9), listOf(0, 1, 2, 3), "Scan indices 4–9; minimum 5 is at index 9."),
-        SortingStep(listOf(1, 2, 3, 4, 5, 9, 7, 10, 6, 8), emptyList(), listOf(0, 1, 2, 3, 4), "Swap 5 into index 4; sorted prefix ends at index 4."),
-        SortingStep(listOf(1, 2, 3, 4, 5, 9, 7, 10, 6, 8), listOf(8), listOf(0, 1, 2, 3, 4), "Scan indices 5–9; minimum 6 is at index 8."),
-        SortingStep(listOf(1, 2, 3, 4, 5, 6, 7, 10, 9, 8), emptyList(), listOf(0, 1, 2, 3, 4, 5), "Swap 6 into index 5; sorted prefix ends at index 5."),
-        SortingStep(listOf(1, 2, 3, 4, 5, 6, 7, 10, 9, 8), listOf(6), listOf(0, 1, 2, 3, 4, 5), "Scan indices 6–9; minimum 7 is already at index 6."),
-        SortingStep(listOf(1, 2, 3, 4, 5, 6, 7, 10, 9, 8), emptyList(), listOf(0, 1, 2, 3, 4, 5, 6), "Keep 7 at index 6; sorted prefix ends at index 6."),
-        SortingStep(listOf(1, 2, 3, 4, 5, 6, 7, 10, 9, 8), listOf(9), listOf(0, 1, 2, 3, 4, 5, 6), "Scan indices 7–9; minimum 8 is at index 9."),
-        SortingStep(listOf(1, 2, 3, 4, 5, 6, 7, 8, 9, 10), emptyList(), listOf(0, 1, 2, 3, 4, 5, 6, 7), "Swap 8 into index 7; sorted prefix ends at index 7."),
-        SortingStep(listOf(1, 2, 3, 4, 5, 6, 7, 8, 9, 10), listOf(8), listOf(0, 1, 2, 3, 4, 5, 6, 7), "Scan indices 8–9; minimum 9 is already at index 8."),
-        SortingStep(listOf(1, 2, 3, 4, 5, 6, 7, 8, 9, 10), emptyList(), listOf(0, 1, 2, 3, 4, 5, 6, 7, 8, 9), "Keep 9 at index 8. All 10 values are now sorted! ✓")
-    )
+    val steps = SelectionSortTrace.steps.map { step ->
+        SortingStep(
+            array = step.array,
+            highlightedIndices = step.highlightedIndices,
+            sortedIndices = step.sortedIndices,
+            message = step.message
+        )
+    }
 
     SortingBarVisualizationCard(
         title = "SELECTION SORT VISUALIZATION",
@@ -735,34 +714,14 @@ private fun SelectionSortVisualizationCard() {
 
 @Composable
 private fun InsertionSortVisualizationCard() {
-    val steps = listOf(
-        SortingStep(listOf(5, 3, 8, 4, 2, 6, 7, 9, 10, 11), listOf(0, 1), emptyList(), "Key 3 at index 1 is smaller than 5 at index 0, so it must move left."),
-        SortingStep(listOf(3, 5, 8, 4, 2, 6, 7, 9, 10, 11), emptyList(), listOf(0, 1), "Move key 3 left, shifting 5 right. The sorted prefix is [3, 5]."),
-        SortingStep(listOf(3, 5, 8, 4, 2, 6, 7, 9, 10, 11), listOf(1, 2), listOf(0), "Compare key 8 at index 2 with 5 at index 1. Since 8 is larger, it stays in place."),
-        SortingStep(listOf(3, 5, 8, 4, 2, 6, 7, 9, 10, 11), listOf(3), listOf(0, 1, 2), "The sorted prefix is [3, 5, 8]. Take key 4 from index 3."),
-        SortingStep(listOf(3, 5, 8, 4, 2, 6, 7, 9, 10, 11), listOf(2, 3), listOf(0, 1), "Compare key 4 at index 3 with 8 at index 2. Since 4 is smaller, move it left."),
-        SortingStep(listOf(3, 5, 4, 8, 2, 6, 7, 9, 10, 11), listOf(2, 3), listOf(0, 1), "Move key 4 left one position and shift 8 right to index 3."),
-        SortingStep(listOf(3, 5, 4, 8, 2, 6, 7, 9, 10, 11), listOf(1, 2), listOf(0), "Compare key 4 at index 2 with 5 at index 1. Since 4 is smaller, move it left."),
-        SortingStep(listOf(3, 4, 5, 8, 2, 6, 7, 9, 10, 11), emptyList(), listOf(0, 1, 2, 3), "Move key 4 left and shift 5 right. The sorted prefix is [3, 4, 5, 8]."),
-        SortingStep(listOf(3, 4, 5, 8, 2, 6, 7, 9, 10, 11), listOf(3, 4), listOf(0, 1, 2), "Take key 2 at index 4 and compare it with 8 at index 3. Move 2 left."),
-        SortingStep(listOf(3, 4, 5, 2, 8, 6, 7, 9, 10, 11), listOf(3, 4), listOf(0, 1, 2), "Move key 2 left one position and shift 8 right to index 4."),
-        SortingStep(listOf(3, 4, 5, 2, 8, 6, 7, 9, 10, 11), listOf(2, 3), listOf(0, 1), "Compare key 2 at index 3 with 5 at index 2. Since 2 is smaller, move it left."),
-        SortingStep(listOf(3, 4, 2, 5, 8, 6, 7, 9, 10, 11), listOf(2, 3), listOf(0, 1), "Move key 2 left one position and shift 5 right to index 3."),
-        SortingStep(listOf(3, 4, 2, 5, 8, 6, 7, 9, 10, 11), listOf(1, 2), listOf(0), "Compare key 2 at index 2 with 4 at index 1. Since 2 is smaller, move it left."),
-        SortingStep(listOf(3, 2, 4, 5, 8, 6, 7, 9, 10, 11), listOf(1, 2), listOf(0), "Move key 2 left one position and shift 4 right to index 2."),
-        SortingStep(listOf(3, 2, 4, 5, 8, 6, 7, 9, 10, 11), listOf(0, 1), emptyList(), "Compare key 2 at index 1 with 3 at index 0. Since 2 is smaller, move it left."),
-        SortingStep(listOf(2, 3, 4, 5, 8, 6, 7, 9, 10, 11), emptyList(), listOf(0, 1, 2, 3, 4), "Insert 2 at index 0. The sorted prefix is [2, 3, 4, 5, 8]."),
-        SortingStep(listOf(2, 3, 4, 5, 8, 6, 7, 9, 10, 11), listOf(4, 5), listOf(0, 1, 2, 3), "Compare key 6 at index 5 with 8 at index 4. Since 6 is smaller, move it left."),
-        SortingStep(listOf(2, 3, 4, 5, 6, 8, 7, 9, 10, 11), emptyList(), listOf(0, 1, 2, 3, 4), "Shift 8 right and insert 6 at index 4; 6 is greater than 5."),
-        SortingStep(listOf(2, 3, 4, 5, 6, 8, 7, 9, 10, 11), listOf(5, 6), listOf(0, 1, 2, 3, 4), "Compare key 7 at index 6 with 8 at index 5. Since 7 is smaller, move it left."),
-        SortingStep(listOf(2, 3, 4, 5, 6, 7, 8, 9, 10, 11), emptyList(), listOf(0, 1, 2, 3, 4, 5, 6), "Shift 8 right and insert 7 at index 5; 7 is greater than 6."),
-        SortingStep(listOf(2, 3, 4, 5, 6, 7, 8, 9, 10, 11), listOf(6, 7), listOf(0, 1, 2, 3, 4, 5), "Compare key 9 at index 7 with 8 at index 6. Since 9 is larger, it stays."),
-        SortingStep(listOf(2, 3, 4, 5, 6, 7, 8, 9, 10, 11), emptyList(), listOf(0, 1, 2, 3, 4, 5, 6, 7), "Keep 9 at index 7; the sorted prefix is [2, 3, 4, 5, 6, 7, 8, 9]."),
-        SortingStep(listOf(2, 3, 4, 5, 6, 7, 8, 9, 10, 11), listOf(7, 8), listOf(0, 1, 2, 3, 4, 5, 6), "Compare key 10 at index 8 with 9 at index 7. Since 10 is larger, it stays."),
-        SortingStep(listOf(2, 3, 4, 5, 6, 7, 8, 9, 10, 11), emptyList(), listOf(0, 1, 2, 3, 4, 5, 6, 7, 8), "Keep 10 at index 8; the sorted prefix now has 9 values."),
-        SortingStep(listOf(2, 3, 4, 5, 6, 7, 8, 9, 10, 11), listOf(8, 9), listOf(0, 1, 2, 3, 4, 5, 6, 7), "Compare key 11 at index 9 with 10 at index 8. Since 11 is larger, it stays."),
-        SortingStep(listOf(2, 3, 4, 5, 6, 7, 8, 9, 10, 11), emptyList(), listOf(0, 1, 2, 3, 4, 5, 6, 7, 8, 9), "Keep 11 at index 9. All 10 values are sorted: [2, 3, 4, 5, 6, 7, 8, 9, 10, 11].")
-    )
+    val steps = InsertionSortTrace.steps.map { step ->
+        SortingStep(
+            array = step.array,
+            highlightedIndices = step.highlightedIndices,
+            sortedIndices = step.sortedIndices,
+            message = step.message
+        )
+    }
 
     SortingBarVisualizationCard(
         title = "INSERTION SORT VISUALIZATION",
@@ -770,6 +729,315 @@ private fun InsertionSortVisualizationCard() {
         steps = steps,
         launchButtonText = "Open insertion sort visualizer"
     )
+}
+
+@Composable
+private fun StackVisualizationCard() {
+    val steps = StackTrace.steps
+    var stepIndex by remember(steps) { mutableStateOf(0) }
+    var isPlaying by remember(steps) { mutableStateOf(false) }
+    var isExpanded by remember { mutableStateOf(false) }
+    val step = steps[stepIndex]
+
+    LaunchedEffect(isPlaying, stepIndex, steps) {
+        if (isPlaying && stepIndex < steps.lastIndex) {
+            delay(1000L)
+            if (stepIndex < steps.lastIndex) stepIndex++ else isPlaying = false
+        } else if (isPlaying) {
+            isPlaying = false
+        }
+    }
+
+    ArrayWindowButton(text = "Open stack visualizer") { isExpanded = true }
+
+    if (isExpanded) {
+        Dialog(
+            onDismissRequest = { isPlaying = false; isExpanded = false },
+            properties = DialogProperties(usePlatformDefaultWidth = false)
+        ) {
+            LandscapeOrientationEffect(enabled = true)
+            BoxWithConstraints(modifier = Modifier.fillMaxSize().padding(6.dp)) {
+                val scale = minOf(maxWidth / 800.dp, maxHeight / 360.dp).coerceIn(0.8f, 1f)
+                Surface(
+                    color = DarkCardBgColor,
+                    shape = RoundedCornerShape(16.dp),
+                    border = BorderStroke(1.dp, CardBorderColor),
+                    modifier = Modifier.fillMaxSize()
+                ) {
+                    Column(
+                        modifier = Modifier.fillMaxSize().padding(12.dp * scale),
+                        verticalArrangement = Arrangement.spacedBy(8.dp * scale)
+                    ) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text("STACK · LIFO", color = OrangeAccent, fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                            Text(
+                                when (step.event) {
+                                    StackTraceEvent.START -> "READY"
+                                    StackTraceEvent.PUSH -> "PUSH ${step.values.last()}"
+                                    StackTraceEvent.POP -> "POPPED ${step.returnedValue}"
+                                    StackTraceEvent.PEEK -> "TOP ${step.returnedValue}"
+                                    StackTraceEvent.UNDERFLOW -> "EMPTY ACCESS"
+                                    StackTraceEvent.OVERFLOW -> "FULL"
+                                    StackTraceEvent.COMPLETE -> "COMPLETE"
+                                },
+                                color = when (step.event) {
+                                    StackTraceEvent.COMPLETE -> GreenAccent
+                                    StackTraceEvent.UNDERFLOW, StackTraceEvent.OVERFLOW -> RedAccent
+                                    else -> BlueAccent
+                                },
+                                fontSize = 10.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+                            ArrayWindowButton(text = "Close", icon = "✕") {
+                                isPlaying = false
+                                isExpanded = false
+                            }
+                        }
+
+                        Row(
+                            modifier = Modifier.weight(1f).fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(12.dp * scale),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Column(
+                                modifier = Modifier.weight(1f),
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                                verticalArrangement = Arrangement.spacedBy(4.dp * scale)
+                            ) {
+                                Text("TOP ↓", color = OrangeAccent, fontSize = 10.sp, fontWeight = FontWeight.Bold)
+                                if (step.values.isEmpty()) {
+                                    Surface(
+                                        color = Color(0xFF13131C),
+                                        shape = RoundedCornerShape(8.dp),
+                                        border = BorderStroke(1.dp, CardBorderColor),
+                                        modifier = Modifier.width(130.dp * scale).height(38.dp * scale)
+                                    ) {
+                                        Box(contentAlignment = Alignment.Center) {
+                                            Text("EMPTY", color = TextSecondary, fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                                        }
+                                    }
+                                } else {
+                                    step.values.indices.reversed().forEach { index ->
+                                        val highlighted = index == step.highlightedIndex
+                                        Surface(
+                                            color = if (highlighted) Color(0xFF2A1C12) else Color(0xFF13131C),
+                                            shape = RoundedCornerShape(8.dp),
+                                            border = BorderStroke(1.dp, if (highlighted) OrangeAccent else CardBorderColor),
+                                            modifier = Modifier.width(130.dp * scale).height(34.dp * scale)
+                                        ) {
+                                            Box(contentAlignment = Alignment.Center) {
+                                                Text(
+                                                    step.values[index],
+                                                    color = if (highlighted) OrangeAccent else TextPrimary,
+                                                    fontSize = 14.sp,
+                                                    fontWeight = FontWeight.Bold
+                                                )
+                                            }
+                                        }
+                                    }
+                                }
+                                Text("BOTTOM", color = TextSecondary, fontSize = 9.sp, fontWeight = FontWeight.Bold)
+                            }
+
+                            Column(
+                                modifier = Modifier.weight(1f),
+                                verticalArrangement = Arrangement.spacedBy(8.dp * scale)
+                            ) {
+                                Text("OPERATION RESULT", color = TextSecondary, fontSize = 9.sp, fontWeight = FontWeight.Bold)
+                                Text(
+                                    step.returnedValue ?: "—",
+                                    color = if (step.returnedValue != null) GreenAccent else TextPrimary,
+                                    fontSize = 22.sp,
+                                    fontWeight = FontWeight.Bold
+                                )
+                                Text(
+                                    "Bottom → top: ${step.values.joinToString(prefix = "[", postfix = "]")}",
+                                    color = TextSecondary,
+                                    fontSize = 11.sp
+                                )
+                            }
+                        }
+
+                        Surface(
+                            color = Color(0xFF13131C),
+                            shape = RoundedCornerShape(10.dp),
+                            border = BorderStroke(1.dp, CardBorderColor),
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Text(step.explanation, color = TextPrimary, fontSize = 12.sp, lineHeight = 16.sp, modifier = Modifier.padding(10.dp * scale))
+                        }
+
+                        LinkedListPlaybackControls(
+                            stepIndex = stepIndex,
+                            stepCount = steps.size,
+                            isPlaying = isPlaying,
+                            onReset = { isPlaying = false; stepIndex = 0 },
+                            onPrevious = { isPlaying = false; if (stepIndex > 0) stepIndex-- },
+                            onTogglePlayback = { isPlaying = !isPlaying },
+                            onNext = { isPlaying = false; if (stepIndex < steps.lastIndex) stepIndex++ }
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun QueueVisualizationCard() {
+    val steps = QueueTrace.steps
+    var stepIndex by remember(steps) { mutableStateOf(0) }
+    var isPlaying by remember(steps) { mutableStateOf(false) }
+    var isExpanded by remember { mutableStateOf(false) }
+    val step = steps[stepIndex]
+
+    LaunchedEffect(isPlaying, stepIndex, steps) {
+        if (isPlaying && stepIndex < steps.lastIndex) {
+            delay(1000L)
+            if (stepIndex < steps.lastIndex) stepIndex++ else isPlaying = false
+        } else if (isPlaying) {
+            isPlaying = false
+        }
+    }
+
+    ArrayWindowButton(text = "Open queue visualizer") { isExpanded = true }
+
+    if (isExpanded) {
+        Dialog(
+            onDismissRequest = { isPlaying = false; isExpanded = false },
+            properties = DialogProperties(usePlatformDefaultWidth = false)
+        ) {
+            LandscapeOrientationEffect(enabled = true)
+            BoxWithConstraints(modifier = Modifier.fillMaxSize().padding(6.dp)) {
+                val scale = minOf(maxWidth / 800.dp, maxHeight / 360.dp).coerceIn(0.8f, 1f)
+                Surface(
+                    color = DarkCardBgColor,
+                    shape = RoundedCornerShape(16.dp),
+                    border = BorderStroke(1.dp, CardBorderColor),
+                    modifier = Modifier.fillMaxSize()
+                ) {
+                    Column(
+                        modifier = Modifier.fillMaxSize().padding(12.dp * scale),
+                        verticalArrangement = Arrangement.spacedBy(10.dp * scale)
+                    ) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text("QUEUE · FIFO CIRCULAR ARRAY", color = OrangeAccent, fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                            Text(
+                                when (step.event) {
+                                    QueueTraceEvent.START -> "READY · CAPACITY ${step.capacity}"
+                                    QueueTraceEvent.ENQUEUE -> "ENQUEUED ${step.operationValue}"
+                                    QueueTraceEvent.DEQUEUE -> "DEQUEUED ${step.returnedValue}"
+                                    QueueTraceEvent.PEEK -> "FRONT ${step.returnedValue}"
+                                    QueueTraceEvent.UNDERFLOW, QueueTraceEvent.EMPTY_ACCESS -> "EMPTY ACCESS"
+                                    QueueTraceEvent.OVERFLOW -> "FULL"
+                                    QueueTraceEvent.COMPLETE -> "COMPLETE"
+                                },
+                                color = when (step.event) {
+                                    QueueTraceEvent.COMPLETE -> GreenAccent
+                                    QueueTraceEvent.UNDERFLOW, QueueTraceEvent.EMPTY_ACCESS, QueueTraceEvent.OVERFLOW -> RedAccent
+                                    else -> BlueAccent
+                                },
+                                fontSize = 10.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+                            ArrayWindowButton(text = "Close", icon = "✕") {
+                                isPlaying = false
+                                isExpanded = false
+                            }
+                        }
+
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(6.dp * scale),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            step.slots.forEachIndexed { index, value ->
+                                val isFront = index == step.frontIndex
+                                val isRear = index == step.nextRearIndex
+                                val highlighted = index == step.highlightedSlot
+                                Column(
+                                    modifier = Modifier.weight(1f),
+                                    horizontalAlignment = Alignment.CenterHorizontally,
+                                    verticalArrangement = Arrangement.spacedBy(4.dp * scale)
+                                ) {
+                                    Text(
+                                        when {
+                                            isFront && isRear -> "FRONT / REAR"
+                                            isFront -> "FRONT"
+                                            isRear -> "NEXT REAR"
+                                            else -> " "
+                                        },
+                                        color = if (isFront) OrangeAccent else BlueAccent,
+                                        fontSize = 8.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        textAlign = TextAlign.Center
+                                    )
+                                    Surface(
+                                        color = when {
+                                            highlighted -> Color(0xFF2A1C12)
+                                            value != null -> Color(0xFF13233A)
+                                            else -> Color(0xFF13131C)
+                                        },
+                                        shape = RoundedCornerShape(10.dp),
+                                        border = BorderStroke(1.dp, if (highlighted) OrangeAccent else CardBorderColor),
+                                        modifier = Modifier.fillMaxWidth().height(56.dp * scale)
+                                    ) {
+                                        Box(contentAlignment = Alignment.Center) {
+                                            Text(value ?: "·", color = if (highlighted) OrangeAccent else TextPrimary, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                                        }
+                                    }
+                                    Text("$index", color = TextSecondary, fontSize = 9.sp)
+                                }
+                            }
+                        }
+
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text("Logical front → rear: ${step.values.joinToString(prefix = "[", postfix = "]")}", color = TextPrimary, fontSize = 12.sp)
+                            Text("size ${step.size} / ${step.capacity}", color = TextSecondary, fontSize = 10.sp)
+                        }
+
+                        Surface(
+                            color = Color(0xFF13131C),
+                            shape = RoundedCornerShape(10.dp),
+                            border = BorderStroke(1.dp, CardBorderColor),
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Row(
+                                modifier = Modifier.fillMaxWidth().padding(10.dp * scale),
+                                horizontalArrangement = Arrangement.spacedBy(10.dp * scale),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(step.returnedValue ?: "—", color = if (step.returnedValue != null) GreenAccent else TextSecondary, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                                Text(step.explanation, color = TextPrimary, fontSize = 11.sp, lineHeight = 15.sp, modifier = Modifier.weight(1f))
+                            }
+                        }
+
+                        LinkedListPlaybackControls(
+                            stepIndex = stepIndex,
+                            stepCount = steps.size,
+                            isPlaying = isPlaying,
+                            onReset = { isPlaying = false; stepIndex = 0 },
+                            onPrevious = { isPlaying = false; if (stepIndex > 0) stepIndex-- },
+                            onTogglePlayback = { isPlaying = !isPlaying },
+                            onNext = { isPlaying = false; if (stepIndex < steps.lastIndex) stepIndex++ }
+                        )
+                    }
+                }
+            }
+        }
+    }
 }
 
 @Composable
@@ -3494,17 +3762,20 @@ private fun LinkedListPlaybackControls(
 
 @Composable
 private fun LinearSearchVisualizationCard() {
-    val arrayData = listOf("4", "8", "2", "7", "5", "9", "1", "6", "3", "10")
-    val target = 10
-    val totalItems = arrayData.size
+    val traceSteps = LinearSearchTrace.steps
+    val target = LinearSearchTrace.target
+    val totalItems = LinearSearchTrace.values.size
 
     var currentIndex by remember { mutableStateOf(-1) }
     var isPlaying by remember { mutableStateOf(false) }
     var isExpanded by remember { mutableStateOf(false) }
 
-    val isFound = currentIndex in arrayData.indices && arrayData[currentIndex].toInt() == target
-    val isFinished = isFound || currentIndex >= totalItems
-    val inspectedCount = if (currentIndex < 0) 0 else (currentIndex + 1).coerceAtMost(totalItems)
+    val currentStep = traceSteps.getOrNull(currentIndex)
+    val arrayData = currentStep?.values ?: LinearSearchTrace.values
+    val isFound = currentStep?.result == LinearSearchResult.FOUND
+    val isNotFound = currentStep?.result == LinearSearchResult.NOT_FOUND
+    val isFinished = currentStep?.isTerminal == true
+    val inspectedCount = currentStep?.inspectedCount ?: 0
 
     // Auto-play timer mechanism
     LaunchedEffect(isPlaying, currentIndex) {
@@ -3512,7 +3783,7 @@ private fun LinearSearchVisualizationCard() {
             delay(1000L)
             if (currentIndex < 0) {
                 currentIndex = 0
-            } else if (!isFinished && currentIndex < totalItems - 1) {
+            } else if (currentIndex < traceSteps.lastIndex) {
                 currentIndex++
             } else {
                 isPlaying = false
@@ -3565,19 +3836,19 @@ private fun LinearSearchVisualizationCard() {
                 val badgeText = when {
                     currentIndex < 0 -> "TARGET: $target"
                     isFound -> "FOUND AT INDEX $currentIndex ✓"
-                    currentIndex >= totalItems -> "NOT FOUND"
+                    isNotFound -> "NOT FOUND"
                     else -> "STEP ${currentIndex + 1} OF $totalItems"
                 }
 
                 val badgeColor = when {
                     isFound -> GreenAccent
-                    currentIndex >= totalItems -> RedAccent
+                    isNotFound -> RedAccent
                     else -> BlueAccent
                 }
 
                 val badgeBg = when {
                     isFound -> Color(0xFF092317)
-                    currentIndex >= totalItems -> Color(0xFF210C0D)
+                    isNotFound -> Color(0xFF210C0D)
                     else -> Color(0xFF13233A)
                 }
 
@@ -3647,7 +3918,7 @@ private fun LinearSearchVisualizationCard() {
                             contentAlignment = Alignment.Center
                         ) {
                             Text(
-                                text = value,
+                                text = value.toString(),
                                 color = textColor,
                                 fontSize = 16.sp,
                                 fontWeight = FontWeight.Bold
@@ -3677,11 +3948,10 @@ private fun LinearSearchVisualizationCard() {
                         .padding(12.dp * scale),
                     verticalArrangement = Arrangement.spacedBy(10.dp * scale)
                 ) {
-                    val explanationText = when {
-                        currentIndex < 0 -> "Target = $target. Inspect elements sequentially from index 0 until found."
-                        isFound -> "Target $target found at index $currentIndex! Linear Search complete. ✓"
-                        currentIndex >= totalItems -> "Target $target not found in array after inspecting all $totalItems items."
-                        else -> "Checking index $currentIndex: value ${arrayData[currentIndex]} != $target. Move to next index."
+                    val explanationText = if (currentIndex < 0) {
+                        "Target = $target. Inspect elements sequentially from index 0 until found."
+                    } else {
+                        currentStep?.explanation.orEmpty()
                     }
 
                     Text(
@@ -3704,7 +3974,11 @@ private fun LinearSearchVisualizationCard() {
                                 .clip(RoundedCornerShape(2.dp))
                                 .background(Color(0xFF262634))
                         ) {
-                            val progressFloat = (inspectedCount.toFloat() / totalItems).coerceIn(0f, 1f)
+                            val progressFloat = if (totalItems == 0) {
+                                if (isFinished) 1f else 0f
+                            } else {
+                                (inspectedCount.toFloat() / totalItems).coerceIn(0f, 1f)
+                            }
                             Box(
                                 modifier = Modifier
                                     .fillMaxWidth(progressFloat)
@@ -3825,7 +4099,7 @@ private fun LinearSearchVisualizationCard() {
                             isPlaying = false
                             if (currentIndex < 0) {
                                 currentIndex = 0
-                            } else if (!isFinished) {
+                            } else if (currentIndex < traceSteps.lastIndex) {
                                 currentIndex++
                             }
                         }
