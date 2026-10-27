@@ -15,10 +15,11 @@ Imagine opening a dictionary in the middle. If the target word comes alphabetica
 
 ### Worked Example
 
-The sorted array is `[1, 3, 5, 7, 9, 11, 13]`, and the target is `11`. Indices start at `0`, so the values are at indices `0` through `6`.
+The sorted array is `[1, 3, 5, 7, 9, 11, 13, 15, 17, 19]`, and the target is `11`. Indices start at `0`, so the values are at indices `0` through `9`.
 
-1. `left = 0`, `right = 6`; `mid = 3`, where the value is `7`. Since `7 < 11`, continue in the right half by setting `left = 4`.
-2. `left = 4`, `right = 6`; `mid = 5`, where the value is `11`. The target is found at index `5`.
+1. `left = 0`, `right = 9`; `mid = 4`, where the value is `9`. Since `9 < 11`, eliminate indices `0` through `4` and continue in the range `5` through `9` by setting `left = 5`.
+2. `left = 5`, `right = 9`; `mid = 7`, where the value is `15`. Since `15 > 11`, eliminate indices `7` through `9` and continue in the range `5` through `6` by setting `right = 6`.
+3. `left = 5`, `right = 6`; `mid = 5`, where the value is `11`. The target is found at index `5` on the third comparison.
 
 ### Code Example: Iterative Binary Search
 

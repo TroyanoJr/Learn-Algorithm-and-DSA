@@ -14,7 +14,7 @@ Track `front` (the next slot to remove) and `size`. The rear insertion slot is `
 
 ### Code Example
 
-**Illustrative trace:** For a queue with capacity four, enqueue 8 and 5, dequeue 8, then enqueue 9; the front remains 5.
+**Illustrative trace:** For a queue with capacity five, start with 10 and 20, enqueue 8, 5, and 6, dequeue 10, then enqueue 9. The front remains 20 and the queue uses all five slots.
 
 ```pseudocode
 create(capacity): data = new array[capacity]; front = 0; size = 0
