@@ -17,9 +17,11 @@ A **queue** stores items in arrival order. New items join the **rear** and leave
 | enqueue A | `[A]` | — |
 | enqueue B | `[A, B]` | — |
 | enqueue C | `[A, B, C]` | — |
-| dequeue | `[B, C]` | `A` |
-| enqueue D | `[B, C, D]` | — |
-| dequeue | `[C, D]` | `B` |
+| enqueue D | `[A, B, C, D]` | — |
+| enqueue E | `[A, B, C, D, E]` | — |
+| dequeue | `[B, C, D, E]` | `A` |
+| enqueue F | `[B, C, D, E, F]` | — |
+| dequeue | `[C, D, E, F]` | `B` |
 
 Items leave in arrival order. Removing the newest item first would be stack behavior, not queue behavior.
 

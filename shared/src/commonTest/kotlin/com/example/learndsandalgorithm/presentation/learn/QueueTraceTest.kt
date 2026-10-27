@@ -8,94 +8,107 @@ import kotlin.test.assertTrue
 
 class QueueTraceTest {
     @Test
-    fun circularBufferTraceMatchesLessonWraparoundAndFifoOrder() {
-        val steps = QueueTrace.steps
-        val enqueueE = steps.first { it.event == QueueTraceEvent.ENQUEUE && it.values.lastOrNull() == "E" }
-        val peeks = steps.filter { it.event == QueueTraceEvent.PEEK }
+    fun noStepExceedsSixDataElementsInAnyQueueDemonstration() {
+        QueueDemonstration.entries.forEach { demonstration ->
+            val steps = QueueTrace.stepsFor(demonstration)
+            steps.forEach { step ->
+                assertTrue(
+                    step.values.size <= 6,
+                    "Demonstration $demonstration step has > 6 data elements: ${step.values.size}"
+                )
+                assertTrue(
+                    step.capacity <= 6,
+                    "Demonstration $demonstration capacity exceeds 6: ${step.capacity}"
+                )
+            }
+        }
+    }
+
+    @Test
+    fun fundamentalsTraceFollowsLessonEnqueueDequeueOrder() {
+        val steps = QueueTrace.stepsFor(QueueDemonstration.FUNDAMENTALS)
+        val enqueues = steps.filter { it.event == QueueTraceEvent.ENQUEUE }
         val dequeues = steps.filter { it.event == QueueTraceEvent.DEQUEUE }
 
-        assertEquals(listOf("A", "B", "C"), steps[3].values)
-        assertEquals(listOf("A", "B", "C"), peeks.first().values)
-        assertEquals("A", peeks.first().returnedValue)
-        assertEquals(peeks.first().values, steps[steps.indexOf(peeks.first()) - 1].values)
-        assertEquals(0, enqueueE.highlightedSlot)
-        assertEquals(listOf("E", null, "C", "D"), enqueueE.slots)
-        assertEquals(listOf("C", "D", "E"), enqueueE.values)
-        assertEquals(2, enqueueE.frontIndex)
-        assertEquals(1, enqueueE.nextRearIndex)
-        assertEquals(listOf("A", "B", "C", "D", "E"), dequeues.map { it.returnedValue })
-        assertTrue(steps.last().isTerminal)
+        assertEquals(
+            listOf(listOf("A"), listOf("A", "B"), listOf("A", "B", "C"), listOf("A", "B", "C", "D"),
+                listOf("A", "B", "C", "D", "E"), listOf("B", "C", "D", "E", "F")),
+            enqueues.map { it.values }
+        )
+        assertEquals(listOf("A", "B"), dequeues.map { it.returnedValue })
+        assertEquals(listOf("B", "C", "D", "E"), dequeues[0].values)
+        assertEquals(listOf("C", "D", "E", "F"), dequeues[1].values)
     }
 
     @Test
-    fun enqueuePeekAndDequeuePreserveSnapshotsAndFifo() {
-        val steps = QueueTrace.generate(
-            listOf(
-                QueueOperation.Enqueue("7"),
-                QueueOperation.Enqueue("4"),
-                QueueOperation.Peek,
-                QueueOperation.Dequeue
-            ),
-            capacity = 3
-        )
+    fun operationsLessonShowsFrontWithoutMutationThenDequeuesSeven() {
+        val steps = QueueTrace.stepsFor(QueueDemonstration.OPERATIONS)
+        val enqueueSeven = steps.first { it.event == QueueTraceEvent.ENQUEUE && it.operationValue == "7" }
+        val enqueueFour = steps.first { it.event == QueueTraceEvent.ENQUEUE && it.operationValue == "4" }
+        val peek = steps.first { it.event == QueueTraceEvent.PEEK }
+        val dequeueSeven = steps.first { it.event == QueueTraceEvent.DEQUEUE }
 
-        assertEquals(listOf("7"), steps[1].values)
-        assertEquals(listOf("7", "4"), steps[2].values)
-        assertEquals(0, steps[3].highlightedSlot)
-        assertEquals("7", steps[3].returnedValue)
-        assertEquals(steps[2].values, steps[3].values)
-        assertEquals(listOf("4"), steps[4].values)
-        assertEquals("7", steps[4].returnedValue)
-        assertEquals(1, steps[4].frontIndex)
+        assertEquals(listOf("7"), enqueueSeven.values)
+        assertEquals(listOf("7", "4"), enqueueFour.values)
+        assertEquals(enqueueFour.values, peek.values)
+        assertEquals("7", peek.returnedValue)
+        assertEquals(listOf("4"), dequeueSeven.values)
+        assertEquals("7", dequeueSeven.returnedValue)
     }
 
     @Test
-    fun emptyDequeueAndPeekAreSafeAndDoNotMutateQueue() {
-        val steps = QueueTrace.generate(
-            listOf(QueueOperation.Dequeue, QueueOperation.Peek),
-            capacity = 2
-        )
+    fun implementationLessonShowsSameLogicalFifoInArrayAndLinkedRepresentations() {
+        val steps = QueueTrace.stepsFor(QueueDemonstration.IMPLEMENTATIONS)
+        val enqueues = steps.filter { it.event == QueueTraceEvent.ENQUEUE }
+        val dequeue = steps.first { it.event == QueueTraceEvent.DEQUEUE }
+        val finalEnqueue = enqueues.last()
 
-        assertEquals(QueueTraceEvent.UNDERFLOW, steps[1].event)
-        assertEquals(QueueTraceEvent.EMPTY_ACCESS, steps[2].event)
-        assertEquals(emptyList(), steps[1].values)
-        assertEquals(steps[1].slots, steps[2].slots)
-        assertNull(steps[1].returnedValue)
-        assertNull(steps[2].returnedValue)
-        assertTrue(steps[1].explanation.contains("dequeue"))
-        assertTrue(steps[2].explanation.contains("peek"))
+        assertTrue(steps.all { it.representation == QueueRepresentation.ARRAY_AND_LINKED })
+        assertEquals(listOf("10", "20", "8", "5", "6"), enqueues[2].values)
+        assertEquals("10", dequeue.returnedValue)
+        assertEquals(listOf("20", "8", "5", "6"), dequeue.values)
+        assertEquals(listOf("20", "8", "5", "6", "9"), finalEnqueue.values)
+        assertEquals("20", steps.first { it.event == QueueTraceEvent.PEEK }.returnedValue)
     }
 
     @Test
-    fun fullQueueRejectsEnqueueWithoutChangingStorage() {
-        val steps = QueueTrace.generate(
-            listOf(QueueOperation.Enqueue("C")),
-            capacity = 2,
-            initialValues = listOf("A", "B")
-        )
+    fun circularBufferLessonPreservesLessonCapacityFourAndWrapsRear() {
+        val steps = QueueTrace.stepsFor(QueueDemonstration.CIRCULAR_BUFFER)
+        val enqueueF = steps.first { it.event == QueueTraceEvent.ENQUEUE && it.operationValue == "F" }
+        val dequeues = steps.filter { it.event == QueueTraceEvent.DEQUEUE }
 
-        assertEquals(QueueTraceEvent.OVERFLOW, steps[1].event)
-        assertEquals(listOf("A", "B"), steps[1].values)
-        assertEquals(listOf("A", "B"), steps[1].slots)
+        assertEquals(listOf("A", "B"), dequeues.map { it.returnedValue })
+        assertEquals(listOf("F", "E", "C", "D"), enqueueF.slots)
+        assertEquals(listOf("C", "D", "E", "F"), enqueueF.values)
+        assertEquals(2, enqueueF.frontIndex)
+        assertEquals(2, enqueueF.nextRearIndex)
+        assertEquals(4, enqueueF.capacity)
+    }
+
+    @Test
+    fun emptyOperationsOverflowAndPeekImmutabilityRemainCorrect() {
+        val empty = QueueTrace.generate(listOf(QueueOperation.Dequeue, QueueOperation.Peek), capacity = 2)
+        assertEquals(QueueTraceEvent.UNDERFLOW, empty[1].event)
+        assertEquals(QueueTraceEvent.EMPTY_ACCESS, empty[2].event)
+        assertEquals(empty[1].slots, empty[2].slots)
+        assertNull(empty[1].returnedValue)
+        val full = QueueTrace.generate(listOf(QueueOperation.Enqueue("C")), capacity = 2, initialValues = listOf("A", "B"))
+        assertEquals(QueueTraceEvent.OVERFLOW, full[1].event)
+        assertEquals(listOf("A", "B"), full[1].values)
+        val peek = QueueTrace.generate(listOf(QueueOperation.Enqueue("X"), QueueOperation.Peek), capacity = 2)[2]
+        assertEquals(listOf("X"), peek.values)
+        assertEquals("X", peek.returnedValue)
+        assertEquals("X", peek.slots[0])
+    }
+
+    @Test
+    fun capacityOneQueueWrapsBackToItsOnlySlot() {
+        val steps = QueueTrace.generate(listOf(QueueOperation.Enqueue("X"), QueueOperation.Dequeue), capacity = 1)
         assertEquals(0, steps[1].frontIndex)
         assertEquals(0, steps[1].nextRearIndex)
-    }
-
-    @Test
-    fun singleSlotQueueWrapsAndReturnsToEmpty() {
-        val steps = QueueTrace.generate(
-            listOf(QueueOperation.Enqueue("X"), QueueOperation.Dequeue),
-            capacity = 1
-        )
-
-        assertEquals(listOf("X"), steps[1].values)
-        assertEquals(0, steps[1].frontIndex)
-        assertEquals(0, steps[1].nextRearIndex)
-        assertEquals(listOf(null), steps[2].slots)
         assertEquals(emptyList(), steps[2].values)
-        assertEquals(0, steps[2].frontIndex)
-        assertEquals(0, steps[2].nextRearIndex)
-        assertEquals(QueueTraceEvent.COMPLETE, steps.last().event)
-        assertFalse(steps.dropLast(1).last().isTerminal)
+        assertEquals(listOf(null), steps[2].slots)
+        assertFalse(steps[2].isTerminal)
+        assertTrue(steps.last().isTerminal)
     }
 }

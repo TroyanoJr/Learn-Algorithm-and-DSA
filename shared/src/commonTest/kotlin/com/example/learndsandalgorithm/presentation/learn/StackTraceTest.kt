@@ -8,69 +8,95 @@ import kotlin.test.assertTrue
 
 class StackTraceTest {
     @Test
-    fun demonstrationShowsPushPeekAndLifoPopResults() {
-        val steps = StackTrace.steps
+    fun noStepExceedsSixDataElementsInAnyStackDemonstration() {
+        StackDemonstration.entries.forEach { demonstration ->
+            val steps = StackTrace.stepsFor(demonstration)
+            steps.forEach { step ->
+                assertTrue(
+                    step.values.size <= 6,
+                    "Demonstration $demonstration step has > 6 elements: ${step.values.size}"
+                )
+            }
+        }
+    }
+
+    @Test
+    fun fundamentalsTraceFollowsLessonLifoExampleAndSafeEmptyAccess() {
+        val steps = StackTrace.stepsFor(StackDemonstration.FUNDAMENTALS)
         val pushes = steps.filter { it.event == StackTraceEvent.PUSH }
         val pops = steps.filter { it.event == StackTraceEvent.POP }
-        val peek = steps.first { it.event == StackTraceEvent.PEEK }
 
         assertEquals(listOf("A", "B", "C", "D", "E"), pushes[4].values)
-        assertEquals(4, pushes[4].highlightedIndex)
-        assertEquals(listOf("A", "B", "C", "D", "E"), peek.values)
-        assertEquals(4, peek.highlightedIndex)
-        assertEquals("E", peek.returnedValue)
-        assertEquals(pushes[4].values, peek.values)
+        assertEquals(listOf("A", "B", "C", "D"), pops.first().values)
+        assertEquals("E", pops.first().returnedValue)
+        assertEquals("F", pops[1].returnedValue)
         assertEquals(listOf("E", "F", "D", "C", "B", "A"), pops.map { it.returnedValue })
-        assertEquals(emptyList(), steps.last().values)
         assertTrue(steps.last().isTerminal)
+        assertTrue(steps.last().values.isEmpty())
     }
 
     @Test
-    fun emptyPopAndPeekAreReportedWithoutChangingState() {
-        val steps = StackTrace.generate(listOf(StackOperation.Peek, StackOperation.Pop))
+    fun operationsLessonShowsPeekWithoutMutationAndPopFour() {
+        val steps = StackTrace.stepsFor(StackDemonstration.OPERATIONS)
+        val pushSeven = steps.first { it.operationValue == "7" && it.event == StackTraceEvent.PUSH }
+        val pushFour = steps.first { it.operationValue == "4" && it.event == StackTraceEvent.PUSH }
+        val peek = steps.first { it.event == StackTraceEvent.PEEK }
+        val popFour = steps.first { it.event == StackTraceEvent.POP }
 
-        assertEquals(StackTraceEvent.START, steps[0].event)
-        assertEquals(StackTraceEvent.UNDERFLOW, steps[1].event)
-        assertEquals(StackTraceEvent.UNDERFLOW, steps[2].event)
-        assertEquals(emptyList(), steps[1].values)
-        assertEquals(steps[1].values, steps[2].values)
-        assertNull(steps[1].returnedValue)
-        assertNull(steps[2].returnedValue)
-        assertTrue(steps[1].explanation.contains("peek"))
-        assertTrue(steps[2].explanation.contains("pop"))
+        assertEquals(listOf("7"), pushSeven.values)
+        assertEquals(listOf("7", "4"), pushFour.values)
+        assertEquals(pushFour.values, peek.values)
+        assertEquals("4", peek.returnedValue)
+        assertEquals(listOf("7"), popFour.values)
+        assertEquals("4", popFour.returnedValue)
+        assertTrue(peek.explanation.contains("without removing"))
     }
 
     @Test
-    fun fixedCapacityRejectsPushWithoutLosingLifoContents() {
-        val steps = StackTrace.generate(
-            operations = listOf(StackOperation.Push("C"), StackOperation.Pop),
-            initialValues = listOf("A", "B"),
-            capacity = 2
-        )
+    fun implementationLessonMarksArrayAndLinkedRepresentationsOnEveryStep() {
+        val steps = StackTrace.stepsFor(StackDemonstration.IMPLEMENTATIONS)
+        val peek = steps.first { it.event == StackTraceEvent.PEEK }
+        val pop = steps.first { it.event == StackTraceEvent.POP }
 
-        assertEquals(StackTraceEvent.OVERFLOW, steps[1].event)
-        assertEquals(listOf("A", "B"), steps[1].values)
-        assertNull(steps[1].returnedValue)
-        assertEquals(StackTraceEvent.POP, steps[2].event)
-        assertEquals("B", steps[2].returnedValue)
-        assertEquals(listOf("A"), steps[2].values)
+        assertTrue(steps.all { it.representation == StackRepresentation.ARRAY_AND_LINKED })
+        assertEquals(listOf("10", "20", "30", "40", "50", "6"), peek.values)
+        assertEquals("6", peek.returnedValue)
+        assertEquals(peek.values, pop.values.plus(pop.returnedValue!!))
+        assertTrue(peek.explanation.contains("without removing"))
     }
 
     @Test
-    fun normalOperationsPreserveSnapshotsAndOnlyPeekLeavesStateUntouched() {
-        val steps = StackTrace.generate(
-            listOf(StackOperation.Push("X"), StackOperation.Peek, StackOperation.Pop)
-        )
+    fun delimiterLessonMatchesLatestOpenersAndCompletesBalanced() {
+        val steps = StackTrace.stepsFor(StackDemonstration.DELIMITER_MATCHING)
+        val matches = steps.filter { it.event == StackTraceEvent.DELIMITER_MATCH }
 
-        assertEquals(emptyList(), steps[0].values)
-        assertEquals(listOf("X"), steps[1].values)
-        assertEquals(listOf("X"), steps[2].values)
-        assertEquals(emptyList(), steps[3].values)
-        assertEquals(emptyList(), steps[4].values)
-        assertEquals("X", steps[2].returnedValue)
-        assertEquals("X", steps[3].returnedValue)
-        assertEquals(StackTraceEvent.COMPLETE, steps.last().event)
+        assertEquals(listOf("}", "]", ")"), matches.map { it.operationValue })
+        assertEquals(listOf("{", "[", "("), matches.map { it.returnedValue })
         assertTrue(steps.last().isTerminal)
-        assertFalse(steps.dropLast(1).any { it.isTerminal })
+        assertEquals(true, steps.last().isValid)
+        assertTrue(steps.last().explanation.contains("balanced"))
+    }
+
+    @Test
+    fun delimiterMismatchPopsTheComparedOpenerAndReportsFailure() {
+        val steps = StackTrace.generate(listOf(StackOperation.OpenDelimiter("["), StackOperation.CloseDelimiter(")")))
+        val mismatch = steps.first { it.event == StackTraceEvent.DELIMITER_MISMATCH }
+
+        assertEquals(emptyList(), mismatch.values)
+        assertEquals("[", mismatch.returnedValue)
+        assertFalse(mismatch.isTerminal)
+        assertEquals(false, steps.last().isValid)
+        assertTrue(steps.last().explanation.contains("invalid"))
+    }
+
+    @Test
+    fun ordinaryEmptyOperationsAndCapacityOverflowRemainSafe() {
+        val empty = StackTrace.generate(listOf(StackOperation.Peek, StackOperation.Pop))
+        assertEquals(StackTraceEvent.UNDERFLOW, empty[1].event)
+        assertEquals(StackTraceEvent.UNDERFLOW, empty[2].event)
+        assertNull(empty[1].returnedValue)
+        val full = StackTrace.generate(listOf(StackOperation.Push("C")), initialValues = listOf("A"), capacity = 1)
+        assertEquals(StackTraceEvent.OVERFLOW, full[1].event)
+        assertEquals(listOf("A"), full[1].values)
     }
 }

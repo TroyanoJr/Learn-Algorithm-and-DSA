@@ -33,9 +33,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -261,8 +263,14 @@ fun LessonDetailScreen(
 
                         // Lesson Specific Visualizations
                         when (state.lesson.id) {
-                            "lesson_stack_1", "lesson_stack_2", "lesson_stack_3", "lesson_stack_4" -> StackVisualizationCard()
-                            "lesson_queues_1", "lesson_queues_2", "lesson_queues_3", "lesson_queues_4" -> QueueVisualizationCard()
+                            "lesson_stack_1" -> StackVisualizationCard(StackDemonstration.FUNDAMENTALS, title = state.lesson.title)
+                            "lesson_stack_2" -> StackVisualizationCard(StackDemonstration.OPERATIONS, title = state.lesson.title)
+                            "lesson_stack_3" -> StackVisualizationCard(StackDemonstration.IMPLEMENTATIONS, title = state.lesson.title)
+                            "lesson_stack_4" -> StackVisualizationCard(StackDemonstration.DELIMITER_MATCHING, title = state.lesson.title)
+                            "lesson_queues_1" -> QueueVisualizationCard(QueueDemonstration.FUNDAMENTALS, title = state.lesson.title)
+                            "lesson_queues_2" -> QueueVisualizationCard(QueueDemonstration.OPERATIONS, title = state.lesson.title)
+                            "lesson_queues_3" -> QueueVisualizationCard(QueueDemonstration.IMPLEMENTATIONS, title = state.lesson.title)
+                            "lesson_queues_4" -> QueueVisualizationCard(QueueDemonstration.CIRCULAR_BUFFER, title = state.lesson.title)
                             "lesson_arrays_1" -> ArrayVisualizationCard()
                             "lesson_arrays_2" -> ArrayResizeVisualizationCard()
                             "lesson_arrays_3" -> ArrayTraversalVisualizationCard()
@@ -732,11 +740,14 @@ private fun InsertionSortVisualizationCard() {
 }
 
 @Composable
-private fun StackVisualizationCard() {
-    val steps = StackTrace.steps
-    var stepIndex by remember(steps) { mutableStateOf(0) }
-    var isPlaying by remember(steps) { mutableStateOf(false) }
-    var isExpanded by remember { mutableStateOf(false) }
+private fun StackVisualizationCard(
+    demonstration: StackDemonstration,
+    title: String = "Stack Visualizer"
+) {
+    val steps = StackTrace.stepsFor(demonstration)
+    var stepIndex by rememberSaveable(demonstration) { mutableIntStateOf(0) }
+    var isPlaying by rememberSaveable(demonstration) { mutableStateOf(false) }
+    var isExpanded by rememberSaveable(demonstration) { mutableStateOf(false) }
     val step = steps[stepIndex]
 
     LaunchedEffect(isPlaying, stepIndex, steps) {
@@ -757,7 +768,7 @@ private fun StackVisualizationCard() {
         ) {
             LandscapeOrientationEffect(enabled = true)
             BoxWithConstraints(modifier = Modifier.fillMaxSize().padding(6.dp)) {
-                val scale = minOf(maxWidth / 800.dp, maxHeight / 360.dp).coerceIn(0.8f, 1f)
+                val scale = minOf(maxWidth / 800.dp, maxHeight / 360.dp).coerceAtMost(1f)
                 Surface(
                     color = DarkCardBgColor,
                     shape = RoundedCornerShape(16.dp),
@@ -773,20 +784,22 @@ private fun StackVisualizationCard() {
                             horizontalArrangement = Arrangement.SpaceBetween,
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Text("STACK · LIFO", color = OrangeAccent, fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                            Text(title.uppercase(), color = OrangeAccent, fontSize = 11.sp, fontWeight = FontWeight.Bold, modifier = Modifier.weight(1f))
                             Text(
                                 when (step.event) {
                                     StackTraceEvent.START -> "READY"
-                                    StackTraceEvent.PUSH -> "PUSH ${step.values.last()}"
+                                    StackTraceEvent.PUSH -> "PUSH ${step.operationValue ?: step.values.lastOrNull()}"
                                     StackTraceEvent.POP -> "POPPED ${step.returnedValue}"
                                     StackTraceEvent.PEEK -> "TOP ${step.returnedValue}"
                                     StackTraceEvent.UNDERFLOW -> "EMPTY ACCESS"
+                                    StackTraceEvent.DELIMITER_MATCH -> "MATCH ${step.operationValue}"
+                                    StackTraceEvent.DELIMITER_MISMATCH, StackTraceEvent.UNMATCHED_CLOSER -> "INVALID CLOSER ${step.operationValue}"
                                     StackTraceEvent.OVERFLOW -> "FULL"
-                                    StackTraceEvent.COMPLETE -> "COMPLETE"
+                                    StackTraceEvent.COMPLETE -> if (step.isValid == false) "UNBALANCED" else "COMPLETE"
                                 },
                                 color = when (step.event) {
-                                    StackTraceEvent.COMPLETE -> GreenAccent
-                                    StackTraceEvent.UNDERFLOW, StackTraceEvent.OVERFLOW -> RedAccent
+                                    StackTraceEvent.UNDERFLOW, StackTraceEvent.OVERFLOW, StackTraceEvent.DELIMITER_MISMATCH, StackTraceEvent.UNMATCHED_CLOSER -> RedAccent
+                                    StackTraceEvent.COMPLETE -> if (step.isValid == false) RedAccent else GreenAccent
                                     else -> BlueAccent
                                 },
                                 fontSize = 10.sp,
@@ -808,39 +821,78 @@ private fun StackVisualizationCard() {
                                 horizontalAlignment = Alignment.CenterHorizontally,
                                 verticalArrangement = Arrangement.spacedBy(4.dp * scale)
                             ) {
-                                Text("TOP ↓", color = OrangeAccent, fontSize = 10.sp, fontWeight = FontWeight.Bold)
-                                if (step.values.isEmpty()) {
-                                    Surface(
-                                        color = Color(0xFF13131C),
-                                        shape = RoundedCornerShape(8.dp),
-                                        border = BorderStroke(1.dp, CardBorderColor),
-                                        modifier = Modifier.width(130.dp * scale).height(38.dp * scale)
-                                    ) {
-                                        Box(contentAlignment = Alignment.Center) {
-                                            Text("EMPTY", color = TextSecondary, fontSize = 11.sp, fontWeight = FontWeight.Bold)
-                                        }
-                                    }
-                                } else {
-                                    step.values.indices.reversed().forEach { index ->
-                                        val highlighted = index == step.highlightedIndex
-                                        Surface(
-                                            color = if (highlighted) Color(0xFF2A1C12) else Color(0xFF13131C),
-                                            shape = RoundedCornerShape(8.dp),
-                                            border = BorderStroke(1.dp, if (highlighted) OrangeAccent else CardBorderColor),
-                                            modifier = Modifier.width(130.dp * scale).height(34.dp * scale)
-                                        ) {
-                                            Box(contentAlignment = Alignment.Center) {
-                                                Text(
-                                                    step.values[index],
-                                                    color = if (highlighted) OrangeAccent else TextPrimary,
-                                                    fontSize = 14.sp,
-                                                    fontWeight = FontWeight.Bold
-                                                )
+                                if (step.representation == StackRepresentation.ARRAY_AND_LINKED) {
+                                    Text("ARRAY · TOP = LAST INDEX", color = OrangeAccent, fontSize = 9.sp, fontWeight = FontWeight.Bold)
+                                    if (step.values.isEmpty()) {
+                                        Text("EMPTY", color = TextSecondary, fontSize = 10.sp)
+                                    } else {
+                                        step.values.indices.reversed().forEach { index ->
+                                            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp * scale)) {
+                                                Text("$index", color = TextSecondary, fontSize = 8.sp)
+                                                Surface(
+                                                    color = if (index == step.highlightedIndex) Color(0xFF2A1C12) else Color(0xFF13131C),
+                                                    shape = RoundedCornerShape(6.dp),
+                                                    border = BorderStroke(1.dp, if (index == step.highlightedIndex) OrangeAccent else CardBorderColor),
+                                                    modifier = Modifier.width(72.dp * scale).height(22.dp * scale)
+                                                ) {
+                                                    Box(contentAlignment = Alignment.Center) {
+                                                        Text(step.values[index], color = if (index == step.highlightedIndex) OrangeAccent else TextPrimary, fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                                                    }
+                                                }
+                                                if (index == step.values.lastIndex) Text("TOP", color = OrangeAccent, fontSize = 8.sp, fontWeight = FontWeight.Bold)
                                             }
                                         }
                                     }
+                                    Text("LINKED · TOP = HEAD", color = BlueAccent, fontSize = 9.sp, fontWeight = FontWeight.Bold)
+                                    if (step.values.isEmpty()) {
+                                        Text("HEAD = null", color = TextSecondary, fontSize = 9.sp)
+                                    } else {
+                                        Row(horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically) {
+                                            Text("HEAD →", color = BlueAccent, fontSize = 8.sp, fontWeight = FontWeight.Bold)
+                                            step.values.indices.reversed().forEach { index ->
+                                                Surface(
+                                                    color = if (index == step.highlightedIndex) Color(0xFF2A1C12) else Color(0xFF13131C),
+                                                    shape = RoundedCornerShape(6.dp),
+                                                    border = BorderStroke(1.dp, if (index == step.highlightedIndex) OrangeAccent else CardBorderColor),
+                                                    modifier = Modifier.width(46.dp * scale).height(20.dp * scale)
+                                                ) {
+                                                    Box(contentAlignment = Alignment.Center) {
+                                                        Text("${step.values[index]} | next", color = if (index == step.highlightedIndex) OrangeAccent else TextPrimary, fontSize = 7.sp, fontWeight = FontWeight.Bold)
+                                                    }
+                                                }
+                                                Text(if (index == 0) "→ null" else "→", color = BlueAccent, fontSize = 8.sp)
+                                            }
+                                        }
+                                    }
+                                } else {
+                                    Text("TOP ↓", color = OrangeAccent, fontSize = 10.sp, fontWeight = FontWeight.Bold)
+                                    if (step.values.isEmpty()) {
+                                        Surface(
+                                            color = Color(0xFF13131C), shape = RoundedCornerShape(8.dp),
+                                            border = BorderStroke(1.dp, CardBorderColor),
+                                            modifier = Modifier.width(130.dp * scale).height(38.dp * scale)
+                                        ) {
+                                            Box(contentAlignment = Alignment.Center) {
+                                                Text("EMPTY", color = TextSecondary, fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                                            }
+                                        }
+                                    } else {
+                                        step.values.indices.reversed().forEach { index ->
+                                            val highlighted = index == step.highlightedIndex
+                                            Surface(
+                                                color = if (highlighted) Color(0xFF2A1C12) else Color(0xFF13131C),
+                                                shape = RoundedCornerShape(8.dp),
+                                                border = BorderStroke(1.dp, if (highlighted) OrangeAccent else CardBorderColor),
+                                                modifier = Modifier.width(130.dp * scale).height(28.dp * scale)
+                                            ) {
+                                                Box(contentAlignment = Alignment.Center) {
+                                                    Text(step.values[index], color = if (highlighted) OrangeAccent else TextPrimary, fontSize = 14.sp, fontWeight = FontWeight.Bold)
+                                                }
+                                            }
+                                        }
+                                    }
+                                    Text("BOTTOM", color = TextSecondary, fontSize = 9.sp, fontWeight = FontWeight.Bold)
                                 }
-                                Text("BOTTOM", color = TextSecondary, fontSize = 9.sp, fontWeight = FontWeight.Bold)
                             }
 
                             Column(
@@ -868,7 +920,11 @@ private fun StackVisualizationCard() {
                             border = BorderStroke(1.dp, CardBorderColor),
                             modifier = Modifier.fillMaxWidth()
                         ) {
-                            Text(step.explanation, color = TextPrimary, fontSize = 12.sp, lineHeight = 16.sp, modifier = Modifier.padding(10.dp * scale))
+                            Column(modifier = Modifier.padding(10.dp * scale), verticalArrangement = Arrangement.spacedBy(4.dp * scale)) {
+                                Text("Steps", color = OrangeAccent, fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                                Text("STEP ${stepIndex + 1} / ${steps.size}", color = TextSecondary, fontSize = 9.sp, fontWeight = FontWeight.Bold)
+                                Text(step.explanation, color = TextPrimary, fontSize = 12.sp, lineHeight = 16.sp)
+                            }
                         }
 
                         LinkedListPlaybackControls(
@@ -888,11 +944,14 @@ private fun StackVisualizationCard() {
 }
 
 @Composable
-private fun QueueVisualizationCard() {
-    val steps = QueueTrace.steps
-    var stepIndex by remember(steps) { mutableStateOf(0) }
-    var isPlaying by remember(steps) { mutableStateOf(false) }
-    var isExpanded by remember { mutableStateOf(false) }
+private fun QueueVisualizationCard(
+    demonstration: QueueDemonstration,
+    title: String = "Queue Visualizer"
+) {
+    val steps = QueueTrace.stepsFor(demonstration)
+    var stepIndex by rememberSaveable(demonstration) { mutableIntStateOf(0) }
+    var isPlaying by rememberSaveable(demonstration) { mutableStateOf(false) }
+    var isExpanded by rememberSaveable(demonstration) { mutableStateOf(false) }
     val step = steps[stepIndex]
 
     LaunchedEffect(isPlaying, stepIndex, steps) {
@@ -911,9 +970,8 @@ private fun QueueVisualizationCard() {
             onDismissRequest = { isPlaying = false; isExpanded = false },
             properties = DialogProperties(usePlatformDefaultWidth = false)
         ) {
-            LandscapeOrientationEffect(enabled = true)
             BoxWithConstraints(modifier = Modifier.fillMaxSize().padding(6.dp)) {
-                val scale = minOf(maxWidth / 800.dp, maxHeight / 360.dp).coerceIn(0.8f, 1f)
+                val scale = minOf(maxWidth / 800.dp, maxHeight / 360.dp).coerceAtMost(1f)
                 Surface(
                     color = DarkCardBgColor,
                     shape = RoundedCornerShape(16.dp),
@@ -929,7 +987,7 @@ private fun QueueVisualizationCard() {
                             horizontalArrangement = Arrangement.SpaceBetween,
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Text("QUEUE · FIFO CIRCULAR ARRAY", color = OrangeAccent, fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                            Text(title.uppercase(), color = OrangeAccent, fontSize = 11.sp, fontWeight = FontWeight.Bold, modifier = Modifier.weight(1f))
                             Text(
                                 when (step.event) {
                                     QueueTraceEvent.START -> "READY · CAPACITY ${step.capacity}"
@@ -988,13 +1046,42 @@ private fun QueueVisualizationCard() {
                                         },
                                         shape = RoundedCornerShape(10.dp),
                                         border = BorderStroke(1.dp, if (highlighted) OrangeAccent else CardBorderColor),
-                                        modifier = Modifier.fillMaxWidth().height(56.dp * scale)
+                                        modifier = Modifier.fillMaxWidth().height(44.dp * scale)
                                     ) {
                                         Box(contentAlignment = Alignment.Center) {
                                             Text(value ?: "·", color = if (highlighted) OrangeAccent else TextPrimary, fontSize = 16.sp, fontWeight = FontWeight.Bold)
                                         }
                                     }
                                     Text("$index", color = TextSecondary, fontSize = 9.sp)
+                                }
+                            }
+                        }
+                        if (step.representation == QueueRepresentation.ARRAY_AND_LINKED) {
+                            Text(
+                                "LINKED NODES · FRONT = ${step.values.firstOrNull() ?: "null"} · REAR = ${step.values.lastOrNull() ?: "null"}",
+                                color = BlueAccent, fontSize = 9.sp, fontWeight = FontWeight.Bold
+                            )
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.Center,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                if (step.values.isEmpty()) {
+                                    Text("FRONT / REAR = null", color = TextSecondary, fontSize = 10.sp)
+                                } else {
+                                    Text("FRONT →", color = OrangeAccent, fontSize = 8.sp, fontWeight = FontWeight.Bold)
+                                    step.values.forEachIndexed { index, value ->
+                                        Surface(
+                                            color = if (step.event == QueueTraceEvent.ENQUEUE && index == step.values.lastIndex) Color(0xFF2A1C12) else Color(0xFF13233A),
+                                            shape = RoundedCornerShape(7.dp), border = BorderStroke(1.dp, CardBorderColor),
+                                            modifier = Modifier.width(54.dp * scale).height(28.dp * scale)
+                                        ) {
+                                            Box(contentAlignment = Alignment.Center) {
+                                                Text("$value | next", color = TextPrimary, fontSize = 8.sp, fontWeight = FontWeight.Bold)
+                                            }
+                                        }
+                                        Text(if (index == step.values.lastIndex) "→ null · REAR" else "→", color = BlueAccent, fontSize = 8.sp)
+                                    }
                                 }
                             }
                         }
@@ -1020,7 +1107,11 @@ private fun QueueVisualizationCard() {
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 Text(step.returnedValue ?: "—", color = if (step.returnedValue != null) GreenAccent else TextSecondary, fontSize = 16.sp, fontWeight = FontWeight.Bold)
-                                Text(step.explanation, color = TextPrimary, fontSize = 11.sp, lineHeight = 15.sp, modifier = Modifier.weight(1f))
+                                Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(3.dp * scale)) {
+                                    Text("Steps", color = OrangeAccent, fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                                    Text("STEP ${stepIndex + 1} / ${steps.size}", color = TextSecondary, fontSize = 9.sp, fontWeight = FontWeight.Bold)
+                                    Text(step.explanation, color = TextPrimary, fontSize = 11.sp, lineHeight = 15.sp)
+                                }
                             }
                         }
 
@@ -3803,7 +3894,6 @@ private fun LinearSearchVisualizationCard() {
             },
             properties = DialogProperties(usePlatformDefaultWidth = false)
         ) {
-            LandscapeOrientationEffect(enabled = true)
             BoxWithConstraints(modifier = Modifier.fillMaxSize().padding(6.dp)) {
                 val scale = minOf(maxWidth / 800.dp, maxHeight / 340.dp).coerceIn(0.85f, 1f)
                 Surface(
