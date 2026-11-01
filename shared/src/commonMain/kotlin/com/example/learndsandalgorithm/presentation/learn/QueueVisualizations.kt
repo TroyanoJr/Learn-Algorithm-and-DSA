@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -88,7 +89,9 @@ internal fun QueueVisualizationCard(
                 isExpanded = false
             },
             visualContent = {
-                QueueVisualizationContent(step = step, scale = 1f)
+                FitToPane(modifier = Modifier.fillMaxSize()) {
+                    QueueVisualizationContent(step = step, scale = 1f)
+                }
             },
             detailsContent = {
                 QueueDetailsAndStepsContent(step = step, stepIndex = stepIndex, totalSteps = steps.size, scale = 1f)

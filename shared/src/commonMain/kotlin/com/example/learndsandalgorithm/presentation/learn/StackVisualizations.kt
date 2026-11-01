@@ -153,7 +153,9 @@ internal fun StackVisualizationCard(
                 }
             } else null,
             visualContent = {
-                StackVisualizationContent(step = step, scale = 1f, selectedView = selectedView)
+                FitToPane(modifier = Modifier.fillMaxSize()) {
+                    StackVisualizationContent(step = step, scale = 1f, selectedView = selectedView)
+                }
             },
             detailsContent = {
                 StackDetailsAndStepsContent(

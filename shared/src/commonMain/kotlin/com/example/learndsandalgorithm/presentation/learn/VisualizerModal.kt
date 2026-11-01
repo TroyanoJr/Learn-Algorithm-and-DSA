@@ -2,6 +2,7 @@ package com.example.learndsandalgorithm.presentation.learn
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -177,7 +178,10 @@ internal fun VisualizerModal(
                                         horizontalAlignment = Alignment.CenterHorizontally
                                     ) {
                                         topContent?.invoke()
-                                        FitToPane(modifier = Modifier.weight(1f).fillMaxWidth(), unboundedWidth = fitUnboundedWidth) {
+                                        Box(
+                                            modifier = Modifier.weight(1f).fillMaxWidth(),
+                                            contentAlignment = Alignment.Center
+                                        ) {
                                             visualContent()
                                         }
                                     }
@@ -197,7 +201,10 @@ internal fun VisualizerModal(
                                     horizontalAlignment = Alignment.CenterHorizontally
                                 ) {
                                     topContent?.invoke()
-                                    FitToPane(modifier = Modifier.weight(1.2f).fillMaxWidth(), unboundedWidth = fitUnboundedWidth) {
+                                    Box(
+                                        modifier = Modifier.weight(1.2f).fillMaxWidth(),
+                                        contentAlignment = Alignment.Center
+                                    ) {
                                         visualContent()
                                     }
                                     Column(
@@ -217,7 +224,10 @@ internal fun VisualizerModal(
                             horizontalAlignment = Alignment.CenterHorizontally
                         ) {
                             topContent?.invoke()
-                            FitToPane(modifier = Modifier.weight(1f).fillMaxWidth(), unboundedWidth = fitUnboundedWidth) {
+                            Box(
+                                modifier = Modifier.weight(1f).fillMaxWidth(),
+                                contentAlignment = Alignment.Center
+                            ) {
                                 visualContent()
                             }
                             Column(

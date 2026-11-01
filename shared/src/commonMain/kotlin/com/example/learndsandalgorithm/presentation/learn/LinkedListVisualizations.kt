@@ -248,7 +248,6 @@ internal fun LinkedListIntroductionVisualizationCard() {
         VisualizerModal(
             title = "LINKED LIST INTRODUCTION",
             layoutMode = VisualizerLayoutMode.FULL_WIDTH,
-            fitUnboundedWidth = true,
             statusText = when (stepIndex) {
                 0 -> "START AT HEAD"
                 1 -> "FOLLOW NEXT"
@@ -430,7 +429,6 @@ internal fun LinkedListTraversalSearchAccessVisualizationCard() {
         VisualizerModal(
             title = "LINKED LIST SEARCH & ACCESS",
             layoutMode = VisualizerLayoutMode.FULL_WIDTH,
-            fitUnboundedWidth = true,
             statusText = if (isCompleted) "COMPLETE" else "STEP ${stepIndex + 1} / $totalSteps",
             isCompleted = isCompleted,
             stepIndex = stepIndex,
@@ -495,7 +493,6 @@ internal fun LinkedListInsertionVisualizationCard() {
         VisualizerModal(
             title = "LINKED LIST INSERTION",
             layoutMode = VisualizerLayoutMode.FULL_WIDTH,
-            fitUnboundedWidth = true,
             statusText = if (isCompleted) "COMPLETE" else "STEP ${stepIndex + 1} / $totalSteps",
             isCompleted = isCompleted,
             stepIndex = stepIndex,
@@ -564,7 +561,6 @@ internal fun LinkedListRemovalVisualizationCard() {
         VisualizerModal(
             title = "LINKED LIST REMOVAL",
             layoutMode = VisualizerLayoutMode.FULL_WIDTH,
-            fitUnboundedWidth = true,
             statusText = if (isCompleted) "COMPLETE" else "STEP ${stepIndex + 1} / $totalSteps",
             isCompleted = isCompleted,
             stepIndex = stepIndex,
