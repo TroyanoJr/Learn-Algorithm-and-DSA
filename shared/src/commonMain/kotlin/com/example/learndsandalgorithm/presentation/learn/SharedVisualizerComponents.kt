@@ -142,22 +142,55 @@ internal fun ArrayStepControlsRow(
 }
 
 @Composable
-internal fun LinkedListStepExplanation(title: String, explanation: String, stepIndex: Int, stepCount: Int) {
+internal fun StepsCard(
+    label: String,
+    explanation: String,
+    stepIndex: Int,
+    totalSteps: Int,
+    isCompleted: Boolean,
+    footer: String? = null,
+    modifier: Modifier = Modifier
+) {
     Surface(
         color = Color(0xFF13131C),
-        shape = RoundedCornerShape(12.dp),
+        shape = RoundedCornerShape(10.dp),
         border = BorderStroke(1.dp, VisualizerCardBorderColor),
-        modifier = Modifier.fillMaxWidth()
+        modifier = modifier.fillMaxWidth()
     ) {
         Column(
-            modifier = Modifier.fillMaxWidth().padding(11.dp),
-            verticalArrangement = Arrangement.spacedBy(5.dp)
+            modifier = Modifier.padding(10.dp),
+            verticalArrangement = Arrangement.spacedBy(4.dp)
         ) {
-            Text(title, color = VisualizerOrangeAccent, fontSize = 12.sp, fontWeight = FontWeight.Bold)
-            Text(explanation, color = VisualizerTextPrimary, fontSize = 12.sp, lineHeight = 17.sp)
-            Text("STEP ${stepIndex + 1} / $stepCount", color = VisualizerTextSecondary, fontSize = 9.sp, fontWeight = FontWeight.Bold)
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(label, color = VisualizerOrangeAccent, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                Text(
+                    "STEP ${stepIndex + 1} / $totalSteps",
+                    color = if (isCompleted) VisualizerGreenAccent else VisualizerTextSecondary,
+                    fontSize = 11.sp,
+                    fontWeight = FontWeight.Bold
+                )
+            }
+            Text(explanation, color = VisualizerTextPrimary, fontSize = 13.sp, lineHeight = 17.sp)
+            if (footer != null) {
+                Text(footer, color = VisualizerGreenAccent, fontSize = 11.sp, fontWeight = FontWeight.Bold)
+            }
         }
     }
+}
+
+@Composable
+internal fun LinkedListStepExplanation(title: String, explanation: String, stepIndex: Int, stepCount: Int) {
+    StepsCard(
+        label = title,
+        explanation = explanation,
+        stepIndex = stepIndex,
+        totalSteps = stepCount,
+        isCompleted = stepIndex == stepCount - 1
+    )
 }
 
 @Composable

@@ -19,10 +19,10 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -58,33 +58,22 @@ internal fun SortingBarVisualizationCard(
     steps: List<SortingStep>,
     launchButtonText: String
 ) {
-    var stepIndex by remember(steps) { mutableStateOf(0) }
-    var isPlaying by remember(steps) { mutableStateOf(false) }
-    var isExpanded by remember { mutableStateOf(false) }
+    var isExpanded by rememberSaveable { mutableStateOf(false) }
+
+    val playback = rememberVisualizerPlaybackState(stepCount = steps.size, initialStep = 0, key = steps)
+    val stepIndex = playback.safeStepIndex
+    val isPlaying = playback.isPlaying
+    val isFinished = playback.isCompleted
 
     val totalSteps = steps.size
     val currentStep = steps.getOrElse(stepIndex) { steps.last() }
-    val isFinished = stepIndex >= totalSteps - 1
-
-    LaunchedEffect(isPlaying, stepIndex, steps) {
-        if (isPlaying && stepIndex < totalSteps - 1) {
-            delay(1000L)
-            if (stepIndex < totalSteps - 1) {
-                stepIndex++
-            } else {
-                isPlaying = false
-            }
-        } else if (stepIndex >= totalSteps - 1) {
-            isPlaying = false
-        }
-    }
 
     ArrayWindowButton(text = launchButtonText) { isExpanded = true }
 
     if (isExpanded) {
         Dialog(
             onDismissRequest = {
-                isPlaying = false
+                playback.reset()
                 isExpanded = false
             },
             properties = DialogProperties(usePlatformDefaultWidth = false)
@@ -143,7 +132,7 @@ internal fun SortingBarVisualizationCard(
                                 )
                             }
                             ArrayWindowButton(text = "Close", icon = "✕") {
-                                isPlaying = false
+                                playback.reset()
                                 isExpanded = false
                             }
                         }
@@ -256,8 +245,7 @@ internal fun SortingBarVisualizationCard(
                                 modifier = Modifier
                                     .size((44.dp * scale).coerceAtLeast(38.dp))
                                     .clickable {
-                                        isPlaying = false
-                                        stepIndex = 0
+                                        playback.reset()
                                     }
                             ) {
                                 Box(contentAlignment = Alignment.Center) {
@@ -276,17 +264,14 @@ internal fun SortingBarVisualizationCard(
                                 border = BorderStroke(1.dp, CardBorderColor),
                                 modifier = Modifier
                                     .size((44.dp * scale).coerceAtLeast(38.dp))
-                                    .clickable(enabled = stepIndex > 0) {
-                                        isPlaying = false
-                                        if (stepIndex > 0) {
-                                            stepIndex--
-                                        }
+                                    .clickable(enabled = playback.canGoPrevious) {
+                                        playback.previous()
                                     }
                             ) {
                                 Box(contentAlignment = Alignment.Center) {
                                     Text(
                                         text = "‹",
-                                        color = if (stepIndex > 0) TextPrimary else TextSecondary.copy(alpha = 0.3f),
+                                        color = if (playback.canGoPrevious) TextPrimary else TextSecondary.copy(alpha = 0.3f),
                                         fontSize = 20.sp,
                                         fontWeight = FontWeight.Bold
                                     )
@@ -300,9 +285,7 @@ internal fun SortingBarVisualizationCard(
                                     .weight(1f)
                                     .height((44.dp * scale).coerceAtLeast(38.dp))
                                     .clickable(enabled = !isFinished) {
-                                        if (!isFinished) {
-                                            isPlaying = !isPlaying
-                                        }
+                                        playback.togglePlayback()
                                     }
                             ) {
                                 Box(contentAlignment = Alignment.Center) {
@@ -332,10 +315,7 @@ internal fun SortingBarVisualizationCard(
                                 modifier = Modifier
                                     .size((44.dp * scale).coerceAtLeast(38.dp))
                                     .clickable(enabled = !isFinished) {
-                                        isPlaying = false
-                                        if (stepIndex < totalSteps - 1) {
-                                            stepIndex++
-                                        }
+                                        playback.next()
                                     }
                             ) {
                                 Box(contentAlignment = Alignment.Center) {

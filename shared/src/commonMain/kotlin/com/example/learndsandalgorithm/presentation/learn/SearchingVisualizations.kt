@@ -18,10 +18,10 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -50,9 +50,11 @@ internal fun LinearSearchVisualizationCard() {
     val target = LinearSearchTrace.target
     val totalItems = LinearSearchTrace.values.size
 
-    var currentIndex by remember { mutableStateOf(-1) }
-    var isPlaying by remember { mutableStateOf(false) }
-    var isExpanded by remember { mutableStateOf(false) }
+    var isExpanded by rememberSaveable { mutableStateOf(false) }
+
+    val playback = rememberVisualizerPlaybackState(stepCount = traceSteps.size, initialStep = -1)
+    val currentIndex = playback.safeStepIndex
+    val isPlaying = playback.isPlaying
 
     val currentStep = traceSteps.getOrNull(currentIndex)
     val arrayData = currentStep?.values ?: LinearSearchTrace.values
@@ -61,28 +63,12 @@ internal fun LinearSearchVisualizationCard() {
     val isFinished = currentStep?.isTerminal == true
     val inspectedCount = currentStep?.inspectedCount ?: 0
 
-    // Auto-play timer mechanism
-    LaunchedEffect(isPlaying, currentIndex) {
-        if (isPlaying && !isFinished) {
-            delay(1000L)
-            if (currentIndex < 0) {
-                currentIndex = 0
-            } else if (currentIndex < traceSteps.lastIndex) {
-                currentIndex++
-            } else {
-                isPlaying = false
-            }
-        } else if (isFinished) {
-            isPlaying = false
-        }
-    }
-
     ArrayWindowButton(text = "Open linear search visualizer") { isExpanded = true }
 
     if (isExpanded) {
         Dialog(
             onDismissRequest = {
-                isPlaying = false
+                playback.reset()
                 isExpanded = false
             },
             properties = DialogProperties(usePlatformDefaultWidth = false)
@@ -150,7 +136,7 @@ internal fun LinearSearchVisualizationCard() {
                                 )
                             }
                             ArrayWindowButton(text = "Close", icon = "✕") {
-                                isPlaying = false
+                                playback.reset()
                                 isExpanded = false
                             }
                         }
@@ -296,8 +282,7 @@ internal fun LinearSearchVisualizationCard() {
                                 modifier = Modifier
                                     .size((44.dp * scale).coerceAtLeast(38.dp))
                                     .clickable {
-                                        isPlaying = false
-                                        currentIndex = -1
+                                        playback.reset()
                                     }
                             ) {
                                 Box(contentAlignment = Alignment.Center) {
@@ -317,19 +302,14 @@ internal fun LinearSearchVisualizationCard() {
                                 border = BorderStroke(1.dp, CardBorderColor),
                                 modifier = Modifier
                                     .size((44.dp * scale).coerceAtLeast(38.dp))
-                                    .clickable(enabled = currentIndex >= 0) {
-                                        isPlaying = false
-                                        if (currentIndex > 0) {
-                                            currentIndex--
-                                        } else {
-                                            currentIndex = -1
-                                        }
+                                    .clickable(enabled = playback.canGoPrevious) {
+                                        playback.previous()
                                     }
                             ) {
                                 Box(contentAlignment = Alignment.Center) {
                                     Text(
                                         text = "‹",
-                                        color = if (currentIndex >= 0) TextPrimary else TextSecondary.copy(alpha = 0.3f),
+                                        color = if (playback.canGoPrevious) TextPrimary else TextSecondary.copy(alpha = 0.3f),
                                         fontSize = 20.sp,
                                         fontWeight = FontWeight.Bold
                                     )
@@ -344,12 +324,7 @@ internal fun LinearSearchVisualizationCard() {
                                     .weight(1f)
                                     .height((44.dp * scale).coerceAtLeast(38.dp))
                                     .clickable(enabled = !isFinished) {
-                                        if (!isFinished) {
-                                            if (currentIndex < 0) {
-                                                currentIndex = 0
-                                            }
-                                            isPlaying = !isPlaying
-                                        }
+                                        playback.togglePlayback()
                                     }
                             ) {
                                 Box(contentAlignment = Alignment.Center) {
@@ -380,12 +355,7 @@ internal fun LinearSearchVisualizationCard() {
                                 modifier = Modifier
                                     .size((44.dp * scale).coerceAtLeast(38.dp))
                                     .clickable(enabled = !isFinished) {
-                                        isPlaying = false
-                                        if (currentIndex < 0) {
-                                            currentIndex = 0
-                                        } else if (currentIndex < traceSteps.lastIndex) {
-                                            currentIndex++
-                                        }
+                                        playback.next()
                                     }
                             ) {
                                 Box(contentAlignment = Alignment.Center) {
@@ -410,37 +380,23 @@ internal fun BinarySearchVisualizationCard() {
     val target = BinarySearchTrace.target
     val totalSteps = BinarySearchTrace.steps.size
 
-    var stepIndex by remember { mutableStateOf(-1) }
-    var isPlaying by remember { mutableStateOf(false) }
-    var isExpanded by remember { mutableStateOf(false) }
+    var isExpanded by rememberSaveable { mutableStateOf(false) }
 
-    val isCompleted = stepIndex >= totalSteps - 1
+    val playback = rememberVisualizerPlaybackState(stepCount = totalSteps, initialStep = -1)
+    val stepIndex = playback.safeStepIndex
+    val isPlaying = playback.isPlaying
+    val isCompleted = playback.isCompleted
+
     val currentStep = BinarySearchTrace.steps.getOrNull(stepIndex)
     val arrayData = currentStep?.values ?: BinarySearchTrace.values
     val isFound = currentStep?.foundIndex != null
-
-    // Auto-play timer mechanism
-    LaunchedEffect(isPlaying, stepIndex) {
-        if (isPlaying && stepIndex < totalSteps - 1) {
-            delay(1000L)
-            if (stepIndex < 0) {
-                stepIndex = 0
-            } else if (stepIndex < totalSteps - 1) {
-                stepIndex++
-            } else {
-                isPlaying = false
-            }
-        } else if (isCompleted) {
-            isPlaying = false
-        }
-    }
 
     ArrayWindowButton(text = "Open binary search visualizer") { isExpanded = true }
 
     if (isExpanded) {
         Dialog(
             onDismissRequest = {
-                isPlaying = false
+                playback.reset()
                 isExpanded = false
             },
             properties = DialogProperties(usePlatformDefaultWidth = false)
@@ -505,7 +461,7 @@ internal fun BinarySearchVisualizationCard() {
                                 )
                             }
                             ArrayWindowButton(text = "Close", icon = "✕") {
-                                isPlaying = false
+                                playback.reset()
                                 isExpanded = false
                             }
                         }
@@ -663,8 +619,7 @@ internal fun BinarySearchVisualizationCard() {
                                 modifier = Modifier
                                     .size((44.dp * scale).coerceAtLeast(38.dp))
                                     .clickable {
-                                        isPlaying = false
-                                        stepIndex = -1
+                                        playback.reset()
                                     }
                             ) {
                                 Box(contentAlignment = Alignment.Center) {
@@ -684,15 +639,14 @@ internal fun BinarySearchVisualizationCard() {
                                 border = BorderStroke(1.dp, CardBorderColor),
                                 modifier = Modifier
                                     .size((44.dp * scale).coerceAtLeast(38.dp))
-                                    .clickable(enabled = stepIndex >= 0) {
-                                        isPlaying = false
-                                        stepIndex--
+                                    .clickable(enabled = playback.canGoPrevious) {
+                                        playback.previous()
                                     }
                             ) {
                                 Box(contentAlignment = Alignment.Center) {
                                     Text(
                                         text = "‹",
-                                        color = if (stepIndex >= 0) TextPrimary else TextSecondary.copy(alpha = 0.3f),
+                                        color = if (playback.canGoPrevious) TextPrimary else TextSecondary.copy(alpha = 0.3f),
                                         fontSize = 20.sp,
                                         fontWeight = FontWeight.Bold
                                     )
@@ -707,12 +661,7 @@ internal fun BinarySearchVisualizationCard() {
                                     .weight(1f)
                                     .height((44.dp * scale).coerceAtLeast(38.dp))
                                     .clickable(enabled = !isCompleted) {
-                                        if (!isCompleted) {
-                                            if (stepIndex < 0) {
-                                                stepIndex = 0
-                                            }
-                                            isPlaying = !isPlaying
-                                        }
+                                        playback.togglePlayback()
                                     }
                             ) {
                                 Box(contentAlignment = Alignment.Center) {
@@ -743,12 +692,7 @@ internal fun BinarySearchVisualizationCard() {
                                 modifier = Modifier
                                     .size((44.dp * scale).coerceAtLeast(38.dp))
                                     .clickable(enabled = !isCompleted) {
-                                        isPlaying = false
-                                        if (stepIndex < 0) {
-                                            stepIndex = 0
-                                        } else if (!isCompleted) {
-                                            stepIndex++
-                                        }
+                                        playback.next()
                                     }
                             ) {
                                 Box(contentAlignment = Alignment.Center) {

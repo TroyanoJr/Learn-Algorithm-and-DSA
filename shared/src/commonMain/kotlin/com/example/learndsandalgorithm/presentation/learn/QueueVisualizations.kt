@@ -4,24 +4,18 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
@@ -32,12 +26,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.window.Dialog
-import androidx.compose.ui.window.DialogProperties
-import com.example.learndsandalgorithm.core.platform.LandscapeOrientationEffect
 import kotlinx.coroutines.delay
 
-private val DarkCardBgColor = Color(0xFF181820)
 private val CardBorderColor = Color(0xFF262634)
 private val OrangeAccent = Color(0xFFFA6E13)
 private val BlueAccent = Color(0xFF38BDF8)
@@ -52,131 +42,58 @@ internal fun QueueVisualizationCard(
     title: String = "Queue Visualizer"
 ) {
     val steps = QueueTrace.stepsFor(demonstration)
-    var stepIndex by rememberSaveable(demonstration) { mutableIntStateOf(0) }
-    var isPlaying by rememberSaveable(demonstration) { mutableStateOf(false) }
     var isExpanded by rememberSaveable(demonstration) { mutableStateOf(false) }
+
+    val playback = rememberVisualizerPlaybackState(stepCount = steps.size, initialStep = 0, key = demonstration)
+    val stepIndex = playback.safeStepIndex
+    val isPlaying = playback.isPlaying
+    val isCompleted = playback.isCompleted
     val step = steps[stepIndex]
 
-    LaunchedEffect(isPlaying, stepIndex, steps) {
-        if (isPlaying && stepIndex < steps.lastIndex) {
-            delay(1000L)
-            if (stepIndex < steps.lastIndex) stepIndex++ else isPlaying = false
-        } else if (isPlaying) {
-            isPlaying = false
-        }
+    ArrayWindowButton(text = "Open queue visualizer") {
+        isExpanded = true
     }
 
-    ArrayWindowButton(text = "Open queue visualizer") { isExpanded = true }
-
     if (isExpanded) {
-        Dialog(
-            onDismissRequest = { isPlaying = false; isExpanded = false },
-            properties = DialogProperties(usePlatformDefaultWidth = false)
-        ) {
-            LandscapeOrientationEffect(enabled = true)
-            BoxWithConstraints(modifier = Modifier.fillMaxSize().padding(6.dp)) {
-                val isLandscape = maxWidth > maxHeight
-                val scale = minOf(maxWidth / 800.dp, maxHeight / 360.dp).coerceAtMost(1f)
-                Surface(
-                    color = DarkCardBgColor,
-                    shape = RoundedCornerShape(16.dp),
-                    border = BorderStroke(1.dp, CardBorderColor),
-                    modifier = Modifier.fillMaxSize()
-                ) {
-                    Column(
-                        modifier = Modifier.fillMaxSize().padding(12.dp * scale),
-                        verticalArrangement = Arrangement.SpaceBetween
-                    ) {
-                        // Header Row with non-overlapping layout (Title + Status stacked on left, Close button on right)
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Column(
-                                modifier = Modifier.weight(1f),
-                                verticalArrangement = Arrangement.spacedBy(2.dp)
-                            ) {
-                                Text(title.uppercase(), color = OrangeAccent, fontSize = 11.sp, fontWeight = FontWeight.Bold)
-                                Text(
-                                    when (step.event) {
-                                        QueueTraceEvent.START -> "READY · CAPACITY ${step.capacity}"
-                                        QueueTraceEvent.ENQUEUE -> "ENQUEUED ${step.operationValue}"
-                                        QueueTraceEvent.DEQUEUE -> "DEQUEUED ${step.returnedValue}"
-                                        QueueTraceEvent.PEEK -> "FRONT ${step.returnedValue}"
-                                        QueueTraceEvent.UNDERFLOW, QueueTraceEvent.EMPTY_ACCESS -> "EMPTY ACCESS"
-                                        QueueTraceEvent.OVERFLOW -> "FULL"
-                                        QueueTraceEvent.COMPLETE -> "COMPLETE"
-                                    },
-                                    color = when (step.event) {
-                                        QueueTraceEvent.COMPLETE -> GreenAccent
-                                        QueueTraceEvent.UNDERFLOW, QueueTraceEvent.EMPTY_ACCESS, QueueTraceEvent.OVERFLOW -> RedAccent
-                                        else -> BlueAccent
-                                    },
-                                    fontSize = 10.sp,
-                                    fontWeight = FontWeight.Bold
-                                )
-                            }
-                            ArrayWindowButton(text = "Close", icon = "✕") {
-                                isPlaying = false
-                                isExpanded = false
-                            }
-                        }
-
-                        Spacer(modifier = Modifier.height(4.dp))
-
-                        // Central Flexible Area: Distinct separation between Data Visualization (left) and Explanations/Results (right)
-                        if (isLandscape) {
-                            Row(
-                                modifier = Modifier.weight(1f).fillMaxWidth(),
-                                horizontalArrangement = Arrangement.spacedBy(16.dp),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                // Left Region: Queue Visualization (Array slots & Linked representation)
-                                Column(
-                                    modifier = Modifier.weight(1f).verticalScroll(rememberScrollState()),
-                                    horizontalAlignment = Alignment.CenterHorizontally,
-                                    verticalArrangement = Arrangement.Center
-                                ) {
-                                    QueueVisualizationContent(step = step, scale = scale)
-                                }
-
-                                // Right Region: Logical view, Result, and Steps Explanation Card (scrollable if text is long)
-                                Column(
-                                    modifier = Modifier.weight(1.2f).verticalScroll(rememberScrollState()),
-                                    verticalArrangement = Arrangement.spacedBy(8.dp)
-                                ) {
-                                    QueueDetailsAndStepsContent(step = step, stepIndex = stepIndex, totalSteps = steps.size, scale = scale)
-                                }
-                            }
-                        } else {
-                            // Portrait Layout: Stacked with clear region separation
-                            Column(
-                                modifier = Modifier.weight(1f).fillMaxWidth().verticalScroll(rememberScrollState()),
-                                verticalArrangement = Arrangement.spacedBy(10.dp),
-                                horizontalAlignment = Alignment.CenterHorizontally
-                            ) {
-                                QueueVisualizationContent(step = step, scale = scale)
-                                QueueDetailsAndStepsContent(step = step, stepIndex = stepIndex, totalSteps = steps.size, scale = scale)
-                            }
-                        }
-
-                        Spacer(modifier = Modifier.height(4.dp))
-
-                        // Bottom Playback Controls (Pinned region, never clipped or overlapped)
-                        LinkedListPlaybackControls(
-                            stepIndex = stepIndex,
-                            stepCount = steps.size,
-                            isPlaying = isPlaying,
-                            onReset = { isPlaying = false; stepIndex = 0 },
-                            onPrevious = { isPlaying = false; if (stepIndex > 0) stepIndex-- },
-                            onTogglePlayback = { isPlaying = !isPlaying },
-                            onNext = { isPlaying = false; if (stepIndex < steps.lastIndex) stepIndex++ }
-                        )
-                    }
-                }
-            }
+        val statusText = when (step.event) {
+            QueueTraceEvent.START -> "READY · CAPACITY ${step.capacity}"
+            QueueTraceEvent.ENQUEUE -> "ENQUEUED ${step.operationValue}"
+            QueueTraceEvent.DEQUEUE -> "DEQUEUED ${step.returnedValue}"
+            QueueTraceEvent.PEEK -> "FRONT ${step.returnedValue}"
+            QueueTraceEvent.UNDERFLOW, QueueTraceEvent.EMPTY_ACCESS -> "EMPTY ACCESS"
+            QueueTraceEvent.OVERFLOW -> "FULL"
+            QueueTraceEvent.COMPLETE -> "COMPLETE"
         }
+
+        val statusColor = when (step.event) {
+            QueueTraceEvent.COMPLETE -> GreenAccent
+            QueueTraceEvent.UNDERFLOW, QueueTraceEvent.EMPTY_ACCESS, QueueTraceEvent.OVERFLOW -> RedAccent
+            else -> BlueAccent
+        }
+
+        VisualizerModal(
+            title = title,
+            statusText = statusText,
+            isCompleted = isCompleted,
+            stepIndex = stepIndex,
+            stepCount = steps.size,
+            isPlaying = isPlaying,
+            statusColor = statusColor,
+            onReset = { playback.reset() },
+            onPrevious = { playback.previous() },
+            onTogglePlayback = { playback.togglePlayback() },
+            onNext = { playback.next() },
+            onClose = {
+                playback.reset()
+                isExpanded = false
+            },
+            visualContent = {
+                QueueVisualizationContent(step = step, scale = 1f)
+            },
+            detailsContent = {
+                QueueDetailsAndStepsContent(step = step, stepIndex = stepIndex, totalSteps = steps.size, scale = 1f)
+            }
+        )
     }
 }
 
@@ -188,7 +105,6 @@ private fun QueueVisualizationContent(step: QueueTraceStep, scale: Float) {
     ) {
         // Circular Array Slots Row (compact, nicely proportioned cells, fully visible simultaneously without scrolling)
         Row(
-            modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.Center,
             verticalAlignment = Alignment.CenterVertically
         ) {
@@ -240,7 +156,7 @@ private fun QueueVisualizationContent(step: QueueTraceStep, scale: Float) {
                 color = BlueAccent, fontSize = 9.sp, fontWeight = FontWeight.Bold
             )
             Row(
-                modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
+                modifier = Modifier.horizontalScroll(rememberScrollState()),
                 horizontalArrangement = Arrangement.Center,
                 verticalAlignment = Alignment.CenterVertically
             ) {
@@ -292,26 +208,12 @@ private fun QueueDetailsAndStepsContent(step: QueueTraceStep, stepIndex: Int, to
             }
         }
 
-        Surface(
-            color = Color(0xFF13131C),
-            shape = RoundedCornerShape(10.dp),
-            border = BorderStroke(1.dp, CardBorderColor),
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Column(
-                modifier = Modifier.padding(10.dp * scale),
-                verticalArrangement = Arrangement.spacedBy(4.dp * scale)
-            ) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text("Steps", color = OrangeAccent, fontSize = 11.sp, fontWeight = FontWeight.Bold)
-                    Text("STEP ${stepIndex + 1} / $totalSteps", color = TextSecondary, fontSize = 9.sp, fontWeight = FontWeight.Bold)
-                }
-                Text(step.explanation, color = TextPrimary, fontSize = 11.sp, lineHeight = 15.sp)
-            }
-        }
+        StepsCard(
+            label = "Steps",
+            explanation = step.explanation,
+            stepIndex = stepIndex,
+            totalSteps = totalSteps,
+            isCompleted = stepIndex == totalSteps - 1
+        )
     }
 }

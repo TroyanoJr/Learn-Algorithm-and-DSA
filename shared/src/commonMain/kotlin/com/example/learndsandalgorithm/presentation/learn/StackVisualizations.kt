@@ -4,19 +4,15 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -33,12 +29,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.window.Dialog
-import androidx.compose.ui.window.DialogProperties
-import com.example.learndsandalgorithm.core.platform.LandscapeOrientationEffect
 import kotlinx.coroutines.delay
 
-private val DarkCardBgColor = Color(0xFF181820)
 private val CardBorderColor = Color(0xFF262634)
 private val OrangeAccent = Color(0xFFFA6E13)
 private val BlueAccent = Color(0xFF38BDF8)
@@ -114,155 +106,64 @@ internal fun StackVisualizationCard(
     ArrayWindowButton(text = "Open stack visualizer") { isExpanded = true }
 
     if (isExpanded) {
-        Dialog(
-            onDismissRequest = { updateActiveIsPlaying(false); isExpanded = false },
-            properties = DialogProperties(usePlatformDefaultWidth = false)
-        ) {
-            LandscapeOrientationEffect(enabled = true)
-            BoxWithConstraints(modifier = Modifier.fillMaxSize().padding(6.dp)) {
-                val isLandscape = maxWidth > maxHeight
-                val scale = minOf(maxWidth / 800.dp, maxHeight / 360.dp).coerceAtMost(1f)
-                Surface(
-                    color = DarkCardBgColor,
-                    shape = RoundedCornerShape(16.dp),
-                    border = BorderStroke(1.dp, CardBorderColor),
-                    modifier = Modifier.fillMaxSize()
-                ) {
-                    Column(
-                        modifier = Modifier.fillMaxSize().padding(12.dp * scale),
-                        verticalArrangement = Arrangement.SpaceBetween
-                    ) {
-                        // Header Row
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Column(
-                                modifier = Modifier.weight(1f),
-                                verticalArrangement = Arrangement.spacedBy(2.dp)
-                            ) {
-                                Text(title.uppercase(), color = OrangeAccent, fontSize = 12.sp, fontWeight = FontWeight.Bold)
-                                Text(
-                                    when (step.event) {
-                                        StackTraceEvent.START -> "READY"
-                                        StackTraceEvent.PUSH -> "PUSH ${step.operationValue ?: step.values.lastOrNull()}"
-                                        StackTraceEvent.POP -> "POPPED ${step.returnedValue}"
-                                        StackTraceEvent.PEEK -> "TOP ${step.returnedValue}"
-                                        StackTraceEvent.UNDERFLOW -> "EMPTY ACCESS"
-                                        StackTraceEvent.DELIMITER_MATCH -> "MATCH ${step.operationValue}"
-                                        StackTraceEvent.DELIMITER_MISMATCH, StackTraceEvent.UNMATCHED_CLOSER -> "INVALID CLOSER ${step.operationValue}"
-                                        StackTraceEvent.OVERFLOW -> "FULL"
-                                        StackTraceEvent.COMPLETE -> if (step.isValid == false) "UNBALANCED" else "COMPLETE"
-                                    },
-                                    color = when (step.event) {
-                                        StackTraceEvent.UNDERFLOW, StackTraceEvent.OVERFLOW, StackTraceEvent.DELIMITER_MISMATCH, StackTraceEvent.UNMATCHED_CLOSER -> RedAccent
-                                        StackTraceEvent.COMPLETE -> if (step.isValid == false) RedAccent else GreenAccent
-                                        else -> BlueAccent
-                                    },
-                                    fontSize = 12.sp,
-                                    fontWeight = FontWeight.Bold
-                                )
-                            }
-                            ArrayWindowButton(text = "Close", icon = "✕") {
-                                updateActiveIsPlaying(false)
-                                isExpanded = false
-                            }
-                        }
-
-                        Spacer(modifier = Modifier.height(4.dp))
-
-                        // Central Flexible Area
-                        if (isLandscape) {
-                            Row(
-                                modifier = Modifier.weight(1f).fillMaxWidth(),
-                                horizontalArrangement = Arrangement.spacedBy(16.dp),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Column(
-                                    modifier = Modifier.weight(1f),
-                                    horizontalAlignment = Alignment.CenterHorizontally,
-                                    verticalArrangement = Arrangement.Center
-                                ) {
-                                    if (isArrayAndLinked) {
-                                        StackImplementationSelector(
-                                            selectedView = selectedView,
-                                            onViewSelected = { newView ->
-                                                if (newView != selectedView) {
-                                                    updateActiveIsPlaying(false)
-                                                    selectedView = newView
-                                                }
-                                            }
-                                        )
-                                        ScaledContentBox {
-                                            StackVisualizationContent(step = step, scale = 1f, selectedView = selectedView)
-                                        }
-                                    } else {
-                                        Column(
-                                            modifier = Modifier.verticalScroll(rememberScrollState()),
-                                            horizontalAlignment = Alignment.CenterHorizontally,
-                                            verticalArrangement = Arrangement.Center
-                                        ) {
-                                            ScaledContentBox {
-                                                StackVisualizationContent(step = step, scale = 1f, selectedView = selectedView)
-                                            }
-                                        }
-                                    }
-                                }
-
-                                // Right Region: Details column
-                                Column(
-                                    modifier = Modifier.weight(1.2f).verticalScroll(rememberScrollState()),
-                                    verticalArrangement = Arrangement.spacedBy(8.dp)
-                                ) {
-                                    StackDetailsAndStepsContent(step = step, stepIndex = activeStepIndex, totalSteps = steps.size, scale = scale)
-                                }
-                            }
-                        } else {
-                            // Portrait Layout
-                            Column(
-                                modifier = Modifier.weight(1f).fillMaxWidth().verticalScroll(rememberScrollState()),
-                                verticalArrangement = Arrangement.spacedBy(10.dp),
-                                horizontalAlignment = Alignment.CenterHorizontally
-                            ) {
-                                if (isArrayAndLinked) {
-                                    StackImplementationSelector(
-                                        selectedView = selectedView,
-                                        onViewSelected = { newView ->
-                                            if (newView != selectedView) {
-                                                updateActiveIsPlaying(false)
-                                                selectedView = newView
-                                            }
-                                        }
-                                    )
-                                    ScaledContentBox {
-                                        StackVisualizationContent(step = step, scale = 1f, selectedView = selectedView)
-                                    }
-                                } else {
-                                    ScaledContentBox {
-                                        StackVisualizationContent(step = step, scale = scale)
-                                    }
-                                }
-                                StackDetailsAndStepsContent(step = step, stepIndex = activeStepIndex, totalSteps = steps.size, scale = scale)
-                            }
-                        }
-
-                        Spacer(modifier = Modifier.height(4.dp))
-
-                        // Bottom Playback Controls
-                        LinkedListPlaybackControls(
-                            stepIndex = activeStepIndex,
-                            stepCount = steps.size,
-                            isPlaying = activeIsPlaying,
-                            onReset = { updateActiveIsPlaying(false); updateActiveStepIndex(0) },
-                            onPrevious = { updateActiveIsPlaying(false); if (activeStepIndex > 0) updateActiveStepIndex(activeStepIndex - 1) },
-                            onTogglePlayback = { updateActiveIsPlaying(!activeIsPlaying) },
-                            onNext = { updateActiveIsPlaying(false); if (activeStepIndex < steps.lastIndex) updateActiveStepIndex(activeStepIndex + 1) }
-                        )
-                    }
-                }
-            }
+        val statusText = when (step.event) {
+            StackTraceEvent.START -> "READY"
+            StackTraceEvent.PUSH -> "PUSH ${step.operationValue ?: step.values.lastOrNull()}"
+            StackTraceEvent.POP -> "POPPED ${step.returnedValue}"
+            StackTraceEvent.PEEK -> "TOP ${step.returnedValue}"
+            StackTraceEvent.UNDERFLOW -> "EMPTY ACCESS"
+            StackTraceEvent.DELIMITER_MATCH -> "MATCH ${step.operationValue}"
+            StackTraceEvent.DELIMITER_MISMATCH, StackTraceEvent.UNMATCHED_CLOSER -> "INVALID CLOSER ${step.operationValue}"
+            StackTraceEvent.OVERFLOW -> "FULL"
+            StackTraceEvent.COMPLETE -> if (step.isValid == false) "UNBALANCED" else "COMPLETE"
         }
+
+        val statusColor = when (step.event) {
+            StackTraceEvent.UNDERFLOW, StackTraceEvent.OVERFLOW, StackTraceEvent.DELIMITER_MISMATCH, StackTraceEvent.UNMATCHED_CLOSER -> RedAccent
+            StackTraceEvent.COMPLETE -> if (step.isValid == false) RedAccent else GreenAccent
+            else -> BlueAccent
+        }
+
+        val isCompleted = activeStepIndex == steps.lastIndex
+
+        VisualizerModal(
+            title = title,
+            statusText = statusText,
+            isCompleted = isCompleted,
+            stepIndex = activeStepIndex,
+            stepCount = steps.size,
+            isPlaying = activeIsPlaying,
+            statusColor = statusColor,
+            onReset = { updateActiveIsPlaying(false); updateActiveStepIndex(0) },
+            onPrevious = { updateActiveIsPlaying(false); if (activeStepIndex > 0) updateActiveStepIndex(activeStepIndex - 1) },
+            onTogglePlayback = { updateActiveIsPlaying(!activeIsPlaying) },
+            onNext = { updateActiveIsPlaying(false); if (activeStepIndex < steps.lastIndex) updateActiveStepIndex(activeStepIndex + 1) },
+            onClose = { updateActiveIsPlaying(false); isExpanded = false },
+            topContent = if (isArrayAndLinked) {
+                {
+                    StackImplementationSelector(
+                        selectedView = selectedView,
+                        onViewSelected = { newView ->
+                            if (newView != selectedView) {
+                                updateActiveIsPlaying(false)
+                                selectedView = newView
+                            }
+                        }
+                    )
+                }
+            } else null,
+            visualContent = {
+                StackVisualizationContent(step = step, scale = 1f, selectedView = selectedView)
+            },
+            detailsContent = {
+                StackDetailsAndStepsContent(
+                    step = step,
+                    stepIndex = activeStepIndex,
+                    totalSteps = steps.size,
+                    scale = 1f
+                )
+            }
+        )
     }
 }
 
@@ -447,26 +348,12 @@ private fun StackDetailsAndStepsContent(step: StackTraceStep, stepIndex: Int, to
             )
         }
 
-        Surface(
-            color = Color(0xFF13131C),
-            shape = RoundedCornerShape(10.dp),
-            border = BorderStroke(1.dp, CardBorderColor),
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Column(
-                modifier = Modifier.padding(10.dp * scale),
-                verticalArrangement = Arrangement.spacedBy(4.dp * scale)
-            ) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text("Steps", color = OrangeAccent, fontSize = 12.sp, fontWeight = FontWeight.Bold)
-                    Text("STEP ${stepIndex + 1} / $totalSteps", color = TextSecondary, fontSize = 12.sp, fontWeight = FontWeight.Bold)
-                }
-                Text(step.explanation, color = TextPrimary, fontSize = 14.sp, lineHeight = 18.sp)
-            }
-        }
+        StepsCard(
+            label = "Steps",
+            explanation = step.explanation,
+            stepIndex = stepIndex,
+            totalSteps = totalSteps,
+            isCompleted = stepIndex == totalSteps - 1
+        )
     }
 }

@@ -17,7 +17,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -191,12 +190,14 @@ internal fun ArrayStorageRow(
 
 @Composable
 internal fun ArrayResizeVisualizationCard() {
-    var stepIndex by remember { mutableStateOf(0) }
-    var isPlaying by remember { mutableStateOf(false) }
     var isExpanded by remember { mutableStateOf(false) }
 
     val totalSteps = 4
-    val isCompleted = stepIndex >= totalSteps
+    val playback = rememberVisualizerPlaybackState(stepCount = 5, initialStep = 0)
+    val stepIndex = playback.safeStepIndex
+    val isPlaying = playback.isPlaying
+    val isCompleted = playback.isCompleted
+
     val initialValues = listOf<String?>("10", "20", "30", "40", "50", "60", "70", "80", "90", "100")
     val fullArray = initialValues + "110"
     val copiedArray = fullArray + List(11) { null }
@@ -224,16 +225,6 @@ internal fun ArrayResizeVisualizationCard() {
         else -> emptySet()
     }
 
-    LaunchedEffect(isPlaying, stepIndex) {
-        if (isPlaying && stepIndex < totalSteps) {
-            delay(1000L)
-            if (stepIndex < totalSteps) {
-                stepIndex++
-                if (stepIndex >= totalSteps) isPlaying = false
-            }
-        }
-    }
-
     ArrayWindowButton(text = "Open resize visualizer") { isExpanded = true }
 
     if (isExpanded) {
@@ -248,21 +239,12 @@ internal fun ArrayResizeVisualizationCard() {
             preservedStorageSlots = fullArray.takeIf { stepIndex == 2 },
             highlightedIndices = highlightedIndices,
             explanationText = explanationText,
-            onReset = {
-                isPlaying = false
-                stepIndex = 0
-            },
-            onPrevious = {
-                isPlaying = false
-                stepIndex = (stepIndex - 1).coerceAtLeast(0)
-            },
-            onPlayPause = { if (!isCompleted) isPlaying = !isPlaying },
-            onNext = {
-                isPlaying = false
-                stepIndex = (stepIndex + 1).coerceAtMost(totalSteps)
-            },
+            onReset = { playback.reset() },
+            onPrevious = { playback.previous() },
+            onPlayPause = { playback.togglePlayback() },
+            onNext = { playback.next() },
             onClose = {
-                isPlaying = false
+                playback.reset()
                 isExpanded = false
             }
         )
@@ -409,12 +391,14 @@ internal fun ArrayResizeExpandedDialog(
 @Composable
 internal fun ArrayTraversalVisualizationCard() {
     val arrayData = listOf("10", "25", "42", "67", "91", "116", "135", "158", "176", "204")
-    var currentIndex by remember { mutableStateOf(-1) }
-    var isPlaying by remember { mutableStateOf(false) }
     var isExpanded by remember { mutableStateOf(false) }
 
     val totalElements = arrayData.size
-    val isCompleted = currentIndex >= totalElements
+    val playback = rememberVisualizerPlaybackState(stepCount = totalElements + 1, initialStep = -1)
+    val currentIndex = playback.safeStepIndex
+    val isPlaying = playback.isPlaying
+    val isCompleted = playback.isCompleted
+
     val visitedCount = if (currentIndex < 0) 0 else (currentIndex + 1).coerceAtMost(totalElements)
     val badgeText = when {
         currentIndex < 0 -> "READY"
@@ -432,20 +416,6 @@ internal fun ArrayTraversalVisualizationCard() {
         else -> "Visiting index $currentIndex: value = ${arrayData[currentIndex]}."
     }
 
-    LaunchedEffect(isPlaying, currentIndex) {
-        if (isPlaying && currentIndex < totalElements) {
-            delay(1000L)
-            if (currentIndex < 0) {
-                currentIndex = 0
-            } else if (currentIndex < totalElements - 1) {
-                currentIndex++
-            } else {
-                currentIndex = totalElements
-                isPlaying = false
-            }
-        }
-    }
-
     ArrayWindowButton(text = "Open traversal visualizer") { isExpanded = true }
 
     if (isExpanded) {
@@ -459,30 +429,12 @@ internal fun ArrayTraversalVisualizationCard() {
             badgeText = badgeText,
             badgeColor = badgeColor,
             explanationText = explanationText,
-            onReset = {
-                isPlaying = false
-                currentIndex = -1
-            },
-            onPrevious = {
-                isPlaying = false
-                currentIndex = if (currentIndex > 0) currentIndex - 1 else -1
-            },
-            onPlayPause = {
-                if (!isCompleted) {
-                    if (currentIndex < 0) currentIndex = 0
-                    isPlaying = !isPlaying
-                }
-            },
-            onNext = {
-                isPlaying = false
-                currentIndex = when {
-                    currentIndex < 0 -> 0
-                    currentIndex < totalElements - 1 -> currentIndex + 1
-                    else -> totalElements
-                }
-            },
+            onReset = { playback.reset() },
+            onPrevious = { playback.previous() },
+            onPlayPause = { playback.togglePlayback() },
+            onNext = { playback.next() },
             onClose = {
-                isPlaying = false
+                playback.reset()
                 isExpanded = false
             }
         )
@@ -620,8 +572,6 @@ internal fun ArrayTraversalExpandedDialog(
 @Composable
 internal fun ArrayInsertDeleteVisualizationCard() {
     var operationMode by remember { mutableStateOf("INSERT") }
-    var stepIndex by remember { mutableStateOf(0) }
-    var isPlaying by remember { mutableStateOf(false) }
     var isExpanded by remember { mutableStateOf(false) }
     val baseArray = listOf("10", "20", "30", "40", "50", "60", "70", "80", "90", "100")
     val insertionStates = remember {
@@ -654,19 +604,11 @@ internal fun ArrayInsertDeleteVisualizationCard() {
     }
     val operationStates = if (operationMode == "INSERT") insertionStates else deletionStates
     val totalSteps = operationStates.lastIndex
-    val isCompleted = stepIndex >= totalSteps
 
-    LaunchedEffect(isPlaying, stepIndex) {
-        if (isPlaying && stepIndex < totalSteps) {
-            delay(1000L)
-            if (stepIndex < totalSteps - 1) {
-                stepIndex++
-            } else {
-                stepIndex = totalSteps
-                isPlaying = false
-            }
-        }
-    }
+    val playback = rememberVisualizerPlaybackState(stepCount = operationStates.size, initialStep = 0, key = operationMode)
+    val stepIndex = playback.safeStepIndex
+    val isPlaying = playback.isPlaying
+    val isCompleted = playback.isCompleted
 
     val displayItems = operationStates[stepIndex.coerceIn(0, operationStates.lastIndex)]
 
@@ -735,27 +677,15 @@ internal fun ArrayInsertDeleteVisualizationCard() {
             badgeText = badgeText,
             badgeColor = badgeColor,
             onOperationModeChange = { newMode ->
-                isPlaying = false
                 operationMode = newMode
-                stepIndex = 0
+                playback.reset()
             },
-            onReset = {
-                isPlaying = false
-                stepIndex = 0
-            },
-            onPrevious = {
-                isPlaying = false
-                stepIndex = (stepIndex - 1).coerceAtLeast(0)
-            },
-            onPlayPause = {
-                if (!isCompleted) isPlaying = !isPlaying
-            },
-            onNext = {
-                isPlaying = false
-                stepIndex = (stepIndex + 1).coerceAtMost(totalSteps)
-            },
+            onReset = { playback.reset() },
+            onPrevious = { playback.previous() },
+            onPlayPause = { playback.togglePlayback() },
+            onNext = { playback.next() },
             onClose = {
-                isPlaying = false
+                playback.reset()
                 isExpanded = false
             }
         )
