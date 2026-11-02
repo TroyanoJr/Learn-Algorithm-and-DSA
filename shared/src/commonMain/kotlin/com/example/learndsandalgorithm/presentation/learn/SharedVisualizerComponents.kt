@@ -55,7 +55,7 @@ internal fun ArrayWindowButton(
 }
 
 @Composable
-internal fun ArrayStepControlsRow(
+internal fun VisualizerPlaybackBar(
     isPlaying: Boolean,
     isCompleted: Boolean,
     canGoPrevious: Boolean,
@@ -64,16 +64,18 @@ internal fun ArrayStepControlsRow(
     onPlayPause: () -> Unit,
     onNext: () -> Unit,
     controlSize: Dp = 44.dp,
-    spacing: Dp = 8.dp
+    spacing: Dp = 8.dp,
+    cornerRadius: Dp = 12.dp,
+    modifier: Modifier = Modifier
 ) {
     Row(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.spacedBy(spacing),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Surface(
             color = VisualizerDarkCardBgColor,
-            shape = RoundedCornerShape(12.dp),
+            shape = RoundedCornerShape(cornerRadius),
             border = BorderStroke(1.dp, VisualizerCardBorderColor),
             modifier = Modifier.size(controlSize).clickable(onClick = onReset)
         ) {
@@ -83,7 +85,7 @@ internal fun ArrayStepControlsRow(
         }
         Surface(
             color = VisualizerDarkCardBgColor,
-            shape = RoundedCornerShape(12.dp),
+            shape = RoundedCornerShape(cornerRadius),
             border = BorderStroke(1.dp, VisualizerCardBorderColor),
             modifier = Modifier.size(controlSize).clickable(enabled = canGoPrevious, onClick = onPrevious)
         ) {
@@ -98,7 +100,7 @@ internal fun ArrayStepControlsRow(
         }
         Surface(
             color = if (isCompleted) Color(0xFF22222E) else VisualizerOrangeAccent,
-            shape = RoundedCornerShape(12.dp),
+            shape = RoundedCornerShape(cornerRadius),
             modifier = Modifier.weight(1f).height(controlSize).clickable(
                 enabled = !isCompleted,
                 onClick = onPlayPause
@@ -125,7 +127,7 @@ internal fun ArrayStepControlsRow(
         }
         Surface(
             color = VisualizerDarkCardBgColor,
-            shape = RoundedCornerShape(12.dp),
+            shape = RoundedCornerShape(cornerRadius),
             border = BorderStroke(1.dp, VisualizerCardBorderColor),
             modifier = Modifier.size(controlSize).clickable(enabled = !isCompleted, onClick = onNext)
         ) {
@@ -139,6 +141,29 @@ internal fun ArrayStepControlsRow(
             }
         }
     }
+}
+
+@Composable
+internal fun VisualizerPlaybackBar(
+    playback: VisualizerPlaybackState,
+    controlSize: Dp = 44.dp,
+    spacing: Dp = 8.dp,
+    cornerRadius: Dp = 12.dp,
+    modifier: Modifier = Modifier
+) {
+    VisualizerPlaybackBar(
+        isPlaying = playback.isPlaying,
+        isCompleted = playback.isCompleted,
+        canGoPrevious = playback.canGoPrevious,
+        onReset = { playback.reset() },
+        onPrevious = { playback.previous() },
+        onPlayPause = { playback.togglePlayback() },
+        onNext = { playback.next() },
+        controlSize = controlSize,
+        spacing = spacing,
+        cornerRadius = cornerRadius,
+        modifier = modifier
+    )
 }
 
 @Composable
@@ -191,49 +216,4 @@ internal fun LinkedListStepExplanation(title: String, explanation: String, stepI
         totalSteps = stepCount,
         isCompleted = stepIndex == stepCount - 1
     )
-}
-
-@Composable
-internal fun LinkedListPlaybackControls(
-    stepIndex: Int,
-    stepCount: Int,
-    isPlaying: Boolean,
-    onReset: () -> Unit,
-    onPrevious: () -> Unit,
-    onTogglePlayback: () -> Unit,
-    onNext: () -> Unit
-) {
-    val isCompleted = stepIndex == stepCount - 1
-    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(7.dp), verticalAlignment = Alignment.CenterVertically) {
-        Surface(
-            color = VisualizerDarkCardBgColor,
-            shape = RoundedCornerShape(10.dp),
-            border = BorderStroke(1.dp, VisualizerCardBorderColor),
-            modifier = Modifier.size(40.dp).clickable { onReset() }
-        ) { Box(contentAlignment = Alignment.Center) { Text("↻", color = VisualizerTextPrimary, fontSize = 16.sp, fontWeight = FontWeight.Bold) } }
-        Surface(
-            color = VisualizerDarkCardBgColor,
-            shape = RoundedCornerShape(10.dp),
-            border = BorderStroke(1.dp, VisualizerCardBorderColor),
-            modifier = Modifier.size(40.dp).clickable(enabled = stepIndex > 0) { onPrevious() }
-        ) { Box(contentAlignment = Alignment.Center) { Text("‹", color = if (stepIndex > 0) VisualizerTextPrimary else VisualizerTextSecondary.copy(alpha = 0.3f), fontSize = 20.sp, fontWeight = FontWeight.Bold) } }
-        Surface(
-            color = if (isCompleted) Color(0xFF22222E) else VisualizerOrangeAccent,
-            shape = RoundedCornerShape(10.dp),
-            modifier = Modifier.weight(1f).height(40.dp).clickable(enabled = !isCompleted) { onTogglePlayback() }
-        ) {
-            Box(contentAlignment = Alignment.Center) {
-                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(5.dp)) {
-                    Text(if (isPlaying) "⏸" else "▶", color = if (isCompleted) VisualizerTextSecondary else Color(0xFF111115), fontSize = 12.sp)
-                    Text(if (isPlaying) "Pause" else "Play", color = if (isCompleted) VisualizerTextSecondary else Color(0xFF111115), fontSize = 13.sp, fontWeight = FontWeight.Bold)
-                }
-            }
-        }
-        Surface(
-            color = VisualizerDarkCardBgColor,
-            shape = RoundedCornerShape(10.dp),
-            border = BorderStroke(1.dp, VisualizerCardBorderColor),
-            modifier = Modifier.size(40.dp).clickable(enabled = !isCompleted) { onNext() }
-        ) { Box(contentAlignment = Alignment.Center) { Text("›", color = if (!isCompleted) VisualizerTextPrimary else VisualizerTextSecondary.copy(alpha = 0.3f), fontSize = 20.sp, fontWeight = FontWeight.Bold) } }
-    }
 }

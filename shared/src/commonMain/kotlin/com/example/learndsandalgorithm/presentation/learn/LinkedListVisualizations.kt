@@ -525,7 +525,7 @@ internal fun LinkedListInsertionVisualizationCard() {
                     detachedNodes = currentStep.detachedNodes,
                     nodeBadges = currentStep.badges,
                     stepKey = scenario to stepIndex,
-                    fitMode = true
+                    fitMode = false
                 )
             },
             detailsContent = {
@@ -593,7 +593,7 @@ internal fun LinkedListRemovalVisualizationCard() {
                     detachedNodes = currentStep.detachedNodes,
                     nodeBadges = currentStep.badges,
                     stepKey = scenario to stepIndex,
-                    fitMode = true
+                    fitMode = false
                 )
             },
             detailsContent = {

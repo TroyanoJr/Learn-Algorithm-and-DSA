@@ -32,7 +32,6 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import com.example.learndsandalgorithm.core.platform.LandscapeOrientationEffect
-import kotlinx.coroutines.delay
 
 private val DarkBgColor = Color(0xFF111115)
 private val DarkCardBgColor = Color(0xFF181820)
@@ -192,43 +191,23 @@ internal fun ArrayStorageRow(
 internal fun ArrayResizeVisualizationCard() {
     var isExpanded by remember { mutableStateOf(false) }
 
+    val steps = remember { ArrayTrace.resizeSteps() }
     val totalSteps = 4
-    val playback = rememberVisualizerPlaybackState(stepCount = 5, initialStep = 0)
+    val playback = rememberVisualizerPlaybackState(stepCount = steps.size, initialStep = 0)
     val stepIndex = playback.safeStepIndex
     val isPlaying = playback.isPlaying
     val isCompleted = playback.isCompleted
 
-    val initialValues = listOf<String?>("10", "20", "30", "40", "50", "60", "70", "80", "90", "100")
-    val fullArray = initialValues + "110"
-    val copiedArray = fullArray + List(11) { null }
-    val resizeSteps: List<Pair<String, List<String?>>> = when (stepIndex) {
-        0 -> listOf("CURRENT STORAGE" to (initialValues + null))
-        1 -> listOf("CAPACITY FULL" to fullArray)
-        2 -> listOf("NEW STORAGE" to List(22) { null })
-        3 -> listOf("11 VALUES COPIED" to copiedArray)
-        else -> listOf(
-            "120 APPENDED" to (fullArray + "120" + List(10) { null })
-        )
-    }
-
-    val explanationText = when (stepIndex) {
-        0 -> "Ten values use ten of eleven slots. Append 110 into the free slot at index 10."
-        1 -> "All eleven slots are occupied. Appending 120 now requires a larger array."
-        2 -> "Allocate new storage with 22 slots. The old eleven-value array is still intact."
-        3 -> "Copy each of the eleven existing values to the same index in the new storage."
-        else -> "Append 120 at index 11. Size is 12 and capacity is 22."
-    }
-    val highlightedIndices = when (stepIndex) {
-        0, 1 -> setOf(10)
-        4 -> setOf(11)
-        3 -> (0..10).toSet()
-        else -> emptySet()
-    }
+    val currentStep = steps[stepIndex.coerceIn(0, steps.lastIndex)]
+    val stageLabel = currentStep.stageLabel
+    val storageSlots = currentStep.storageSlots
+    val preservedStorageSlots = currentStep.preservedStorageSlots
+    val highlightedIndices = currentStep.highlightedIndices
+    val explanationText = currentStep.explanationText
 
     ArrayWindowButton(text = "Open resize visualizer") { isExpanded = true }
 
     if (isExpanded) {
-        val (stageLabel, storageSlots) = resizeSteps.single()
         ArrayResizeExpandedDialog(
             stepIndex = stepIndex,
             totalSteps = totalSteps,
@@ -236,7 +215,7 @@ internal fun ArrayResizeVisualizationCard() {
             isCompleted = isCompleted,
             stageLabel = stageLabel,
             storageSlots = storageSlots,
-            preservedStorageSlots = fullArray.takeIf { stepIndex == 2 },
+            preservedStorageSlots = preservedStorageSlots,
             highlightedIndices = highlightedIndices,
             explanationText = explanationText,
             onReset = { playback.reset() },
@@ -371,7 +350,7 @@ internal fun ArrayResizeExpandedDialog(
                         }
                     }
 
-                    ArrayStepControlsRow(
+                    VisualizerPlaybackBar(
                         isPlaying = isPlaying,
                         isCompleted = isCompleted,
                         canGoPrevious = stepIndex > 0,
@@ -390,31 +369,26 @@ internal fun ArrayResizeExpandedDialog(
 
 @Composable
 internal fun ArrayTraversalVisualizationCard() {
-    val arrayData = listOf("10", "25", "42", "67", "91", "116", "135", "158", "176", "204")
     var isExpanded by remember { mutableStateOf(false) }
 
-    val totalElements = arrayData.size
-    val playback = rememberVisualizerPlaybackState(stepCount = totalElements + 1, initialStep = -1)
+    val steps = remember { ArrayTrace.traversalSteps() }
+    val totalElements = ArrayTrace.defaultTraversalData.size
+    val playback = rememberVisualizerPlaybackState(stepCount = steps.size, initialStep = -1)
     val currentIndex = playback.safeStepIndex
     val isPlaying = playback.isPlaying
     val isCompleted = playback.isCompleted
 
-    val visitedCount = if (currentIndex < 0) 0 else (currentIndex + 1).coerceAtMost(totalElements)
-    val badgeText = when {
-        currentIndex < 0 -> "READY"
-        isCompleted -> "COMPLETED"
-        else -> "STEP ${currentIndex + 1} OF $totalElements"
-    }
+    val stepIdx = (currentIndex + 1).coerceIn(0, steps.lastIndex)
+    val currentStep = steps[stepIdx]
+    val arrayData = currentStep.arrayData
+    val visitedCount = currentStep.visitedCount
+    val badgeText = currentStep.badgeText
     val badgeColor = when {
         currentIndex < 0 -> TextSecondary
         isCompleted -> GreenAccent
         else -> BlueAccent
     }
-    val explanationText = when {
-        currentIndex < 0 -> "Start at index 0, then visit each element from left to right."
-        isCompleted -> "Traversal complete! All $totalElements elements have been visited."
-        else -> "Visiting index $currentIndex: value = ${arrayData[currentIndex]}."
-    }
+    val explanationText = currentStep.explanationText
 
     ArrayWindowButton(text = "Open traversal visualizer") { isExpanded = true }
 
@@ -552,7 +526,7 @@ internal fun ArrayTraversalExpandedDialog(
                         }
                     }
 
-                    ArrayStepControlsRow(
+                    VisualizerPlaybackBar(
                         isPlaying = isPlaying,
                         isCompleted = isCompleted,
                         canGoPrevious = currentIndex >= 0,
@@ -573,89 +547,20 @@ internal fun ArrayTraversalExpandedDialog(
 internal fun ArrayInsertDeleteVisualizationCard() {
     var operationMode by remember { mutableStateOf("INSERT") }
     var isExpanded by remember { mutableStateOf(false) }
-    val baseArray = listOf("10", "20", "30", "40", "50", "60", "70", "80", "90", "100")
-    val insertionStates = remember {
-        val states = mutableListOf(baseArray)
-        var working = (baseArray + "  ").toMutableList()
-        states.add(working.toList())
-        for (sourceIndex in baseArray.lastIndex downTo 2) {
-            working = working.toMutableList().apply {
-                this[sourceIndex + 1] = this[sourceIndex]
-                this[sourceIndex] = "  "
-            }
-            states.add(working.toList())
-        }
-        states.add(working.toMutableList().apply { this[2] = "25" })
-        states
-    }
-    val deletionStates = remember {
-        val states = mutableListOf(baseArray)
-        var working = baseArray.toMutableList().apply { this[1] = "  " }
-        states.add(working.toList())
-        for (gapIndex in 1 until baseArray.lastIndex) {
-            working = working.toMutableList().apply {
-                this[gapIndex] = this[gapIndex + 1]
-                this[gapIndex + 1] = "  "
-            }
-            states.add(working.toList())
-        }
-        states.add(working.dropLast(1))
-        states
-    }
-    val operationStates = if (operationMode == "INSERT") insertionStates else deletionStates
-    val totalSteps = operationStates.lastIndex
 
-    val playback = rememberVisualizerPlaybackState(stepCount = operationStates.size, initialStep = 0, key = operationMode)
+    val steps = remember(operationMode) { ArrayTrace.insertDeleteSteps(operationMode) }
+    val totalSteps = steps.lastIndex
+
+    val playback = rememberVisualizerPlaybackState(stepCount = steps.size, initialStep = 0, key = operationMode)
     val stepIndex = playback.safeStepIndex
     val isPlaying = playback.isPlaying
     val isCompleted = playback.isCompleted
 
-    val displayItems = operationStates[stepIndex.coerceIn(0, operationStates.lastIndex)]
-
-    val explanationText = when (operationMode) {
-        "INSERT" -> when (stepIndex) {
-            0 -> "Insert 25 at index 2 in the 10-value array. One free capacity slot is available at index 10."
-            1 -> "Create the free slot at index 10. Size remains 10; no values have moved yet."
-            in 2..9 -> {
-                val sourceIndex = 11 - stepIndex
-                "Shift ${baseArray[sourceIndex]} from index $sourceIndex to ${sourceIndex + 1}; the gap moves to index $sourceIndex."
-            }
-            else -> "Place 25 in the gap at index 2. The resulting array contains 11 elements."
-        }
-        else -> when (stepIndex) {
-            0 -> "Delete 20 at index 1. The following values will shift left."
-            1 -> "Remove 20 and leave a temporary gap at index 1."
-            in 2..9 -> {
-                val sourceIndex = stepIndex
-                "Shift ${baseArray[sourceIndex]} from index $sourceIndex to ${sourceIndex - 1}; the gap moves to index $sourceIndex."
-            }
-            else -> "Drop the unused trailing slot. The resulting array contains 9 elements."
-        }
-    }
-
-    val highlightedIndices = when (operationMode) {
-        "INSERT" -> when (stepIndex) {
-            0 -> setOf(2)
-            1 -> setOf(10)
-            in 2..9 -> {
-                val sourceIndex = 11 - stepIndex
-                setOf(sourceIndex, sourceIndex + 1)
-            }
-            else -> setOf(2)
-        }
-        else -> when (stepIndex) {
-            0, 1 -> setOf(1)
-            in 2..9 -> setOf(stepIndex - 1, stepIndex)
-            else -> setOf(8)
-        }
-    }
-
-    val badgeText = when (stepIndex) {
-        0 -> "READY"
-        totalSteps -> "COMPLETED"
-        else -> "STEP $stepIndex OF $totalSteps"
-    }
-
+    val currentStep = steps[stepIndex.coerceIn(0, steps.lastIndex)]
+    val displayItems = currentStep.displayItems
+    val highlightedIndices = currentStep.highlightedIndices
+    val explanationText = currentStep.explanationText
+    val badgeText = currentStep.badgeText
     val badgeColor = when (stepIndex) {
         0 -> TextSecondary
         totalSteps -> GreenAccent
@@ -846,7 +751,7 @@ internal fun ArrayInsertDeleteExpandedDialog(
                         }
                     }
 
-                    ArrayStepControlsRow(
+                    VisualizerPlaybackBar(
                         isPlaying = isPlaying,
                         isCompleted = isCompleted,
                         canGoPrevious = stepIndex > 0,

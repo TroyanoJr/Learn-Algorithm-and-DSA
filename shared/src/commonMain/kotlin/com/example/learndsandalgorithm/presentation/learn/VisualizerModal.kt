@@ -242,13 +242,13 @@ internal fun VisualizerModal(
                     Spacer(modifier = Modifier.height(4.dp))
 
                     // Bottom Playback Controls Row
-                    LinkedListPlaybackControls(
-                        stepIndex = stepIndex,
-                        stepCount = stepCount,
+                    VisualizerPlaybackBar(
                         isPlaying = isPlaying,
+                        isCompleted = isCompleted,
+                        canGoPrevious = stepIndex > 0,
                         onReset = onReset,
                         onPrevious = onPrevious,
-                        onTogglePlayback = onTogglePlayback,
+                        onPlayPause = onTogglePlayback,
                         onNext = onNext
                     )
                 }
