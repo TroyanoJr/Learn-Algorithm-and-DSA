@@ -102,7 +102,7 @@ internal fun SortingBarVisualizationCard(
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(90.dp),
+                        .height(140.dp),
                     horizontalArrangement = Arrangement.SpaceEvenly,
                     verticalAlignment = Alignment.Bottom
                 ) {
@@ -115,7 +115,7 @@ internal fun SortingBarVisualizationCard(
                             isHighlighted -> OrangeAccent
                             else -> Color(0xFF262638)
                         }
-                        val barHeight = (65.dp * (value.toFloat() / maxVal)).coerceAtLeast(6.dp)
+                        val barHeight = (110.dp * (value.toFloat() / maxVal)).coerceAtLeast(10.dp)
 
                         Column(
                             horizontalAlignment = Alignment.CenterHorizontally,
@@ -131,7 +131,7 @@ internal fun SortingBarVisualizationCard(
                             Spacer(modifier = Modifier.height(4.dp))
                             Box(
                                 modifier = Modifier
-                                    .fillMaxWidth(0.7f)
+                                    .fillMaxWidth(0.65f)
                                     .height(barHeight)
                                     .clip(RoundedCornerShape(topStart = 6.dp, topEnd = 6.dp))
                                     .background(barColor)

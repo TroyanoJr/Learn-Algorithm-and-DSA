@@ -133,6 +133,7 @@ internal fun StackVisualizationCard(
             stepIndex = activeStepIndex,
             stepCount = steps.size,
             isPlaying = activeIsPlaying,
+            layoutMode = VisualizerLayoutMode.FULL_WIDTH,
             statusColor = statusColor,
             onReset = { updateActiveIsPlaying(false); updateActiveStepIndex(0) },
             onPrevious = { updateActiveIsPlaying(false); if (activeStepIndex > 0) updateActiveStepIndex(activeStepIndex - 1) },

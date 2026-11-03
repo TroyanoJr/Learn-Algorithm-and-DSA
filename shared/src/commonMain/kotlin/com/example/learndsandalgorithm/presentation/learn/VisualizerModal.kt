@@ -1,6 +1,5 @@
 package com.example.learndsandalgorithm.presentation.learn
 
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -58,6 +57,8 @@ internal enum class VisualizerLayoutMode {
 internal fun FitToPane(
     modifier: Modifier = Modifier,
     maxScale: Float = 1.25f,
+    fitMaxScale: Float = maxScale,
+    fitFillFraction: Float = 1.0f,
     unboundedWidth: Boolean = false,
     content: @Composable () -> Unit
 ) {
@@ -77,9 +78,9 @@ internal fun FitToPane(
         val placeable = measurables.firstOrNull()?.measure(childConstraints)
         val pWidth = placeable?.width ?: 0
         val pHeight = placeable?.height ?: 0
-        val scaleX = if (pWidth > 0) w.toFloat() / pWidth else 1f
-        val scaleY = if (pHeight > 0) h.toFloat() / pHeight else 1f
-        val s = minOf(scaleX, scaleY, maxScale)
+        val scaleX = if (pWidth > 0) (w.toFloat() * fitFillFraction) / pWidth else 1f
+        val scaleY = if (pHeight > 0) (h.toFloat() * fitFillFraction) / pHeight else 1f
+        val s = minOf(scaleX, scaleY, fitMaxScale)
         layout(w, h) {
             if (placeable != null && placeable.width > 0 && placeable.height > 0) {
                 placeable.placeWithLayer((w - placeable.width) / 2, (h - placeable.height) / 2) {
@@ -111,6 +112,8 @@ internal fun VisualizerModal(
     onClose: () -> Unit,
     layoutMode: VisualizerLayoutMode = VisualizerLayoutMode.SPLIT_VIEW,
     fitUnboundedWidth: Boolean = false,
+    fitMaxScale: Float = 1.25f,
+    fitFillFraction: Float = 1.0f,
     statusColor: Color = if (isCompleted) VisualizerGreenAccent else VisualizerBlueAccent,
     topContent: (@Composable () -> Unit)? = null,
     visualContent: @Composable () -> Unit,
@@ -121,48 +124,53 @@ internal fun VisualizerModal(
         properties = DialogProperties(usePlatformDefaultWidth = false)
     ) {
         LandscapeOrientationEffect(enabled = true)
-        BoxWithConstraints(modifier = Modifier.fillMaxSize().padding(6.dp)) {
+        BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
             val isLandscape = maxWidth > maxHeight
-            val scale = minOf(maxWidth / 800.dp, maxHeight / 360.dp).coerceAtMost(1f)
             Surface(
                 color = VisualizerDarkCardBgColor,
-                shape = RoundedCornerShape(16.dp),
-                border = BorderStroke(1.dp, VisualizerCardBorderColor),
                 modifier = Modifier.fillMaxSize()
             ) {
                 Column(
-                    modifier = Modifier.fillMaxSize().padding(12.dp * scale),
+                    modifier = Modifier.fillMaxSize().padding(horizontal = 14.dp, vertical = 8.dp),
                     verticalArrangement = Arrangement.SpaceBetween
                 ) {
-                    // Header Row
-                    Row(
+                    // REGION A: Top Bar & Scenarios Header Row
+                    Column(
                         modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
+                        verticalArrangement = Arrangement.spacedBy(4.dp)
                     ) {
-                        Column(
-                            modifier = Modifier.weight(1f),
-                            verticalArrangement = Arrangement.spacedBy(2.dp)
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Text(
-                                text = title.uppercase(),
-                                color = VisualizerOrangeAccent,
-                                fontSize = 12.sp,
-                                fontWeight = FontWeight.Bold
-                            )
-                            Text(
-                                text = statusText,
-                                color = statusColor,
-                                fontSize = 12.sp,
-                                fontWeight = FontWeight.Bold
-                            )
+                            Column(
+                                modifier = Modifier.weight(1f),
+                                verticalArrangement = Arrangement.spacedBy(2.dp)
+                            ) {
+                                Text(
+                                    text = title.uppercase(),
+                                    color = VisualizerOrangeAccent,
+                                    fontSize = 12.sp,
+                                    fontWeight = FontWeight.Bold
+                                )
+                                Text(
+                                    text = statusText,
+                                    color = statusColor,
+                                    fontSize = 12.sp,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
+                            ArrayWindowButton(text = "Close", icon = "✕", onClick = onClose)
                         }
-                        ArrayWindowButton(text = "Close", icon = "✕", onClick = onClose)
+
+                        // Region A Scenario Selector Tabs (if provided)
+                        topContent?.invoke()
                     }
 
                     Spacer(modifier = Modifier.height(4.dp))
 
-                    // Central Area
+                    // REGION B & C: Central Area
                     if (isLandscape) {
                         when (layoutMode) {
                             VisualizerLayoutMode.SPLIT_VIEW -> {
@@ -171,23 +179,16 @@ internal fun VisualizerModal(
                                     horizontalArrangement = Arrangement.spacedBy(16.dp),
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
-                                    // Left Region: Visual Content
-                                    Column(
-                                        modifier = Modifier.weight(1.2f).fillMaxHeight(),
-                                        verticalArrangement = Arrangement.spacedBy(6.dp),
-                                        horizontalAlignment = Alignment.CenterHorizontally
+                                    // REGION B: Visual Content
+                                    Box(
+                                        modifier = Modifier.weight(1.3f).fillMaxHeight(),
+                                        contentAlignment = Alignment.Center
                                     ) {
-                                        topContent?.invoke()
-                                        Box(
-                                            modifier = Modifier.weight(1f).fillMaxWidth(),
-                                            contentAlignment = Alignment.Center
-                                        ) {
-                                            visualContent()
-                                        }
+                                        visualContent()
                                     }
-                                    // Right Region: Explanation / Steps / Result Details
+                                    // REGION C: Explanation / Details
                                     Column(
-                                        modifier = Modifier.weight(1f).verticalScroll(rememberScrollState()),
+                                        modifier = Modifier.weight(1f).fillMaxHeight().verticalScroll(rememberScrollState()),
                                         verticalArrangement = Arrangement.spacedBy(8.dp)
                                     ) {
                                         detailsContent()
@@ -197,19 +198,20 @@ internal fun VisualizerModal(
                             VisualizerLayoutMode.FULL_WIDTH -> {
                                 Column(
                                     modifier = Modifier.weight(1f).fillMaxWidth(),
-                                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                                    verticalArrangement = Arrangement.spacedBy(6.dp),
                                     horizontalAlignment = Alignment.CenterHorizontally
                                 ) {
-                                    topContent?.invoke()
+                                    // REGION B: Visual Content
                                     Box(
-                                        modifier = Modifier.weight(1.2f).fillMaxWidth(),
+                                        modifier = Modifier.weight(1.8f).fillMaxWidth(),
                                         contentAlignment = Alignment.Center
                                     ) {
                                         visualContent()
                                     }
+                                    // REGION C: Explanation / Details
                                     Column(
                                         modifier = Modifier.weight(1f).fillMaxWidth().verticalScroll(rememberScrollState()),
-                                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                                        verticalArrangement = Arrangement.spacedBy(6.dp)
                                     ) {
                                         detailsContent()
                                     }
@@ -223,15 +225,14 @@ internal fun VisualizerModal(
                             verticalArrangement = Arrangement.spacedBy(8.dp),
                             horizontalAlignment = Alignment.CenterHorizontally
                         ) {
-                            topContent?.invoke()
                             Box(
-                                modifier = Modifier.weight(1f).fillMaxWidth(),
+                                modifier = Modifier.weight(1.4f).fillMaxWidth(),
                                 contentAlignment = Alignment.Center
                             ) {
                                 visualContent()
                             }
                             Column(
-                                modifier = Modifier.heightIn(max = 140.dp).verticalScroll(rememberScrollState()),
+                                modifier = Modifier.weight(1f).fillMaxWidth().verticalScroll(rememberScrollState()),
                                 verticalArrangement = Arrangement.spacedBy(8.dp)
                             ) {
                                 detailsContent()
@@ -241,7 +242,7 @@ internal fun VisualizerModal(
 
                     Spacer(modifier = Modifier.height(4.dp))
 
-                    // Bottom Playback Controls Row
+                    // REGION C: Bottom Playback Controls Row
                     VisualizerPlaybackBar(
                         isPlaying = isPlaying,
                         isCompleted = isCompleted,

@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -85,14 +84,14 @@ internal fun ArrayVisualizationCard() {
 internal fun ArrayElementRow(
     values: List<String?>,
     highlightedIndices: Set<Int> = emptySet(),
-    cellHeight: Dp = 48.dp,
+    cellHeight: Dp = 36.dp,
     startIndex: Int = 0,
-    spacing: Dp = 4.dp
+    spacing: Dp = 14.dp
 ) {
     BoxWithConstraints(modifier = Modifier.fillMaxWidth()) {
         val cellWidth = (maxWidth - spacing * (values.size - 1).toFloat()) / values.size.toFloat()
-        val valueFontSize = minOf(cellWidth.value * 0.4f, cellHeight.value * 0.6f).coerceIn(11f, 22f).sp
-        val indexFontSize = (valueFontSize.value * 0.85f).coerceAtLeast(10f).sp
+        val valueFontSize = 15.sp
+        val indexFontSize = 11.sp
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(spacing),
@@ -105,7 +104,7 @@ internal fun ArrayElementRow(
                 Column(
                     modifier = Modifier.weight(1f),
                     horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.spacedBy(spacing.coerceAtMost(5.dp))
+                    verticalArrangement = Arrangement.spacedBy(4.dp)
                 ) {
                     Box(
                         modifier = Modifier
@@ -157,7 +156,7 @@ internal fun ArrayStorageRow(
     label: String,
     slots: List<String?>,
     highlightedIndices: Set<Int> = emptySet(),
-    cellHeight: Dp = 40.dp
+    cellHeight: Dp = 36.dp
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
         Text(
@@ -247,124 +246,65 @@ internal fun ArrayResizeExpandedDialog(
     onNext: () -> Unit,
     onClose: () -> Unit
 ) {
-    Dialog(
-        onDismissRequest = onClose,
-        properties = DialogProperties(usePlatformDefaultWidth = false)
-    ) {
-        LandscapeOrientationEffect(enabled = true)
-        BoxWithConstraints(modifier = Modifier.fillMaxSize().padding(6.dp)) {
-            val scale = minOf(maxWidth / 800.dp, maxHeight / 360.dp).coerceIn(0.68f, 1.05f)
-            val viewportHeight = maxHeight
-            val cellHeight = (viewportHeight * 0.08f).coerceIn(20.dp, 30.dp)
-            Surface(
-                color = DarkCardBgColor,
-                shape = RoundedCornerShape(16.dp),
-                border = BorderStroke(1.dp, CardBorderColor),
-                modifier = Modifier.fillMaxSize()
+    val statusText = when {
+        stepIndex == 0 -> "READY"
+        isCompleted -> "COMPLETED"
+        else -> "STEP $stepIndex OF $totalSteps"
+    }
+
+    VisualizerModal(
+        title = "DYNAMIC ARRAY RESIZE",
+        statusText = statusText,
+        isCompleted = isCompleted,
+        stepIndex = stepIndex,
+        stepCount = totalSteps,
+        isPlaying = isPlaying,
+        layoutMode = VisualizerLayoutMode.FULL_WIDTH,
+        fitMaxScale = 1.0f,
+        fitFillFraction = 0.85f,
+        onReset = onReset,
+        onPrevious = onPrevious,
+        onTogglePlayback = onPlayPause,
+        onNext = onNext,
+        onClose = onClose,
+        visualContent = {
+            Column(
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Column(
-                    modifier = Modifier.fillMaxSize().padding(8.dp * scale),
-                    verticalArrangement = Arrangement.spacedBy(6.dp * scale)
-                ) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                            Text(
-                                text = "DYNAMIC ARRAY RESIZE",
-                                color = OrangeAccent,
-                                fontSize = 12.sp,
-                                fontWeight = FontWeight.Bold,
-                                letterSpacing = 1.sp
-                            )
-                            Text(
-                                text = when {
-                                    stepIndex == 0 -> "READY"
-                                    isCompleted -> "COMPLETED"
-                                    else -> "STEP $stepIndex OF $totalSteps"
-                                },
-                                color = if (isCompleted) GreenAccent else BlueAccent,
-                                fontSize = 11.sp,
-                                fontWeight = FontWeight.Bold
-                            )
-                        }
-                        ArrayWindowButton(text = "Close", icon = "✕", onClick = onClose)
-                    }
-
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(12.dp * scale),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Column(modifier = Modifier.weight(1.8f)) {
-                            if (preservedStorageSlots != null) {
-                                Column(verticalArrangement = Arrangement.spacedBy(4.dp * scale)) {
-                                    ArrayStorageRow(
-                                        label = "OLD ARRAY (PRESERVED)",
-                                        slots = preservedStorageSlots,
-                                        cellHeight = cellHeight
-                                    )
-                                    ArrayStorageRow(
-                                        label = stageLabel,
-                                        slots = storageSlots,
-                                        highlightedIndices = highlightedIndices,
-                                        cellHeight = cellHeight
-                                    )
-                                }
-                            } else {
-                                ArrayStorageRow(
-                                    label = stageLabel,
-                                    slots = storageSlots,
-                                    highlightedIndices = highlightedIndices,
-                                    cellHeight = cellHeight
-                                )
-                            }
-                        }
-
-                        Surface(
-                            color = Color(0xFF13131C),
-                            shape = RoundedCornerShape(12.dp),
-                            border = BorderStroke(1.dp, CardBorderColor),
-                            modifier = Modifier.weight(1f)
-                        ) {
-                            Column(
-                                modifier = Modifier.padding(9.dp * scale),
-                                verticalArrangement = Arrangement.spacedBy(6.dp * scale)
-                            ) {
-                                Text(
-                                    text = "SIZE = values stored\nCAPACITY = allocated slots",
-                                    color = TextSecondary,
-                                    fontSize = 11.sp,
-                                    lineHeight = 14.sp,
-                                    fontWeight = FontWeight.Bold
-                                )
-                                Text(
-                                    text = explanationText,
-                                    color = TextPrimary,
-                                    fontSize = 13.sp,
-                                    lineHeight = 17.sp
-                                )
-                            }
-                        }
-                    }
-
-                    VisualizerPlaybackBar(
-                        isPlaying = isPlaying,
-                        isCompleted = isCompleted,
-                        canGoPrevious = stepIndex > 0,
-                        onReset = onReset,
-                        onPrevious = onPrevious,
-                        onPlayPause = onPlayPause,
-                        onNext = onNext,
-                        controlSize = (40.dp * scale).coerceIn(32.dp, 44.dp),
-                        spacing = 6.dp * scale
+                if (preservedStorageSlots != null) {
+                    ArrayStorageRow(
+                        label = "OLD ARRAY (PRESERVED)",
+                        slots = preservedStorageSlots,
+                        cellHeight = 36.dp
+                    )
+                    ArrayStorageRow(
+                        label = stageLabel,
+                        slots = storageSlots,
+                        highlightedIndices = highlightedIndices,
+                        cellHeight = 36.dp
+                    )
+                } else {
+                    ArrayStorageRow(
+                        label = stageLabel,
+                        slots = storageSlots,
+                        highlightedIndices = highlightedIndices,
+                        cellHeight = 36.dp
                     )
                 }
             }
+        },
+        detailsContent = {
+            StepsCard(
+                label = "Size vs Capacity",
+                explanation = explanationText,
+                stepIndex = stepIndex,
+                totalSteps = totalSteps,
+                isCompleted = isCompleted,
+                footer = "SIZE = values stored | CAPACITY = allocated slots"
+            )
         }
-    }
+    )
 }
 
 @Composable
@@ -432,115 +372,41 @@ internal fun ArrayTraversalExpandedDialog(
     onNext: () -> Unit,
     onClose: () -> Unit
 ) {
-    Dialog(
-        onDismissRequest = onClose,
-        properties = DialogProperties(usePlatformDefaultWidth = false)
-    ) {
-        LandscapeOrientationEffect(enabled = true)
-        BoxWithConstraints(modifier = Modifier.fillMaxSize().padding(6.dp)) {
-            val viewportHeight = maxHeight
-            val compact = viewportHeight < 300.dp
-            val scale = minOf(maxWidth / 800.dp, viewportHeight / 360.dp).coerceIn(0.68f, 1.05f)
-            Surface(
-                color = DarkCardBgColor,
-                shape = RoundedCornerShape(16.dp),
-                border = BorderStroke(1.dp, CardBorderColor),
-                modifier = Modifier.fillMaxSize()
-            ) {
-                Column(
-                    modifier = Modifier.fillMaxSize().padding((if (compact) 8.dp else 11.dp) * scale),
-                    verticalArrangement = Arrangement.spacedBy((if (compact) 5.dp else 8.dp) * scale)
-                ) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                            Text(
-                                text = "ARRAY TRAVERSAL",
-                                color = OrangeAccent,
-                                fontSize = 12.sp,
-                                fontWeight = FontWeight.Bold,
-                                letterSpacing = 1.sp
-                            )
-                            Text(text = badgeText, color = badgeColor, fontSize = 10.sp, fontWeight = FontWeight.Bold)
-                        }
-                        ArrayWindowButton(text = "Close", icon = "✕", onClick = onClose)
-                    }
-
-                    Text(
-                        text = "Each index labels its value; orange marks the current visit.",
-                        color = TextSecondary,
-                        fontSize = 11.sp,
-                        lineHeight = 14.sp
-                    )
-
-                    ArrayElementRow(
-                        values = arrayData,
-                        highlightedIndices = if (currentIndex in arrayData.indices) setOf(currentIndex) else emptySet(),
-                        cellHeight = (viewportHeight * (if (compact) 0.15f else 0.18f)).coerceIn(
-                            if (compact) 32.dp else 40.dp,
-                            if (compact) 48.dp else 60.dp
-                        ),
-                        spacing = 6.dp
-                    )
-
-                    Surface(
-                        color = Color(0xFF13131C),
-                        shape = RoundedCornerShape(12.dp),
-                        border = BorderStroke(1.dp, CardBorderColor),
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Column(
-                            modifier = Modifier.fillMaxWidth().padding((if (compact) 6.dp else 8.dp) * scale),
-                            verticalArrangement = Arrangement.spacedBy((if (compact) 5.dp else 7.dp) * scale)
-                        ) {
-                            Text(explanationText, color = TextPrimary, fontSize = 12.sp, lineHeight = 17.sp)
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.spacedBy(10.dp * scale),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Box(
-                                    modifier = Modifier
-                                        .weight(1f)
-                                        .height(3.dp)
-                                        .clip(RoundedCornerShape(2.dp))
-                                        .background(Color(0xFF262634))
-                                ) {
-                                    Box(
-                                        modifier = Modifier
-                                            .fillMaxWidth((visitedCount.toFloat() / totalElements).coerceIn(0f, 1f))
-                                            .height(3.dp)
-                                            .background(OrangeAccent, RoundedCornerShape(2.dp))
-                                    )
-                                }
-                                Text(
-                                    "$visitedCount / $totalElements VISITED",
-                                    color = TextSecondary,
-                                    fontSize = 11.sp,
-                                    fontWeight = FontWeight.Bold
-                                )
-                            }
-                        }
-                    }
-
-                    VisualizerPlaybackBar(
-                        isPlaying = isPlaying,
-                        isCompleted = isCompleted,
-                        canGoPrevious = currentIndex >= 0,
-                        onReset = onReset,
-                        onPrevious = onPrevious,
-                        onPlayPause = onPlayPause,
-                        onNext = onNext,
-                        controlSize = (40.dp * scale).coerceIn(32.dp, 44.dp),
-                        spacing = 6.dp * scale
-                    )
-                }
-            }
+    VisualizerModal(
+        title = "ARRAY TRAVERSAL",
+        statusText = badgeText,
+        statusColor = badgeColor,
+        isCompleted = isCompleted,
+        stepIndex = if (currentIndex < 0) 0 else currentIndex + 1,
+        stepCount = totalElements + 1,
+        isPlaying = isPlaying,
+        layoutMode = VisualizerLayoutMode.FULL_WIDTH,
+        fitMaxScale = 1.0f,
+        fitFillFraction = 0.85f,
+        onReset = onReset,
+        onPrevious = onPrevious,
+        onTogglePlayback = onPlayPause,
+        onNext = onNext,
+        onClose = onClose,
+        visualContent = {
+            ArrayElementRow(
+                values = arrayData,
+                highlightedIndices = if (currentIndex in arrayData.indices) setOf(currentIndex) else emptySet(),
+                cellHeight = 36.dp,
+                spacing = 14.dp
+            )
+        },
+        detailsContent = {
+            StepsCard(
+                label = "Traversal Status",
+                explanation = explanationText,
+                stepIndex = if (currentIndex < 0) -1 else currentIndex,
+                totalSteps = totalElements,
+                isCompleted = isCompleted,
+                footer = "$visitedCount / $totalElements VISITED"
+            )
         }
-    }
+    )
 }
 
 @Composable
@@ -616,156 +482,63 @@ internal fun ArrayInsertDeleteExpandedDialog(
     onNext: () -> Unit,
     onClose: () -> Unit
 ) {
-    Dialog(
-        onDismissRequest = onClose,
-        properties = DialogProperties(usePlatformDefaultWidth = false)
-    ) {
-        LandscapeOrientationEffect(enabled = true)
-        BoxWithConstraints(modifier = Modifier.fillMaxSize().padding(6.dp)) {
-            val viewportHeight = maxHeight
-            val compact = viewportHeight < 300.dp
-            val scale = minOf(maxWidth / 800.dp, viewportHeight / 360.dp).coerceIn(0.68f, 1.05f)
-            Surface(
-                color = DarkCardBgColor,
-                shape = RoundedCornerShape(16.dp),
-                border = BorderStroke(1.dp, CardBorderColor),
-                modifier = Modifier.fillMaxSize()
+    VisualizerModal(
+        title = "INSERT & DELETE",
+        statusText = badgeText,
+        statusColor = badgeColor,
+        isCompleted = isCompleted,
+        stepIndex = stepIndex,
+        stepCount = totalSteps,
+        isPlaying = isPlaying,
+        layoutMode = VisualizerLayoutMode.FULL_WIDTH,
+        fitMaxScale = 1.0f,
+        fitFillFraction = 0.85f,
+        onReset = onReset,
+        onPrevious = onPrevious,
+        onTogglePlayback = onPlayPause,
+        onNext = onNext,
+        onClose = onClose,
+        topContent = {
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Column(
-                    modifier = Modifier.fillMaxSize().padding((if (compact) 8.dp else 11.dp) * scale),
-                    verticalArrangement = Arrangement.spacedBy((if (compact) 5.dp else 7.dp) * scale)
-                ) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp * scale),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Column(
-                            modifier = Modifier.weight(1f),
-                            verticalArrangement = Arrangement.spacedBy(4.dp)
-                        ) {
-                            Text(
-                                text = "INSERT & DELETE",
-                                color = OrangeAccent,
-                                fontSize = 12.sp,
-                                fontWeight = FontWeight.Bold,
-                                letterSpacing = 1.sp
-                            )
-                            Text(
-                                text = badgeText,
-                                color = badgeColor,
-                                fontSize = 10.sp,
-                                fontWeight = FontWeight.Bold
-                            )
-                        }
-                        Row(horizontalArrangement = Arrangement.spacedBy(6.dp * scale)) {
-                            listOf("INSERT", "DELETE").forEach { mode ->
-                                val isSelected = operationMode == mode
-                                Surface(
-                                    color = if (isSelected) OrangeAccent else Color(0xFF22222E),
-                                    shape = RoundedCornerShape(8.dp),
-                                    modifier = Modifier.clickable { onOperationModeChange(mode) }
-                                ) {
-                                    Text(
-                                        text = mode.lowercase().replaceFirstChar { it.uppercase() },
-                                        color = if (isSelected) DarkBgColor else TextSecondary,
-                                        fontSize = 11.sp,
-                                        fontWeight = FontWeight.Bold,
-                                        modifier = Modifier.padding(
-                                            horizontal = 9.dp * scale,
-                                            vertical = 6.dp * scale
-                                        )
-                                    )
-                                }
-                            }
-                        }
-                        Surface(
-                            color = Color(0xFF22222E),
-                            shape = RoundedCornerShape(8.dp),
-                            border = BorderStroke(1.dp, CardBorderColor),
-                            modifier = Modifier.clickable(onClick = onClose)
-                        ) {
-                            Text(
-                                text = "Close  ✕",
-                                color = TextPrimary,
-                                fontSize = 11.sp,
-                                fontWeight = FontWeight.Bold,
-                                modifier = Modifier.padding(horizontal = 10.dp * scale, vertical = 6.dp * scale)
-                            )
-                        }
-                    }
-
-                    Text(
-                        text = "Orange cells mark the position shifting in this step.",
-                        color = TextSecondary,
-                        fontSize = 11.sp,
-                        lineHeight = 14.sp
-                    )
-
-                    ArrayElementRow(
-                        values = displayItems,
-                        highlightedIndices = highlightedIndices,
-                        cellHeight = (viewportHeight * (if (compact) 0.12f else 0.13f)).coerceIn(
-                            if (compact) 30.dp else 34.dp,
-                            if (compact) 44.dp else 50.dp
-                        ),
-                        spacing = 4.dp * scale
-                    )
-
+                listOf("INSERT", "DELETE").forEach { mode ->
+                    val isSelected = operationMode == mode
                     Surface(
-                        color = Color(0xFF13131C),
-                        shape = RoundedCornerShape(12.dp),
-                        border = BorderStroke(1.dp, CardBorderColor),
-                        modifier = Modifier.fillMaxWidth()
+                        color = if (isSelected) OrangeAccent else Color(0xFF22222E),
+                        shape = RoundedCornerShape(8.dp),
+                        modifier = Modifier.clickable { onOperationModeChange(mode) }
                     ) {
-                        Column(
-                            modifier = Modifier.fillMaxWidth().padding((if (compact) 6.dp else 8.dp) * scale),
-                            verticalArrangement = Arrangement.spacedBy((if (compact) 4.dp else 6.dp) * scale)
-                        ) {
-                            Text(
-                                text = explanationText,
-                                color = TextPrimary,
-                                fontSize = if (compact) 12.sp else 13.sp,
-                                lineHeight = if (compact) 16.sp else 18.sp
-                            )
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.spacedBy(6.dp * scale),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Box(
-                                    modifier = Modifier
-                                        .weight(1f)
-                                        .height(3.dp)
-                                        .clip(RoundedCornerShape(2.dp))
-                                        .background(Color(0xFF262634))
-                                ) {
-                                    Box(
-                                        modifier = Modifier
-                                            .fillMaxWidth((stepIndex.toFloat() / totalSteps).coerceIn(0f, 1f))
-                                            .height(3.dp)
-                                            .background(OrangeAccent, RoundedCornerShape(2.dp))
-                                    )
-                                }
-                            }
-                        }
+                        Text(
+                            text = mode.lowercase().replaceFirstChar { it.uppercase() },
+                            color = if (isSelected) DarkBgColor else TextSecondary,
+                            fontSize = 11.sp,
+                            fontWeight = FontWeight.Bold,
+                            modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
+                        )
                     }
-
-                    VisualizerPlaybackBar(
-                        isPlaying = isPlaying,
-                        isCompleted = isCompleted,
-                        canGoPrevious = stepIndex > 0,
-                        onReset = onReset,
-                        onPrevious = onPrevious,
-                        onPlayPause = onPlayPause,
-                        onNext = onNext,
-                        controlSize = (40.dp * scale).coerceIn(32.dp, 44.dp),
-                        spacing = 6.dp * scale
-                    )
                 }
             }
+        },
+        visualContent = {
+            ArrayElementRow(
+                values = displayItems,
+                highlightedIndices = highlightedIndices,
+                cellHeight = 36.dp,
+                spacing = 14.dp
+            )
+        },
+        detailsContent = {
+            StepsCard(
+                label = if (operationMode == "INSERT") "Insertion Step" else "Deletion Step",
+                explanation = explanationText,
+                stepIndex = stepIndex,
+                totalSteps = totalSteps,
+                isCompleted = isCompleted
+            )
         }
-    }
+    )
 }
 
 @Composable

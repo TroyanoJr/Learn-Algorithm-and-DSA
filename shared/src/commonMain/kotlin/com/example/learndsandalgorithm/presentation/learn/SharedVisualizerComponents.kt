@@ -177,13 +177,12 @@ internal fun StepsCard(
     modifier: Modifier = Modifier
 ) {
     Surface(
-        color = Color(0xFF13131C),
-        shape = RoundedCornerShape(10.dp),
-        border = BorderStroke(1.dp, VisualizerCardBorderColor),
+        color = Color(0xFF161622),
+        shape = RoundedCornerShape(12.dp),
         modifier = modifier.fillMaxWidth()
     ) {
         Column(
-            modifier = Modifier.padding(10.dp),
+            modifier = Modifier.padding(12.dp),
             verticalArrangement = Arrangement.spacedBy(4.dp)
         ) {
             Row(
@@ -199,7 +198,7 @@ internal fun StepsCard(
                     fontWeight = FontWeight.Bold
                 )
             }
-            Text(explanation, color = VisualizerTextPrimary, fontSize = 13.sp, lineHeight = 17.sp)
+            Text(explanation, color = VisualizerTextPrimary, fontSize = 13.sp, lineHeight = 18.sp)
             if (footer != null) {
                 Text(footer, color = VisualizerGreenAccent, fontSize = 11.sp, fontWeight = FontWeight.Bold)
             }

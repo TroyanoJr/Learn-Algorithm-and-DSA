@@ -676,9 +676,12 @@ internal fun LinkedListTypeCard(title: String, description: String, doubly: Bool
 
 @Composable
 internal fun LinkedListNodeField(label: String, value: String) {
-    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-        Text(label, color = TextSecondary, fontSize = 7.sp, fontWeight = FontWeight.Bold)
-        Text(value, color = BlueAccent, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = Modifier.width(36.dp).height(36.dp)
+    ) {
+        Text(label, color = TextSecondary, fontSize = 8.sp, fontWeight = FontWeight.Bold)
+        Text(value, color = BlueAccent, fontSize = 15.sp, fontWeight = FontWeight.Bold)
     }
 }
 
@@ -751,7 +754,7 @@ internal fun LinkedListOperationDiagram(
     detachedNodes: List<String> = emptyList(),
     nodeBadges: Map<String, String> = emptyMap(),
     stepKey: Any,
-    fitMode: Boolean = false
+    fitMode: Boolean = true
 ) {
     val scrollState = rememberScrollState()
     val diagramItems = remember(nodeOrder, detachedNodes) {
@@ -781,7 +784,7 @@ internal fun LinkedListOperationDiagram(
             modifier = Modifier
                 .padding(horizontal = 8.dp, vertical = 8.dp)
                 .then(if (fitMode) Modifier else Modifier.fillMaxWidth().horizontalScroll(scrollState)),
-            horizontalArrangement = Arrangement.spacedBy(4.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Surface(
@@ -812,7 +815,9 @@ internal fun LinkedListOperationDiagram(
                     if (isLinked) "─►" else "···",
                     color = if (isLinked && (value in highlightedNodes || nextValue in highlightedNodes)) BlueAccent else TextSecondary,
                     fontSize = 12.sp,
-                    fontWeight = FontWeight.Bold
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.width(20.dp),
+                    textAlign = TextAlign.Center
                 )
             }
 
@@ -855,7 +860,7 @@ internal fun LinkedListOperationNode(
         verticalArrangement = Arrangement.spacedBy(1.dp)
     ) {
         Box(modifier = Modifier.height(13.dp), contentAlignment = Alignment.Center) {
-            if (badge != null) Text(badge, color = if (badge == "REMOVED") RedAccent else OrangeAccent, fontSize = 7.sp, fontWeight = FontWeight.Bold)
+            if (badge != null) Text(badge, color = if (badge == "REMOVED") RedAccent else OrangeAccent, fontSize = 8.sp, fontWeight = FontWeight.Bold)
         }
         Surface(
             color = if (highlighted) Color(0xFF2A1C12) else DarkCardBgColor,
@@ -863,15 +868,19 @@ internal fun LinkedListOperationNode(
             border = BorderStroke(if (highlighted) 1.5.dp else 1.dp, if (highlighted) OrangeAccent else CardBorderColor)
         ) {
             Row(
-                modifier = Modifier.padding(horizontal = 6.dp, vertical = 5.dp),
+                modifier = Modifier.padding(horizontal = 4.dp, vertical = 2.dp),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(4.dp)
             ) {
                 LinkedListNodeField("DATA", value)
-                Box(Modifier.width(1.dp).height(22.dp).background(CardBorderColor))
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text("NEXT", color = TextSecondary, fontSize = 7.sp, fontWeight = FontWeight.Bold)
-                    Text(nextTarget, color = if (nextTarget == "—") TextSecondary else BlueAccent, fontSize = 10.sp, fontWeight = FontWeight.Bold)
+                Box(Modifier.width(1.dp).height(32.dp).background(CardBorderColor))
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    modifier = Modifier.width(18.dp).height(36.dp),
+                    verticalArrangement = Arrangement.Center
+                ) {
+                    Text("NEXT", color = TextSecondary, fontSize = 8.sp, fontWeight = FontWeight.Bold)
+                    Text(nextTarget, color = if (nextTarget == "—") TextSecondary else BlueAccent, fontSize = 12.sp, fontWeight = FontWeight.Bold)
                 }
             }
         }

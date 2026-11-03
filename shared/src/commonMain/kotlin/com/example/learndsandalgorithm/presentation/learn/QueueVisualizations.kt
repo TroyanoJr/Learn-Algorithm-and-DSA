@@ -79,6 +79,7 @@ internal fun QueueVisualizationCard(
             stepIndex = stepIndex,
             stepCount = steps.size,
             isPlaying = isPlaying,
+            layoutMode = VisualizerLayoutMode.FULL_WIDTH,
             statusColor = statusColor,
             onReset = { playback.reset() },
             onPrevious = { playback.previous() },
