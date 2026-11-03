@@ -270,6 +270,10 @@ fun LessonDetailScreen(
                             "sorting_3" -> SelectionSortVisualizationCard()
                             "sorting_4" -> InsertionSortVisualizationCard()
                             "sorting_5" -> SortingComparisonCard()
+                            "lesson_hash_tables_1" -> HashTableVisualizationCard(title = state.lesson.title)
+                            "lesson_hash_tables_2" -> HashTableCollisionVisualizationCard(title = state.lesson.title)
+                            "lesson_hash_tables_3" -> HashTableOperationsVisualizationCard(title = state.lesson.title)
+                            "lesson_hash_tables_4" -> HashTableApplicationsVisualizationCard(title = state.lesson.title)
                             else -> {
                                 if (state.lesson.topicId == "arrays") {
                                     ArrayVisualizationCard()
