@@ -284,6 +284,11 @@ fun LessonDetailScreen(
                             "lesson_trees_2" -> BinaryTreeBstVisualizationCard(title = state.lesson.title)
                             "lesson_trees_3" -> TreeTraversalsVisualizationCard(title = state.lesson.title)
                             "lesson_trees_4" -> BstOperationsVisualizationCard(title = state.lesson.title)
+                            "lesson_heap_1" -> HeapPropertiesVisualizationCard(title = state.lesson.title)
+                            "lesson_heap_2" -> HeapInsertSiftUpVisualizationCard(title = state.lesson.title)
+                            "lesson_heap_3" -> HeapExtractSiftDownVisualizationCard(title = state.lesson.title)
+                            "lesson_heap_4" -> HeapBuildVisualizationCard(title = state.lesson.title)
+                            "lesson_heap_5" -> HeapSortVisualizationCard(title = state.lesson.title)
                             else -> {
                                 if (state.lesson.topicId == "arrays") {
                                     ArrayVisualizationCard()
