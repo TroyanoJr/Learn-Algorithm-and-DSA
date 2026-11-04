@@ -280,6 +280,10 @@ fun LessonDetailScreen(
                             "lesson_divide_conquer_4" -> MergeSortFullVisualizationCard(title = state.lesson.title)
                             "lesson_divide_conquer_5" -> QuickSortPartitionVisualizationCard(title = state.lesson.title)
                             "lesson_divide_conquer_6" -> DivideConquerTradeoffsVisualizationCard(title = state.lesson.title)
+                            "lesson_trees_1" -> TreeFundamentalsVisualizationCard(title = state.lesson.title)
+                            "lesson_trees_2" -> BinaryTreeBstVisualizationCard(title = state.lesson.title)
+                            "lesson_trees_3" -> TreeTraversalsVisualizationCard(title = state.lesson.title)
+                            "lesson_trees_4" -> BstOperationsVisualizationCard(title = state.lesson.title)
                             else -> {
                                 if (state.lesson.topicId == "arrays") {
                                     ArrayVisualizationCard()
