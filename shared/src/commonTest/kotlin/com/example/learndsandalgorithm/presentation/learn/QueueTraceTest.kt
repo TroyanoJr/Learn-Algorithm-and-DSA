@@ -78,7 +78,7 @@ class QueueTraceTest {
         val dequeues = steps.filter { it.event == QueueTraceEvent.DEQUEUE }
 
         assertEquals(listOf("A", "B"), dequeues.map { it.returnedValue })
-        assertEquals(listOf("F", "E", "C", "D"), enqueueF.slots)
+        assertEquals(listOf("E", "F", "C", "D"), enqueueF.slots)
         assertEquals(listOf("C", "D", "E", "F"), enqueueF.values)
         assertEquals(2, enqueueF.frontIndex)
         assertEquals(2, enqueueF.nextRearIndex)

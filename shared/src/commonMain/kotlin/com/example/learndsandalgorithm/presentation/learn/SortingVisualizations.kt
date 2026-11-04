@@ -3,10 +3,8 @@ package com.example.learndsandalgorithm.presentation.learn
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -19,10 +17,10 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -58,300 +56,105 @@ internal fun SortingBarVisualizationCard(
     steps: List<SortingStep>,
     launchButtonText: String
 ) {
-    var stepIndex by remember(steps) { mutableStateOf(0) }
-    var isPlaying by remember(steps) { mutableStateOf(false) }
-    var isExpanded by remember { mutableStateOf(false) }
+    var isExpanded by rememberSaveable { mutableStateOf(false) }
+
+    val playback = rememberVisualizerPlaybackState(stepCount = steps.size, initialStep = 0, key = steps)
+    val stepIndex = playback.safeStepIndex
+    val isPlaying = playback.isPlaying
+    val isFinished = playback.isCompleted
 
     val totalSteps = steps.size
     val currentStep = steps.getOrElse(stepIndex) { steps.last() }
-    val isFinished = stepIndex >= totalSteps - 1
-
-    LaunchedEffect(isPlaying, stepIndex, steps) {
-        if (isPlaying && stepIndex < totalSteps - 1) {
-            delay(1000L)
-            if (stepIndex < totalSteps - 1) {
-                stepIndex++
-            } else {
-                isPlaying = false
-            }
-        } else if (stepIndex >= totalSteps - 1) {
-            isPlaying = false
-        }
-    }
 
     ArrayWindowButton(text = launchButtonText) { isExpanded = true }
 
     if (isExpanded) {
-        Dialog(
-            onDismissRequest = {
-                isPlaying = false
+        val badgeText = when {
+            isFinished -> "Sorted ✓"
+            stepIndex == 0 -> algorithmBadge
+            else -> "STEP ${stepIndex + 1} OF $totalSteps"
+        }
+
+        val badgeColor = when {
+            isFinished -> GreenAccent
+            else -> BlueAccent
+        }
+
+        VisualizerModal(
+            title = title,
+            statusText = badgeText,
+            statusColor = badgeColor,
+            isCompleted = isFinished,
+            stepIndex = stepIndex,
+            stepCount = totalSteps,
+            isPlaying = isPlaying,
+            layoutMode = VisualizerLayoutMode.FULL_WIDTH,
+            onReset = { playback.reset() },
+            onPrevious = { playback.previous() },
+            onTogglePlayback = { playback.togglePlayback() },
+            onNext = { playback.next() },
+            onClose = {
+                playback.reset()
                 isExpanded = false
             },
-            properties = DialogProperties(usePlatformDefaultWidth = false)
-        ) {
-            LandscapeOrientationEffect(enabled = true)
-            BoxWithConstraints(modifier = Modifier.fillMaxSize().padding(6.dp)) {
-                val scale = minOf(maxWidth / 800.dp, maxHeight / 320.dp).coerceIn(0.85f, 1f)
-                Surface(
-                    color = DarkCardBgColor,
-                    shape = RoundedCornerShape(16.dp),
-                    border = BorderStroke(1.dp, CardBorderColor),
-                    modifier = Modifier.fillMaxSize()
+            visualContent = {
+                val maxVal = currentStep.array.maxOrNull()?.coerceAtLeast(1) ?: 1
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(140.dp),
+                    horizontalArrangement = Arrangement.SpaceEvenly,
+                    verticalAlignment = Alignment.Bottom
                 ) {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(12.dp * scale),
-                        verticalArrangement = Arrangement.spacedBy(10.dp * scale)
-                    ) {
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.spacedBy(8.dp * scale),
-                            verticalAlignment = Alignment.CenterVertically
+                    currentStep.array.forEachIndexed { index, value ->
+                        val isHighlighted = index in currentStep.highlightedIndices
+                        val isSorted = index in currentStep.sortedIndices
+
+                        val barColor = when {
+                            isSorted -> GreenAccent
+                            isHighlighted -> OrangeAccent
+                            else -> Color(0xFF262638)
+                        }
+                        val barHeight = (110.dp * (value.toFloat() / maxVal)).coerceAtLeast(10.dp)
+
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.Bottom,
+                            modifier = Modifier.weight(1f)
                         ) {
                             Text(
-                                text = title,
-                                color = OrangeAccent,
-                                fontSize = 11.sp,
-                                fontWeight = FontWeight.Bold,
-                                letterSpacing = 1.2.sp,
-                                modifier = Modifier.weight(1f)
+                                text = value.toString(),
+                                color = if (isHighlighted || isSorted) TextPrimary else TextSecondary,
+                                fontSize = 12.sp,
+                                fontWeight = FontWeight.Bold
                             )
-
-                            val badgeText = when {
-                                isFinished -> "Sorted ✓"
-                                stepIndex == 0 -> algorithmBadge
-                                else -> "STEP ${stepIndex + 1} OF $totalSteps"
-                            }
-
-                            val badgeColor = when {
-                                isFinished -> GreenAccent
-                                else -> BlueAccent
-                            }
-
+                            Spacer(modifier = Modifier.height(4.dp))
                             Box(
                                 modifier = Modifier
-                                    .clip(RoundedCornerShape(4.dp))
-                                    .background(if (isFinished) Color(0xFF092317) else Color(0xFF13233A))
-                                    .padding(horizontal = 8.dp, vertical = 3.dp)
-                            ) {
-                                Text(
-                                    text = badgeText,
-                                    color = badgeColor,
-                                    fontSize = 10.sp,
-                                    fontWeight = FontWeight.Bold
-                                )
-                            }
-                            ArrayWindowButton(text = "Close", icon = "✕") {
-                                isPlaying = false
-                                isExpanded = false
-                            }
-                        }
-
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(90.dp * scale),
-                            horizontalArrangement = Arrangement.SpaceEvenly,
-                            verticalAlignment = Alignment.Bottom
-                        ) {
-                            currentStep.array.forEachIndexed { index, value ->
-                                val isHighlighted = index in currentStep.highlightedIndices
-                                val isSorted = index in currentStep.sortedIndices
-
-                                val barColor = when {
-                                    isSorted -> GreenAccent
-                                    isHighlighted -> OrangeAccent
-                                    else -> Color(0xFF262638)
-                                }
-
-                                Column(
-                                    horizontalAlignment = Alignment.CenterHorizontally,
-                                    verticalArrangement = Arrangement.Bottom,
-                                    modifier = Modifier.weight(1f)
-                                ) {
-                                    Text(
-                                        text = value.toString(),
-                                        color = if (isHighlighted || isSorted) TextPrimary else TextSecondary,
-                                        fontSize = 12.sp,
-                                        fontWeight = FontWeight.Bold
+                                    .fillMaxWidth(0.65f)
+                                    .height(barHeight)
+                                    .clip(RoundedCornerShape(topStart = 6.dp, topEnd = 6.dp))
+                                    .background(barColor)
+                                    .border(
+                                        width = if (isHighlighted || isSorted) 1.5.dp else 0.dp,
+                                        color = if (isSorted) GreenAccent else if (isHighlighted) OrangeAccent else Color.Transparent,
+                                        shape = RoundedCornerShape(topStart = 6.dp, topEnd = 6.dp)
                                     )
-                                    Spacer(modifier = Modifier.height(4.dp))
-                                    Box(
-                                        modifier = Modifier
-                                            .fillMaxWidth(0.7f)
-                                            .height((value * 6).dp * scale)
-                                            .clip(RoundedCornerShape(topStart = 6.dp, topEnd = 6.dp))
-                                            .background(barColor)
-                                            .border(
-                                                width = if (isHighlighted || isSorted) 1.5.dp else 0.dp,
-                                                color = if (isSorted) GreenAccent else if (isHighlighted) OrangeAccent else Color.Transparent,
-                                                shape = RoundedCornerShape(topStart = 6.dp, topEnd = 6.dp)
-                                            )
-                                    )
-                                }
-                            }
-                        }
-
-                        Surface(
-                            color = Color(0xFF13131C),
-                            shape = RoundedCornerShape(12.dp),
-                            border = BorderStroke(1.dp, CardBorderColor),
-                            modifier = Modifier.fillMaxWidth()
-                        ) {
-                            Column(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(12.dp * scale),
-                                verticalArrangement = Arrangement.spacedBy(10.dp * scale)
-                            ) {
-                                Text(
-                                    text = currentStep.message,
-                                    color = if (isFinished) GreenAccent else TextPrimary,
-                                    fontSize = 13.sp,
-                                    lineHeight = 18.sp
-                                )
-
-                                Row(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    horizontalArrangement = Arrangement.spacedBy(12.dp)
-                                ) {
-                                    Box(
-                                        modifier = Modifier
-                                            .weight(1f)
-                                            .height(3.dp)
-                                            .clip(RoundedCornerShape(2.dp))
-                                            .background(Color(0xFF262634))
-                                    ) {
-                                        val progressFloat = if (totalSteps > 1) stepIndex.toFloat() / (totalSteps - 1) else 1f
-                                        Box(
-                                            modifier = Modifier
-                                                .fillMaxWidth(progressFloat.coerceIn(0f, 1f))
-                                                .height(3.dp)
-                                                .background(if (isFinished) GreenAccent else OrangeAccent, RoundedCornerShape(2.dp))
-                                        )
-                                    }
-
-                                    Text(
-                                        text = "STEP ${stepIndex + 1} / $totalSteps",
-                                        color = TextSecondary,
-                                        fontSize = 10.sp,
-                                        fontWeight = FontWeight.Bold,
-                                        letterSpacing = 1.sp
-                                    )
-                                }
-                            }
-                        }
-
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.spacedBy(8.dp * scale),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Surface(
-                                color = DarkCardBgColor,
-                                shape = RoundedCornerShape(12.dp),
-                                border = BorderStroke(1.dp, CardBorderColor),
-                                modifier = Modifier
-                                    .size((44.dp * scale).coerceAtLeast(38.dp))
-                                    .clickable {
-                                        isPlaying = false
-                                        stepIndex = 0
-                                    }
-                            ) {
-                                Box(contentAlignment = Alignment.Center) {
-                                    Text(
-                                        text = "↻",
-                                        color = TextPrimary,
-                                        fontSize = 16.sp,
-                                        fontWeight = FontWeight.Bold
-                                    )
-                                }
-                            }
-
-                            Surface(
-                                color = DarkCardBgColor,
-                                shape = RoundedCornerShape(12.dp),
-                                border = BorderStroke(1.dp, CardBorderColor),
-                                modifier = Modifier
-                                    .size((44.dp * scale).coerceAtLeast(38.dp))
-                                    .clickable(enabled = stepIndex > 0) {
-                                        isPlaying = false
-                                        if (stepIndex > 0) {
-                                            stepIndex--
-                                        }
-                                    }
-                            ) {
-                                Box(contentAlignment = Alignment.Center) {
-                                    Text(
-                                        text = "‹",
-                                        color = if (stepIndex > 0) TextPrimary else TextSecondary.copy(alpha = 0.3f),
-                                        fontSize = 20.sp,
-                                        fontWeight = FontWeight.Bold
-                                    )
-                                }
-                            }
-
-                            Surface(
-                                color = if (isFinished) Color(0xFF22222E) else OrangeAccent,
-                                shape = RoundedCornerShape(12.dp),
-                                modifier = Modifier
-                                    .weight(1f)
-                                    .height((44.dp * scale).coerceAtLeast(38.dp))
-                                    .clickable(enabled = !isFinished) {
-                                        if (!isFinished) {
-                                            isPlaying = !isPlaying
-                                        }
-                                    }
-                            ) {
-                                Box(contentAlignment = Alignment.Center) {
-                                    Row(
-                                        verticalAlignment = Alignment.CenterVertically,
-                                        horizontalArrangement = Arrangement.spacedBy(6.dp * scale)
-                                    ) {
-                                        Text(
-                                            text = if (isPlaying) "⏸" else "▶",
-                                            color = if (isFinished) TextSecondary else Color(0xFF111115),
-                                            fontSize = 14.sp
-                                        )
-                                        Text(
-                                            text = if (isPlaying) "Pause" else "Play",
-                                            color = if (isFinished) TextSecondary else Color(0xFF111115),
-                                            fontSize = 15.sp,
-                                            fontWeight = FontWeight.Bold
-                                        )
-                                    }
-                                }
-                            }
-
-                            Surface(
-                                color = DarkCardBgColor,
-                                shape = RoundedCornerShape(12.dp),
-                                border = BorderStroke(1.dp, CardBorderColor),
-                                modifier = Modifier
-                                    .size((44.dp * scale).coerceAtLeast(38.dp))
-                                    .clickable(enabled = !isFinished) {
-                                        isPlaying = false
-                                        if (stepIndex < totalSteps - 1) {
-                                            stepIndex++
-                                        }
-                                    }
-                            ) {
-                                Box(contentAlignment = Alignment.Center) {
-                                    Text(
-                                        text = "›",
-                                        color = if (!isFinished) TextPrimary else TextSecondary.copy(alpha = 0.3f),
-                                        fontSize = 20.sp,
-                                        fontWeight = FontWeight.Bold
-                                    )
-                                }
-                            }
+                            )
                         }
                     }
                 }
+            },
+            detailsContent = {
+                StepsCard(
+                    label = "Sorting Step",
+                    explanation = currentStep.message,
+                    stepIndex = stepIndex,
+                    totalSteps = totalSteps,
+                    isCompleted = isFinished
+                )
             }
-        }
+        )
     }
 }
 
