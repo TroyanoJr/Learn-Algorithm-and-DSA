@@ -274,6 +274,12 @@ fun LessonDetailScreen(
                             "lesson_hash_tables_2" -> HashTableCollisionVisualizationCard(title = state.lesson.title)
                             "lesson_hash_tables_3" -> HashTableOperationsVisualizationCard(title = state.lesson.title)
                             "lesson_hash_tables_4" -> HashTableApplicationsVisualizationCard(title = state.lesson.title)
+                            "lesson_divide_conquer_1" -> DivideConquerFundamentalsVisualizationCard(title = state.lesson.title)
+                            "lesson_divide_conquer_2" -> RecursiveBinarySearchVisualizationCard(title = state.lesson.title)
+                            "lesson_divide_conquer_3" -> MergeSortFundamentalsVisualizationCard(title = state.lesson.title)
+                            "lesson_divide_conquer_4" -> MergeSortFullVisualizationCard(title = state.lesson.title)
+                            "lesson_divide_conquer_5" -> QuickSortPartitionVisualizationCard(title = state.lesson.title)
+                            "lesson_divide_conquer_6" -> DivideConquerTradeoffsVisualizationCard(title = state.lesson.title)
                             else -> {
                                 if (state.lesson.topicId == "arrays") {
                                     ArrayVisualizationCard()
