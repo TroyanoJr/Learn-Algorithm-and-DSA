@@ -300,6 +300,11 @@ fun LessonDetailScreen(
                             "lesson_brute_force_1" -> BruteForceFundamentalsVisualizationCard(title = state.lesson.title)
                             "lesson_brute_force_2" -> BruteForcePairProblemsVisualizationCard(title = state.lesson.title)
                             "lesson_brute_force_3" -> NaiveStringMatchingVisualizationCard(title = state.lesson.title)
+                            "lesson_greedy_1" -> GreedyFundamentalsVisualizationCard(title = state.lesson.title)
+                            "lesson_greedy_2" -> GreedyCoinChangeVisualizationCard(title = state.lesson.title)
+                            "lesson_greedy_3" -> ActivitySelectionVisualizationCard(title = state.lesson.title)
+                            "lesson_greedy_4" -> FractionalKnapsackVisualizationCard(title = state.lesson.title)
+                            "lesson_greedy_5" -> GreedyCounterexamplesVisualizationCard(title = state.lesson.title)
                             else -> {
                                 if (state.lesson.topicId == "arrays") {
                                     ArrayVisualizationCard()

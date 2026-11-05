@@ -250,7 +250,7 @@ internal fun ArrayResizeExpandedDialog(
         stepIndex == 0 -> "READY"
         isCompleted -> "COMPLETED"
         else -> "STEP $stepIndex OF $totalSteps"
-    }
+     }
 
     VisualizerModal(
         title = "DYNAMIC ARRAY RESIZE",
