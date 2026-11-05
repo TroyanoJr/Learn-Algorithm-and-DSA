@@ -305,6 +305,12 @@ fun LessonDetailScreen(
                             "lesson_greedy_3" -> ActivitySelectionVisualizationCard(title = state.lesson.title)
                             "lesson_greedy_4" -> FractionalKnapsackVisualizationCard(title = state.lesson.title)
                             "lesson_greedy_5" -> GreedyCounterexamplesVisualizationCard(title = state.lesson.title)
+                            "lesson_backtracking_1" -> BacktrackingFundamentalsVisualizationCard(title = state.lesson.title)
+                            "lesson_backtracking_2" -> PermutationsVisualizationCard(title = state.lesson.title)
+                            "lesson_backtracking_3" -> CombinationsPruningVisualizationCard(title = state.lesson.title)
+                            "lesson_backtracking_4" -> NQueensVisualizationCard(title = state.lesson.title)
+                            "lesson_backtracking_5" -> GridPathfindingVisualizationCard(title = state.lesson.title)
+                            "lesson_backtracking_6" -> BacktrackingComplexityVisualizationCard(title = state.lesson.title)
                             else -> {
                                 if (state.lesson.topicId == "arrays") {
                                     ArrayVisualizationCard()
