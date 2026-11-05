@@ -289,6 +289,14 @@ fun LessonDetailScreen(
                             "lesson_heap_3" -> HeapExtractSiftDownVisualizationCard(title = state.lesson.title)
                             "lesson_heap_4" -> HeapBuildVisualizationCard(title = state.lesson.title)
                             "lesson_heap_5" -> HeapSortVisualizationCard(title = state.lesson.title)
+                            "lesson_graphs_1" -> GraphFundamentalsVisualizationCard(title = state.lesson.title)
+                            "lesson_graphs_2" -> GraphRepresentationsVisualizationCard(title = state.lesson.title)
+                            "lesson_graphs_3" -> GraphBfsVisualizationCard(title = state.lesson.title)
+                            "lesson_graphs_4" -> GraphDfsVisualizationCard(title = state.lesson.title)
+                            "lesson_graphs_5" -> GraphComponentsCycleVisualizationCard(title = state.lesson.title)
+                            "lesson_graphs_6" -> GraphUnweightedShortestPathVisualizationCard(title = state.lesson.title)
+                            "lesson_graphs_7" -> DijkstraVisualizationCard(title = state.lesson.title)
+                            "lesson_graphs_8" -> TopologicalSortVisualizationCard(title = state.lesson.title)
                             else -> {
                                 if (state.lesson.topicId == "arrays") {
                                     ArrayVisualizationCard()
