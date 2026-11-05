@@ -297,6 +297,9 @@ fun LessonDetailScreen(
                             "lesson_graphs_6" -> GraphUnweightedShortestPathVisualizationCard(title = state.lesson.title)
                             "lesson_graphs_7" -> DijkstraVisualizationCard(title = state.lesson.title)
                             "lesson_graphs_8" -> TopologicalSortVisualizationCard(title = state.lesson.title)
+                            "lesson_brute_force_1" -> BruteForceFundamentalsVisualizationCard(title = state.lesson.title)
+                            "lesson_brute_force_2" -> BruteForcePairProblemsVisualizationCard(title = state.lesson.title)
+                            "lesson_brute_force_3" -> NaiveStringMatchingVisualizationCard(title = state.lesson.title)
                             else -> {
                                 if (state.lesson.topicId == "arrays") {
                                     ArrayVisualizationCard()
