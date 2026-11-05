@@ -311,6 +311,12 @@ fun LessonDetailScreen(
                             "lesson_backtracking_4" -> NQueensVisualizationCard(title = state.lesson.title)
                             "lesson_backtracking_5" -> GridPathfindingVisualizationCard(title = state.lesson.title)
                             "lesson_backtracking_6" -> BacktrackingComplexityVisualizationCard(title = state.lesson.title)
+                            "lesson_dynamic_programming_1" -> DpMemoizationVisualizationCard(title = state.lesson.title)
+                            "lesson_dynamic_programming_2" -> DpTabulationVisualizationCard(title = state.lesson.title)
+                            "lesson_dynamic_programming_3" -> CoinChangeDpVisualizationCard(title = state.lesson.title)
+                            "lesson_dynamic_programming_4" -> UniquePathsDpVisualizationCard(title = state.lesson.title)
+                            "lesson_dynamic_programming_5" -> Knapsack01DpVisualizationCard(title = state.lesson.title)
+                            "lesson_dynamic_programming_6" -> LcsDpVisualizationCard(title = state.lesson.title)
                             else -> {
                                 if (state.lesson.topicId == "arrays") {
                                     ArrayVisualizationCard()
