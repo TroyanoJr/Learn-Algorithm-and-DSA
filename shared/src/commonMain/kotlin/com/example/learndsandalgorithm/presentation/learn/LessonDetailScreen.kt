@@ -321,6 +321,10 @@ fun LessonDetailScreen(
                             "lesson_branch_bound_2" -> BoundsPruningVisualizationCard(title = state.lesson.title)
                             "lesson_branch_bound_3" -> BestFirstSearchVisualizationCard(title = state.lesson.title)
                             "lesson_branch_bound_4" -> KnapsackBranchBoundVisualizationCard(title = state.lesson.title)
+                            "lesson_iteration_recursion_1" -> IterationFundamentalsVisualizationCard(title = state.lesson.title)
+                            "lesson_iteration_recursion_2" -> NestedIterationVisualizationCard(title = state.lesson.title)
+                            "lesson_iteration_recursion_3" -> RecursionFundamentalsVisualizationCard(title = state.lesson.title)
+                            "lesson_iteration_recursion_4" -> RecursionTradeoffsVisualizationCard(title = state.lesson.title)
                             else -> {
                                 if (state.lesson.topicId == "arrays") {
                                     ArrayVisualizationCard()
