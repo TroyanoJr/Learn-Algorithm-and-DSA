@@ -317,6 +317,10 @@ fun LessonDetailScreen(
                             "lesson_dynamic_programming_4" -> UniquePathsDpVisualizationCard(title = state.lesson.title)
                             "lesson_dynamic_programming_5" -> Knapsack01DpVisualizationCard(title = state.lesson.title)
                             "lesson_dynamic_programming_6" -> LcsDpVisualizationCard(title = state.lesson.title)
+                            "lesson_branch_bound_1" -> BranchBoundFundamentalsVisualizationCard(title = state.lesson.title)
+                            "lesson_branch_bound_2" -> BoundsPruningVisualizationCard(title = state.lesson.title)
+                            "lesson_branch_bound_3" -> BestFirstSearchVisualizationCard(title = state.lesson.title)
+                            "lesson_branch_bound_4" -> KnapsackBranchBoundVisualizationCard(title = state.lesson.title)
                             else -> {
                                 if (state.lesson.topicId == "arrays") {
                                     ArrayVisualizationCard()
