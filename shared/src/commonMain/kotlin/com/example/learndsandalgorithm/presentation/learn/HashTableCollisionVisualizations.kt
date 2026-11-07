@@ -286,17 +286,18 @@ private fun HashTableCollisionVisualizationContent(step: CollisionTraceStep, sca
                                     modifier = Modifier.fillMaxWidth()
                                 ) {
                                     Column(
-                                        modifier = Modifier.padding(4.dp * scale),
+                                        modifier = Modifier.padding(horizontal = 4.dp * scale, vertical = 3.dp * scale),
                                         horizontalAlignment = Alignment.CenterHorizontally
                                     ) {
-                                        Text(node.key, color = TextPrimary, fontSize = 10.sp, fontWeight = FontWeight.Bold, maxLines = 1)
-                                        Text(node.value, color = BlueAccent, fontSize = 8.sp, maxLines = 1)
+                                        Text(node.key, color = TextPrimary, fontSize = 11.sp, fontWeight = FontWeight.Bold, maxLines = 1)
+                                        Text(node.value, color = BlueAccent, fontSize = 9.sp, maxLines = 1)
                                     }
                                 }
                                 Text(
-                                    text = if (nodeIdx < chain.lastIndex) "↓" else "↓ null",
+                                    text = if (nodeIdx < chain.lastIndex) "↓" else "• null",
                                     color = TextSecondary,
-                                    fontSize = 8.sp,
+                                    fontSize = 9.sp,
+                                    fontWeight = FontWeight.Bold,
                                     textAlign = TextAlign.Center
                                 )
                             }
@@ -362,7 +363,7 @@ private fun HashTableCollisionVisualizationContent(step: CollisionTraceStep, sca
                                     else -> CardBorderColor
                                 }
                             ),
-                            modifier = Modifier.fillMaxWidth().height(54.dp * scale)
+                            modifier = Modifier.fillMaxWidth().height(58.dp * scale)
                         ) {
                             Column(
                                 modifier = Modifier.fillMaxSize().padding(2.dp * scale),

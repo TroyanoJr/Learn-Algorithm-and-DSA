@@ -166,10 +166,17 @@ internal fun ArrayStorageRow(
             fontWeight = FontWeight.Bold
         )
 
-        slots.chunked(11).forEachIndexed { rowIndex, rowSlots ->
+        val chunkSize = when {
+            slots.size <= 8 -> 8
+            slots.size <= 16 -> 8
+            else -> 10
+        }
+
+        slots.chunked(chunkSize).forEachIndexed { rowIndex, rowSlots ->
+            val startIdx = rowIndex * chunkSize
             if (rowIndex > 0) {
                 Text(
-                    text = "Continue at index ${rowIndex * 11} ↓",
+                    text = "Continue at index $startIdx ↓",
                     color = BlueAccent,
                     fontSize = 11.sp,
                     fontWeight = FontWeight.Bold
@@ -178,7 +185,7 @@ internal fun ArrayStorageRow(
             ArrayElementRow(
                 values = rowSlots,
                 highlightedIndices = highlightedIndices,
-                startIndex = rowIndex * 11,
+                startIndex = startIdx,
                 cellHeight = cellHeight,
                 spacing = 4.dp
             )
