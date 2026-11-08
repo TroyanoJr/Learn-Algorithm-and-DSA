@@ -123,8 +123,9 @@ fun LessonDetailScreen(
                 }
 
                 Column {
+                    val lessonOrder = (uiState as? LessonUiState.Success)?.lesson?.order ?: 1
                     Text(
-                        text = "LESSON",
+                        text = "LESSON $lessonOrder",
                         color = OrangeAccent,
                         fontSize = 10.sp,
                         fontWeight = FontWeight.Bold,
@@ -237,7 +238,28 @@ fun LessonDetailScreen(
                     showQuestionsModal = false
                 }
 
-                Box(modifier = Modifier.fillMaxSize()) {
+                var animProgress by remember { mutableStateOf(0f) }
+                LaunchedEffect(lessonId) {
+                    animProgress = 0f
+                    animProgress = 1f
+                }
+                val transitionAlpha by animateFloatAsState(
+                    targetValue = animProgress,
+                    animationSpec = tween(300)
+                )
+                val transitionTranslation by animateFloatAsState(
+                    targetValue = (1f - animProgress) * 40f,
+                    animationSpec = tween(300)
+                )
+
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .graphicsLayer {
+                            alpha = transitionAlpha
+                            translationX = transitionTranslation
+                        }
+                ) {
                     Column(
                         modifier = Modifier
                             .fillMaxSize()
@@ -746,59 +768,44 @@ private fun CheckYourUnderstandingSection(
                             .fillMaxWidth()
                             .clickable { onSelectOption(index) }
                     ) {
-                        Row(
+                        Column(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(horizontal = 12.dp, vertical = 8.dp),
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.SpaceBetween
+                            verticalArrangement = Arrangement.spacedBy(4.dp)
                         ) {
-                            Text(
-                                text = optionText,
-                                color = style.textColor,
-                                fontSize = 15.sp,
-                                fontWeight = FontWeight.SemiBold
-                            )
-                            if (style.iconStr != null) {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.SpaceBetween
+                            ) {
                                 Text(
-                                    text = style.iconStr,
+                                    text = optionText,
                                     color = style.textColor,
-                                    fontSize = 16.sp,
-                                    fontWeight = FontWeight.Bold
+                                    fontSize = 15.sp,
+                                    fontWeight = FontWeight.SemiBold,
+                                    modifier = Modifier.weight(1f)
+                                )
+                                if (style.iconStr != null) {
+                                    Text(
+                                        text = style.iconStr,
+                                        color = style.textColor,
+                                        fontSize = 16.sp,
+                                        fontWeight = FontWeight.Bold
+                                    )
+                                }
+                            }
+
+                            if (isSelected) {
+                                Text(
+                                    text = explanation,
+                                    color = style.textColor.copy(alpha = 0.9f),
+                                    fontSize = 12.sp,
+                                    lineHeight = 17.sp,
+                                    modifier = Modifier.padding(top = 2.dp)
                                 )
                             }
                         }
-                    }
-                }
-            }
-
-            // Explanation Feedback
-            if (selectedOption != null) {
-                val isCorrectAnswer = selectedOption == correctIndex
-                Surface(
-                    color = if (isCorrectAnswer) Color(0xFF092317) else Color(0xFF210C0D),
-                    shape = RoundedCornerShape(10.dp),
-                    border = BorderStroke(1.dp, if (isCorrectAnswer) GreenAccent else RedAccent),
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(10.dp),
-                        verticalArrangement = Arrangement.spacedBy(4.dp)
-                    ) {
-                        Text(
-                            text = if (isCorrectAnswer) "Correct!" else "Incorrect",
-                            color = if (isCorrectAnswer) GreenAccent else RedAccent,
-                            fontSize = 14.sp,
-                            fontWeight = FontWeight.Bold
-                        )
-                        Text(
-                            text = explanation,
-                            color = Color(0xFFD1D5DB),
-                            fontSize = 12.sp,
-                            lineHeight = 17.sp
-                        )
                     }
                 }
             }

@@ -138,17 +138,21 @@ fun AppNavigation(
     var isTopicQuizActive by remember { mutableStateOf(false) }
     var learnExpandedCategoryId by remember { mutableStateOf<String?>(null) }
 
+    val showBottomBar = selectedLessonId == null && selectedTopicId == null && !isTopicQuizActive
+
     Scaffold(
         bottomBar = {
-            AppBottomNavigation(
-                currentDestination = currentDestination,
-                onNavigate = { destination ->
-                    selectedLessonId = null
-                    selectedTopicId = null
-                    isTopicQuizActive = false
-                    currentDestination = destination
-                }
-            )
+            if (showBottomBar) {
+                AppBottomNavigation(
+                    currentDestination = currentDestination,
+                    onNavigate = { destination ->
+                        selectedLessonId = null
+                        selectedTopicId = null
+                        isTopicQuizActive = false
+                        currentDestination = destination
+                    }
+                )
+            }
         },
         containerColor = DarkBgColor
     ) { innerPadding ->
