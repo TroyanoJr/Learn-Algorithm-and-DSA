@@ -37,7 +37,8 @@ internal fun BranchBoundFundamentalsVisualizationCard(
     title: String = "Branch and Bound Fundamentals"
 ) {
     val steps = BranchBoundFundamentalsTrace.createTrace()
-    var isExpanded by rememberSaveable { mutableStateOf(false) }
+    val autoExpand = LocalAutoExpandVisualizer.current
+    var isExpanded by rememberSaveable { mutableStateOf(autoExpand) }
 
     val playback = rememberVisualizerPlaybackState(
         stepCount = steps.size,
@@ -48,8 +49,10 @@ internal fun BranchBoundFundamentalsVisualizationCard(
     val isCompleted = playback.isCompleted
     val step = steps[stepIndex]
 
-    ArrayWindowButton(text = "Open branch & bound visualizer") {
-        isExpanded = true
+    if (!autoExpand) {
+        ArrayWindowButton(text = "Open branch & bound visualizer") {
+            isExpanded = true
+        }
     }
 
     if (isExpanded) {

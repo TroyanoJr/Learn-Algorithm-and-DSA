@@ -35,7 +35,8 @@ internal fun GraphBfsVisualizationCard(
     title: String = "Breadth-First Search (BFS)"
 ) {
     val steps = GraphBfsTrace.stepsForBfs()
-    var isExpanded by rememberSaveable { mutableStateOf(false) }
+    val autoExpand = LocalAutoExpandVisualizer.current
+    var isExpanded by rememberSaveable { mutableStateOf(autoExpand) }
 
     val playback = rememberVisualizerPlaybackState(
         stepCount = steps.size,
@@ -46,8 +47,10 @@ internal fun GraphBfsVisualizationCard(
     val isCompleted = playback.isCompleted
     val step = steps[stepIndex]
 
-    ArrayWindowButton(text = "Open BFS visualizer") {
-        isExpanded = true
+    if (!autoExpand) {
+        ArrayWindowButton(text = "Open BFS visualizer") {
+            isExpanded = true
+        }
     }
 
     if (isExpanded) {

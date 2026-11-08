@@ -25,6 +25,7 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -71,7 +72,6 @@ fun LessonDetailScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
 
-    val selectedQuestionAnswers = remember(lessonId) { mutableStateMapOf<String, Int>() }
     var lessonQuestionIndex by remember(lessonId) { mutableStateOf(0) }
     var isLessonCompleted by remember { mutableStateOf(false) }
 
@@ -225,11 +225,16 @@ fun LessonDetailScreen(
 
             is LessonUiState.Success -> {
                 var showCelebrationOverlay by remember { mutableStateOf(false) }
+                var showVisualizerModal by remember { mutableStateOf(false) }
+                var showQuestionsModal by remember { mutableStateOf(false) }
+
                 val scrollState = rememberScrollState()
 
                 LaunchedEffect(lessonId) {
                     scrollState.scrollTo(0)
                     showCelebrationOverlay = false
+                    showVisualizerModal = false
+                    showQuestionsModal = false
                 }
 
                 Box(modifier = Modifier.fillMaxSize()) {
@@ -238,127 +243,213 @@ fun LessonDetailScreen(
                             .fillMaxSize()
                             .verticalScroll(scrollState)
                             .padding(horizontal = 16.dp, vertical = 10.dp),
-                        verticalArrangement = Arrangement.spacedBy(10.dp)
+                        verticalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
-                         // Theory & Key Concepts Markdown Content
+                        // Theory & Key Concepts Markdown Content
                         MarkdownContent(content = state.markdownContent)
 
-                        // Lesson Specific Visualizations
-                        when (state.lesson.id) {
-                            "lesson_stack_1" -> StackVisualizationCard(StackDemonstration.FUNDAMENTALS, title = state.lesson.title)
-                            "lesson_stack_2" -> StackVisualizationCard(StackDemonstration.OPERATIONS, title = state.lesson.title)
-                            "lesson_stack_3" -> StackVisualizationCard(StackDemonstration.IMPLEMENTATIONS, title = state.lesson.title)
-                            "lesson_stack_4" -> StackVisualizationCard(StackDemonstration.DELIMITER_MATCHING, title = state.lesson.title)
-                            "lesson_queues_1" -> QueueVisualizationCard(QueueDemonstration.FUNDAMENTALS, title = state.lesson.title)
-                            "lesson_queues_2" -> QueueVisualizationCard(QueueDemonstration.OPERATIONS, title = state.lesson.title)
-                            "lesson_queues_3" -> QueueVisualizationCard(QueueDemonstration.IMPLEMENTATIONS, title = state.lesson.title)
-                            "lesson_queues_4" -> QueueVisualizationCard(QueueDemonstration.CIRCULAR_BUFFER, title = state.lesson.title)
-                            "lesson_arrays_1" -> ArrayVisualizationCard()
-                            "lesson_arrays_2" -> ArrayResizeVisualizationCard()
-                            "lesson_arrays_3" -> ArrayTraversalVisualizationCard()
-                            "lesson_arrays_4" -> ArrayInsertDeleteVisualizationCard()
-                            "lesson_arrays_5" -> ArrayComplexityComparisonCard()
-                            "lesson_linked_list_1" -> LinkedListIntroductionVisualizationCard()
-                            "lesson_linked_list_2" -> LinkedListTraversalSearchAccessVisualizationCard()
-                            "lesson_linked_list_3" -> LinkedListInsertionVisualizationCard()
-                            "lesson_linked_list_4" -> LinkedListRemovalVisualizationCard()
-                            "lesson_linked_list_5" -> LinkedListPerformanceComparisonVisualizationCard()
-                            "searching_2" -> LinearSearchVisualizationCard()
-                            "searching_3" -> BinarySearchVisualizationCard()
-                            "searching_4" -> SearchComparisonCard()
-                            "sorting_2" -> BubbleSortVisualizationCard()
-                            "sorting_3" -> SelectionSortVisualizationCard()
-                            "sorting_4" -> InsertionSortVisualizationCard()
-                            "sorting_5" -> SortingComparisonCard()
-                            "lesson_hash_tables_1" -> HashTableVisualizationCard(title = state.lesson.title)
-                            "lesson_hash_tables_2" -> HashTableCollisionVisualizationCard(title = state.lesson.title)
-                            "lesson_hash_tables_3" -> HashTableOperationsVisualizationCard(title = state.lesson.title)
-                            "lesson_hash_tables_4" -> HashTableApplicationsVisualizationCard(title = state.lesson.title)
-                            "lesson_divide_conquer_1" -> DivideConquerFundamentalsVisualizationCard(title = state.lesson.title)
-                            "lesson_divide_conquer_2" -> RecursiveBinarySearchVisualizationCard(title = state.lesson.title)
-                            "lesson_divide_conquer_3" -> MergeSortFundamentalsVisualizationCard(title = state.lesson.title)
-                            "lesson_divide_conquer_4" -> MergeSortFullVisualizationCard(title = state.lesson.title)
-                            "lesson_divide_conquer_5" -> QuickSortPartitionVisualizationCard(title = state.lesson.title)
-                            "lesson_divide_conquer_6" -> DivideConquerTradeoffsVisualizationCard(title = state.lesson.title)
-                            "lesson_trees_1" -> TreeFundamentalsVisualizationCard(title = state.lesson.title)
-                            "lesson_trees_2" -> BinaryTreeBstVisualizationCard(title = state.lesson.title)
-                            "lesson_trees_3" -> TreeTraversalsVisualizationCard(title = state.lesson.title)
-                            "lesson_trees_4" -> BstOperationsVisualizationCard(title = state.lesson.title)
-                            "lesson_heap_1" -> HeapPropertiesVisualizationCard(title = state.lesson.title)
-                            "lesson_heap_2" -> HeapInsertSiftUpVisualizationCard(title = state.lesson.title)
-                            "lesson_heap_3" -> HeapExtractSiftDownVisualizationCard(title = state.lesson.title)
-                            "lesson_heap_4" -> HeapBuildVisualizationCard(title = state.lesson.title)
-                            "lesson_heap_5" -> HeapSortVisualizationCard(title = state.lesson.title)
-                            "lesson_graphs_1" -> GraphFundamentalsVisualizationCard(title = state.lesson.title)
-                            "lesson_graphs_2" -> GraphRepresentationsVisualizationCard(title = state.lesson.title)
-                            "lesson_graphs_3" -> GraphBfsVisualizationCard(title = state.lesson.title)
-                            "lesson_graphs_4" -> GraphDfsVisualizationCard(title = state.lesson.title)
-                            "lesson_graphs_5" -> GraphComponentsCycleVisualizationCard(title = state.lesson.title)
-                            "lesson_graphs_6" -> GraphUnweightedShortestPathVisualizationCard(title = state.lesson.title)
-                            "lesson_graphs_7" -> DijkstraVisualizationCard(title = state.lesson.title)
-                            "lesson_graphs_8" -> TopologicalSortVisualizationCard(title = state.lesson.title)
-                            "lesson_brute_force_1" -> BruteForceFundamentalsVisualizationCard(title = state.lesson.title)
-                            "lesson_brute_force_2" -> BruteForcePairProblemsVisualizationCard(title = state.lesson.title)
-                            "lesson_brute_force_3" -> NaiveStringMatchingVisualizationCard(title = state.lesson.title)
-                            "lesson_greedy_1" -> GreedyFundamentalsVisualizationCard(title = state.lesson.title)
-                            "lesson_greedy_2" -> GreedyCoinChangeVisualizationCard(title = state.lesson.title)
-                            "lesson_greedy_3" -> ActivitySelectionVisualizationCard(title = state.lesson.title)
-                            "lesson_greedy_4" -> FractionalKnapsackVisualizationCard(title = state.lesson.title)
-                            "lesson_greedy_5" -> GreedyCounterexamplesVisualizationCard(title = state.lesson.title)
-                            "lesson_backtracking_1" -> BacktrackingFundamentalsVisualizationCard(title = state.lesson.title)
-                            "lesson_backtracking_2" -> PermutationsVisualizationCard(title = state.lesson.title)
-                            "lesson_backtracking_3" -> CombinationsPruningVisualizationCard(title = state.lesson.title)
-                            "lesson_backtracking_4" -> NQueensVisualizationCard(title = state.lesson.title)
-                            "lesson_backtracking_5" -> GridPathfindingVisualizationCard(title = state.lesson.title)
-                            "lesson_backtracking_6" -> BacktrackingComplexityVisualizationCard(title = state.lesson.title)
-                            "lesson_dynamic_programming_1" -> DpMemoizationVisualizationCard(title = state.lesson.title)
-                            "lesson_dynamic_programming_2" -> DpTabulationVisualizationCard(title = state.lesson.title)
-                            "lesson_dynamic_programming_3" -> CoinChangeDpVisualizationCard(title = state.lesson.title)
-                            "lesson_dynamic_programming_4" -> UniquePathsDpVisualizationCard(title = state.lesson.title)
-                            "lesson_dynamic_programming_5" -> Knapsack01DpVisualizationCard(title = state.lesson.title)
-                            "lesson_dynamic_programming_6" -> LcsDpVisualizationCard(title = state.lesson.title)
-                            "lesson_branch_bound_1" -> BranchBoundFundamentalsVisualizationCard(title = state.lesson.title)
-                            "lesson_branch_bound_2" -> BoundsPruningVisualizationCard(title = state.lesson.title)
-                            "lesson_branch_bound_3" -> BestFirstSearchVisualizationCard(title = state.lesson.title)
-                            "lesson_branch_bound_4" -> KnapsackBranchBoundVisualizationCard(title = state.lesson.title)
-                            "lesson_iteration_recursion_1" -> IterationFundamentalsVisualizationCard(title = state.lesson.title)
-                            "lesson_iteration_recursion_2" -> NestedIterationVisualizationCard(title = state.lesson.title)
-                            "lesson_iteration_recursion_3" -> RecursionFundamentalsVisualizationCard(title = state.lesson.title)
-                            "lesson_iteration_recursion_4" -> RecursionTradeoffsVisualizationCard(title = state.lesson.title)
-                            else -> {
-                                if (state.lesson.topicId == "arrays") {
-                                    ArrayVisualizationCard()
+                        // 1. Independent Interactive Visualizer Section (When lesson has visualizer)
+                        if (hasVisualizerForLesson(state.lesson.id)) {
+                            Surface(
+                                color = DarkCardBgColor,
+                                shape = RoundedCornerShape(16.dp),
+                                border = BorderStroke(1.dp, CardBorderColor),
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                Column(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(14.dp),
+                                    verticalArrangement = Arrangement.spacedBy(10.dp)
+                                ) {
+                                    Row(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        horizontalArrangement = Arrangement.SpaceBetween,
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        Text(
+                                            text = "INTERACTIVE VISUALIZER",
+                                            color = OrangeAccent,
+                                            fontSize = 11.sp,
+                                            fontWeight = FontWeight.Bold,
+                                            letterSpacing = 1.2.sp
+                                        )
+                                        Surface(
+                                            color = Color(0xFF22222E),
+                                            shape = RoundedCornerShape(6.dp)
+                                        ) {
+                                            Text(
+                                                text = "Interactive",
+                                                color = TextSecondary,
+                                                fontSize = 10.sp,
+                                                fontWeight = FontWeight.Medium,
+                                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                                            )
+                                        }
+                                    }
+
+                                    Text(
+                                        text = "Interactive Data Structure Visualization",
+                                        color = TextPrimary,
+                                        fontSize = 16.sp,
+                                        fontWeight = FontWeight.Bold
+                                    )
+
+                                    Text(
+                                        text = "Step through algorithm operations interactively with custom trace controls and step-by-step state logs.",
+                                        color = TextSecondary,
+                                        fontSize = 13.sp,
+                                        lineHeight = 18.sp
+                                    )
+
+                                    Surface(
+                                        color = OrangeAccent,
+                                        shape = RoundedCornerShape(12.dp),
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .clickable { showVisualizerModal = true }
+                                    ) {
+                                        Box(
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .padding(vertical = 11.dp),
+                                            contentAlignment = Alignment.Center
+                                        ) {
+                                            Text(
+                                                text = "Launch Visualizer ➔",
+                                                color = Color(0xFF111115),
+                                                fontSize = 15.sp,
+                                                fontWeight = FontWeight.Bold
+                                            )
+                                        }
+                                    }
                                 }
                             }
                         }
 
-                        // Check Your Understanding Quiz Section
+                        // 2. Independent Lesson Questions Section (When lesson has questions)
                         if (state.questions.isNotEmpty()) {
-                            val hasQuestionSequence = state.questions.size > 1
-                            val questionIndex = if (hasQuestionSequence) {
-                                lessonQuestionIndex.coerceIn(0, state.questions.lastIndex)
-                            } else {
-                                0
+                            val answeredCount = state.answeredQuestionIds.size
+                            val totalQuestions = state.questions.size
+                            val cardBorder = when {
+                                state.completionBlocked -> BorderStroke(1.5.dp, RedAccent)
+                                state.allQuestionsAnswered -> BorderStroke(1.dp, GreenAccent)
+                                else -> BorderStroke(1.dp, CardBorderColor)
                             }
-                            val question = state.questions[questionIndex]
-                            CheckYourUnderstandingSection(
-                                statement = question.statement,
-                                options = question.options,
-                                correctIndex = question.correctOptionIndex,
-                                explanation = question.explanation,
-                                selectedOption = selectedQuestionAnswers[question.id],
-                                onSelectOption = { selectedQuestionAnswers[question.id] = it },
-                                questionType = question.type,
-                                questionNumber = questionIndex + 1,
-                                questionCount = if (hasQuestionSequence) state.questions.size else 1,
-                                showProgress = hasQuestionSequence,
-                                onPreviousQuestion = if (hasQuestionSequence) {
-                                    { lessonQuestionIndex = (questionIndex - 1).coerceAtLeast(0) }
-                                } else null,
-                                onNextQuestion = if (hasQuestionSequence) {
-                                    { lessonQuestionIndex = (questionIndex + 1).coerceAtMost(state.questions.lastIndex) }
-                                } else null
+
+                            var wasAllAnswered by remember { mutableStateOf(state.allQuestionsAnswered) }
+                            var playCompletionPulse by remember { mutableStateOf(false) }
+
+                            LaunchedEffect(state.allQuestionsAnswered) {
+                                if (state.allQuestionsAnswered && !wasAllAnswered) {
+                                    playCompletionPulse = true
+                                }
+                                wasAllAnswered = state.allQuestionsAnswered
+                            }
+
+                            val badgeScale by animateFloatAsState(
+                                targetValue = if (playCompletionPulse) 1.22f else 1.0f,
+                                animationSpec = tween(durationMillis = 320),
+                                finishedListener = { playCompletionPulse = false }
                             )
+
+                            Surface(
+                                color = DarkCardBgColor,
+                                shape = RoundedCornerShape(16.dp),
+                                border = cardBorder,
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                Column(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(14.dp),
+                                    verticalArrangement = Arrangement.spacedBy(10.dp)
+                                ) {
+                                    Row(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        horizontalArrangement = Arrangement.SpaceBetween,
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        Text(
+                                            text = "LESSON QUESTIONS",
+                                            color = OrangeAccent,
+                                            fontSize = 11.sp,
+                                            fontWeight = FontWeight.Bold,
+                                            letterSpacing = 1.2.sp
+                                        )
+                                        Surface(
+                                            color = if (state.allQuestionsAnswered) Color(0xFF092317) else Color(0xFF2A1C12),
+                                            shape = RoundedCornerShape(6.dp),
+                                            border = BorderStroke(1.dp, if (state.allQuestionsAnswered) GreenAccent else OrangeAccent),
+                                            modifier = Modifier.graphicsLayer {
+                                                scaleX = badgeScale
+                                                scaleY = badgeScale
+                                            }
+                                        ) {
+                                            Text(
+                                                text = if (state.allQuestionsAnswered) "Completed ✓" else "$answeredCount of $totalQuestions Answered",
+                                                color = if (state.allQuestionsAnswered) GreenAccent else OrangeAccent,
+                                                fontSize = 10.sp,
+                                                fontWeight = FontWeight.Bold,
+                                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                                            )
+                                        }
+                                    }
+
+                                    Text(
+                                        text = "Check Your Understanding",
+                                        color = TextPrimary,
+                                        fontSize = 16.sp,
+                                        fontWeight = FontWeight.Bold
+                                    )
+
+                                    if (state.completionBlocked) {
+                                        Surface(
+                                            color = Color(0xFF210C0D),
+                                            shape = RoundedCornerShape(8.dp),
+                                            border = BorderStroke(1.dp, RedAccent),
+                                            modifier = Modifier.fillMaxWidth()
+                                        ) {
+                                            Text(
+                                                text = "Please answer all $totalQuestions questions before completing the lesson.",
+                                                color = RedAccent,
+                                                fontSize = 12.sp,
+                                                fontWeight = FontWeight.Bold,
+                                                modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp)
+                                            )
+                                        }
+                                    } else {
+                                        Text(
+                                            text = "Test your knowledge with multiple-choice and code output questions.",
+                                            color = TextSecondary,
+                                            fontSize = 13.sp,
+                                            lineHeight = 18.sp
+                                        )
+                                    }
+
+                                    Surface(
+                                        color = if (state.allQuestionsAnswered) GreenAccent else OrangeAccent,
+                                        shape = RoundedCornerShape(12.dp),
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .clickable { showQuestionsModal = true }
+                                    ) {
+                                        Box(
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .padding(vertical = 11.dp),
+                                            contentAlignment = Alignment.Center
+                                        ) {
+                                            Text(
+                                                text = if (state.allQuestionsAnswered) "Review Questions ➔" else "Start Quiz ➔",
+                                                color = Color(0xFF111115),
+                                                fontSize = 15.sp,
+                                                fontWeight = FontWeight.Bold
+                                            )
+                                        }
+                                    }
+                                }
+                            }
                         }
 
                         // Finish Lesson Section with Next Lesson capability
@@ -367,14 +458,168 @@ fun LessonDetailScreen(
                             nextLessonId = state.nextLessonId,
                             onComplete = {
                                 viewModel.markLessonCompleted()
-                                isLessonCompleted = true
-                                showCelebrationOverlay = true
+                                val latestState = viewModel.uiState.value
+                                if (latestState is LessonUiState.Success && latestState.isCompleted) {
+                                    isLessonCompleted = true
+                                    showCelebrationOverlay = true
+                                }
                             },
                             onNavigateToNextLesson = onNavigateToLesson,
                             onBackToTopic = onBack
                         )
 
                         Spacer(modifier = Modifier.height(16.dp))
+                    }
+
+                    // Direct Interactive Fullscreen Visualizer Dialog
+                    if (showVisualizerModal) {
+                        CompositionLocalProvider(
+                            LocalAutoExpandVisualizer provides true,
+                            LocalVisualizerClose provides { showVisualizerModal = false }
+                        ) {
+                            RenderVisualizerCardForLesson(lessonId = state.lesson.id, title = state.lesson.title)
+                        }
+                    }
+
+                    // Independent Lesson Questions Quiz Window
+                    if (showQuestionsModal && state.questions.isNotEmpty()) {
+                        val hasQuestionSequence = state.questions.size > 1
+                        val questionIndex = if (hasQuestionSequence) {
+                            lessonQuestionIndex.coerceIn(0, state.questions.lastIndex)
+                        } else {
+                            0
+                        }
+                        val question = state.questions[questionIndex]
+
+                        Box(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .background(DarkBgColor)
+                                .clickable(enabled = false) {}
+                                .padding(14.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Column(
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .clip(RoundedCornerShape(18.dp))
+                                    .background(DarkCardBgColor)
+                                    .border(1.dp, CardBorderColor, RoundedCornerShape(18.dp))
+                                    .padding(14.dp),
+                                verticalArrangement = Arrangement.SpaceBetween
+                            ) {
+                                // Top Header Bar
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Column {
+                                        Text(
+                                            text = "LESSON QUIZ",
+                                            color = OrangeAccent,
+                                            fontSize = 10.sp,
+                                            fontWeight = FontWeight.Bold,
+                                            letterSpacing = 1.2.sp
+                                        )
+                                        Text(
+                                            text = "Question ${questionIndex + 1} of ${state.questions.size}",
+                                            color = TextPrimary,
+                                            fontSize = 16.sp,
+                                            fontWeight = FontWeight.Bold
+                                        )
+                                    }
+
+                                    Box(
+                                        modifier = Modifier
+                                            .size(34.dp)
+                                            .clip(CircleShape)
+                                            .background(Color(0xFF22222E))
+                                            .clickable { showQuestionsModal = false },
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        Text(
+                                            text = "✕",
+                                            color = TextPrimary,
+                                            fontSize = 15.sp,
+                                            fontWeight = FontWeight.Bold
+                                        )
+                                    }
+                                }
+
+                                // Scrollable Center Question Content
+                                Box(
+                                    modifier = Modifier
+                                        .weight(1f)
+                                        .fillMaxWidth()
+                                        .verticalScroll(rememberScrollState())
+                                        .padding(vertical = 10.dp)
+                                ) {
+                                    CheckYourUnderstandingSection(
+                                        statement = question.statement,
+                                        options = question.options,
+                                        correctIndex = question.correctOptionIndex,
+                                        explanation = question.explanation,
+                                        selectedOption = state.displayedSelectedOptions[question.id],
+                                        onSelectOption = { displayedOptionIdx ->
+                                            viewModel.selectQuestionAnswer(question.id, displayedOptionIdx)
+                                        },
+                                        questionType = question.type,
+                                        questionNumber = questionIndex + 1,
+                                        questionCount = if (hasQuestionSequence) state.questions.size else 1,
+                                        showProgress = false,
+                                        onPreviousQuestion = null,
+                                        onNextQuestion = null
+                                    )
+                                }
+
+                                // Bottom Navigation Bar
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Surface(
+                                        color = if (questionIndex > 0) Color(0xFF22222E) else Color(0xFF14141A),
+                                        shape = RoundedCornerShape(10.dp),
+                                        border = BorderStroke(1.dp, if (questionIndex > 0) CardBorderColor else Color(0xFF1E1E28)),
+                                        modifier = Modifier
+                                            .clickable(enabled = questionIndex > 0) {
+                                                lessonQuestionIndex = (questionIndex - 1).coerceAtLeast(0)
+                                            }
+                                    ) {
+                                        Text(
+                                            text = "‹ Previous",
+                                            color = if (questionIndex > 0) TextPrimary else TextSecondary.copy(alpha = 0.4f),
+                                            fontSize = 13.sp,
+                                            fontWeight = FontWeight.Bold,
+                                            modifier = Modifier.padding(horizontal = 16.dp, vertical = 10.dp)
+                                        )
+                                    }
+
+                                    Surface(
+                                        color = OrangeAccent,
+                                        shape = RoundedCornerShape(10.dp),
+                                        modifier = Modifier
+                                            .clickable {
+                                                if (questionIndex < state.questions.lastIndex) {
+                                                    lessonQuestionIndex = (questionIndex + 1).coerceAtMost(state.questions.lastIndex)
+                                                } else {
+                                                    showQuestionsModal = false
+                                                }
+                                            }
+                                    ) {
+                                        Text(
+                                            text = if (questionIndex < state.questions.lastIndex) "Next Question ›" else "Finish Review ➔",
+                                            color = Color(0xFF111115),
+                                            fontSize = 13.sp,
+                                            fontWeight = FontWeight.Bold,
+                                            modifier = Modifier.padding(horizontal = 16.dp, vertical = 10.dp)
+                                        )
+                                    }
+                                }
+                            }
+                        }
                     }
 
                     // Full-Screen Celebration Overlay (Figma Reference)
@@ -921,5 +1166,104 @@ private fun LessonCompletionCelebrationOverlay(
                 }
             }
         }
+    }
+}
+
+private fun hasVisualizerForLesson(lessonId: String): Boolean {
+    return when (lessonId) {
+        "lesson_introduction_ds_1",
+        "lesson_introduction_ds_2",
+        "lesson_introduction_algo_1",
+        "lesson_introduction_algo_2",
+        "searching_1",
+        "sorting_1" -> false
+        else -> true
+    }
+}
+
+@Composable
+private fun RenderVisualizerCardForLesson(lessonId: String, title: String) {
+    when (lessonId) {
+        "lesson_stack_1" -> StackVisualizationCard(StackDemonstration.FUNDAMENTALS, title = title)
+        "lesson_stack_2" -> StackVisualizationCard(StackDemonstration.OPERATIONS, title = title)
+        "lesson_stack_3" -> StackVisualizationCard(StackDemonstration.IMPLEMENTATIONS, title = title)
+        "lesson_stack_4" -> StackVisualizationCard(StackDemonstration.DELIMITER_MATCHING, title = title)
+        "lesson_queues_1" -> QueueVisualizationCard(QueueDemonstration.FUNDAMENTALS, title = title)
+        "lesson_queues_2" -> QueueVisualizationCard(QueueDemonstration.OPERATIONS, title = title)
+        "lesson_queues_3" -> QueueVisualizationCard(QueueDemonstration.IMPLEMENTATIONS, title = title)
+        "lesson_queues_4" -> QueueVisualizationCard(QueueDemonstration.CIRCULAR_BUFFER, title = title)
+        "lesson_arrays_1" -> ArrayVisualizationCard()
+        "lesson_arrays_2" -> ArrayResizeVisualizationCard()
+        "lesson_arrays_3" -> ArrayTraversalVisualizationCard()
+        "lesson_arrays_4" -> ArrayInsertDeleteVisualizationCard()
+        "lesson_arrays_5" -> ArrayComplexityComparisonCard()
+        "lesson_linked_list_1" -> LinkedListIntroductionVisualizationCard()
+        "lesson_linked_list_2" -> LinkedListTraversalSearchAccessVisualizationCard()
+        "lesson_linked_list_3" -> LinkedListInsertionVisualizationCard()
+        "lesson_linked_list_4" -> LinkedListRemovalVisualizationCard()
+        "lesson_linked_list_5" -> LinkedListPerformanceComparisonVisualizationCard()
+        "searching_2" -> LinearSearchVisualizationCard()
+        "searching_3" -> BinarySearchVisualizationCard()
+        "searching_4" -> SearchComparisonCard()
+        "sorting_2" -> BubbleSortVisualizationCard()
+        "sorting_3" -> SelectionSortVisualizationCard()
+        "sorting_4" -> InsertionSortVisualizationCard()
+        "sorting_5" -> SortingComparisonCard()
+        "lesson_hash_tables_1" -> HashTableVisualizationCard(title = title)
+        "lesson_hash_tables_2" -> HashTableCollisionVisualizationCard(title = title)
+        "lesson_hash_tables_3" -> HashTableOperationsVisualizationCard(title = title)
+        "lesson_hash_tables_4" -> HashTableApplicationsVisualizationCard(title = title)
+        "lesson_divide_conquer_1" -> DivideConquerFundamentalsVisualizationCard(title = title)
+        "lesson_divide_conquer_2" -> RecursiveBinarySearchVisualizationCard(title = title)
+        "lesson_divide_conquer_3" -> MergeSortFundamentalsVisualizationCard(title = title)
+        "lesson_divide_conquer_4" -> MergeSortFullVisualizationCard(title = title)
+        "lesson_divide_conquer_5" -> QuickSortPartitionVisualizationCard(title = title)
+        "lesson_divide_conquer_6" -> DivideConquerTradeoffsVisualizationCard(title = title)
+        "lesson_trees_1" -> TreeFundamentalsVisualizationCard(title = title)
+        "lesson_trees_2" -> BinaryTreeBstVisualizationCard(title = title)
+        "lesson_trees_3" -> TreeTraversalsVisualizationCard(title = title)
+        "lesson_trees_4" -> BstOperationsVisualizationCard(title = title)
+        "lesson_heap_1" -> HeapPropertiesVisualizationCard(title = title)
+        "lesson_heap_2" -> HeapInsertSiftUpVisualizationCard(title = title)
+        "lesson_heap_3" -> HeapExtractSiftDownVisualizationCard(title = title)
+        "lesson_heap_4" -> HeapBuildVisualizationCard(title = title)
+        "lesson_heap_5" -> HeapSortVisualizationCard(title = title)
+        "lesson_graphs_1" -> GraphFundamentalsVisualizationCard(title = title)
+        "lesson_graphs_2" -> GraphRepresentationsVisualizationCard(title = title)
+        "lesson_graphs_3" -> GraphBfsVisualizationCard(title = title)
+        "lesson_graphs_4" -> GraphDfsVisualizationCard(title = title)
+        "lesson_graphs_5" -> GraphComponentsCycleVisualizationCard(title = title)
+        "lesson_graphs_6" -> GraphUnweightedShortestPathVisualizationCard(title = title)
+        "lesson_graphs_7" -> DijkstraVisualizationCard(title = title)
+        "lesson_graphs_8" -> TopologicalSortVisualizationCard(title = title)
+        "lesson_brute_force_1" -> BruteForceFundamentalsVisualizationCard(title = title)
+        "lesson_brute_force_2" -> BruteForcePairProblemsVisualizationCard(title = title)
+        "lesson_brute_force_3" -> NaiveStringMatchingVisualizationCard(title = title)
+        "lesson_greedy_1" -> GreedyFundamentalsVisualizationCard(title = title)
+        "lesson_greedy_2" -> GreedyCoinChangeVisualizationCard(title = title)
+        "lesson_greedy_3" -> ActivitySelectionVisualizationCard(title = title)
+        "lesson_greedy_4" -> FractionalKnapsackVisualizationCard(title = title)
+        "lesson_greedy_5" -> GreedyCounterexamplesVisualizationCard(title = title)
+        "lesson_backtracking_1" -> BacktrackingFundamentalsVisualizationCard(title = title)
+        "lesson_backtracking_2" -> PermutationsVisualizationCard(title = title)
+        "lesson_backtracking_3" -> CombinationsPruningVisualizationCard(title = title)
+        "lesson_backtracking_4" -> NQueensVisualizationCard(title = title)
+        "lesson_backtracking_5" -> GridPathfindingVisualizationCard(title = title)
+        "lesson_backtracking_6" -> BacktrackingComplexityVisualizationCard(title = title)
+        "lesson_dynamic_programming_1" -> DpMemoizationVisualizationCard(title = title)
+        "lesson_dynamic_programming_2" -> DpTabulationVisualizationCard(title = title)
+        "lesson_dynamic_programming_3" -> CoinChangeDpVisualizationCard(title = title)
+        "lesson_dynamic_programming_4" -> UniquePathsDpVisualizationCard(title = title)
+        "lesson_dynamic_programming_5" -> Knapsack01DpVisualizationCard(title = title)
+        "lesson_dynamic_programming_6" -> LcsDpVisualizationCard(title = title)
+        "lesson_branch_bound_1" -> BranchBoundFundamentalsVisualizationCard(title = title)
+        "lesson_branch_bound_2" -> BoundsPruningVisualizationCard(title = title)
+        "lesson_branch_bound_3" -> BestFirstSearchVisualizationCard(title = title)
+        "lesson_branch_bound_4" -> KnapsackBranchBoundVisualizationCard(title = title)
+        "lesson_iteration_recursion_1" -> IterationFundamentalsVisualizationCard(title = title)
+        "lesson_iteration_recursion_2" -> NestedIterationVisualizationCard(title = title)
+        "lesson_iteration_recursion_3" -> RecursionFundamentalsVisualizationCard(title = title)
+        "lesson_iteration_recursion_4" -> RecursionTradeoffsVisualizationCard(title = title)
+        else -> ArrayVisualizationCard()
     }
 }

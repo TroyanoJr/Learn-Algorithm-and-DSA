@@ -37,7 +37,8 @@ internal fun RecursiveBinarySearchVisualizationCard(
     title: String = "Recursive Binary Search"
 ) {
     val steps = RecursiveBinarySearchTrace.stepsForSearch()
-    var isExpanded by rememberSaveable { mutableStateOf(false) }
+    val autoExpand = LocalAutoExpandVisualizer.current
+    var isExpanded by rememberSaveable { mutableStateOf(autoExpand) }
 
     val playback = rememberVisualizerPlaybackState(
         stepCount = steps.size,
@@ -48,8 +49,10 @@ internal fun RecursiveBinarySearchVisualizationCard(
     val isCompleted = playback.isCompleted
     val step = steps[stepIndex]
 
-    ArrayWindowButton(text = "Open binary search visualizer") {
-        isExpanded = true
+    if (!autoExpand) {
+        ArrayWindowButton(text = "Open binary search visualizer") {
+            isExpanded = true
+        }
     }
 
     if (isExpanded) {

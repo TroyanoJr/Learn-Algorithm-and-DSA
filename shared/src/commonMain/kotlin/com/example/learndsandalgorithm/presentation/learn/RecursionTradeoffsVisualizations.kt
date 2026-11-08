@@ -37,7 +37,8 @@ internal fun RecursionTradeoffsVisualizationCard(
     title: String = "Recursion Patterns and Trade-offs"
 ) {
     val steps = RecursionTradeoffsTrace.createTrace()
-    var isExpanded by rememberSaveable { mutableStateOf(false) }
+    val autoExpand = LocalAutoExpandVisualizer.current
+    var isExpanded by rememberSaveable { mutableStateOf(autoExpand) }
 
     val playback = rememberVisualizerPlaybackState(
         stepCount = steps.size,
@@ -48,8 +49,10 @@ internal fun RecursionTradeoffsVisualizationCard(
     val isCompleted = playback.isCompleted
     val step = steps[stepIndex]
 
-    ArrayWindowButton(text = "Open tradeoffs visualizer") {
-        isExpanded = true
+    if (!autoExpand) {
+        ArrayWindowButton(text = "Open tradeoffs visualizer") {
+            isExpanded = true
+        }
     }
 
     if (isExpanded) {

@@ -39,7 +39,8 @@ internal fun BinaryTreeBstVisualizationCard(
 ) {
     var selectedScenario by rememberSaveable { mutableStateOf(BstComparisonScenario.VALID_BST) }
     val steps = BinaryTreeBstTrace.stepsForScenario(selectedScenario)
-    var isExpanded by rememberSaveable { mutableStateOf(false) }
+    val autoExpand = LocalAutoExpandVisualizer.current
+    var isExpanded by rememberSaveable { mutableStateOf(autoExpand) }
 
     val playback = rememberVisualizerPlaybackState(
         stepCount = steps.size,
@@ -51,8 +52,10 @@ internal fun BinaryTreeBstVisualizationCard(
     val isCompleted = playback.isCompleted
     val step = steps[stepIndex]
 
-    ArrayWindowButton(text = "Open binary tree vs BST visualizer") {
-        isExpanded = true
+    if (!autoExpand) {
+        ArrayWindowButton(text = "Open binary tree vs BST visualizer") {
+            isExpanded = true
+        }
     }
 
     if (isExpanded) {

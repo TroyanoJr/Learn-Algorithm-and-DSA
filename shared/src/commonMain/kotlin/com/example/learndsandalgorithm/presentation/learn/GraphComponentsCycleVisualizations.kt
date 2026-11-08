@@ -39,7 +39,8 @@ internal fun GraphComponentsCycleVisualizationCard(
 ) {
     var selectedTopic by rememberSaveable { mutableStateOf(ComponentCycleTopic.CONNECTED_COMPONENTS) }
     val steps = GraphComponentsCycleTrace.stepsForTopic(selectedTopic)
-    var isExpanded by rememberSaveable { mutableStateOf(false) }
+    val autoExpand = LocalAutoExpandVisualizer.current
+    var isExpanded by rememberSaveable { mutableStateOf(autoExpand) }
 
     val playback = rememberVisualizerPlaybackState(
         stepCount = steps.size,
@@ -51,8 +52,10 @@ internal fun GraphComponentsCycleVisualizationCard(
     val isCompleted = playback.isCompleted
     val step = steps[stepIndex]
 
-    ArrayWindowButton(text = "Open components & cycle visualizer") {
-        isExpanded = true
+    if (!autoExpand) {
+        ArrayWindowButton(text = "Open components & cycle visualizer") {
+            isExpanded = true
+        }
     }
 
     if (isExpanded) {

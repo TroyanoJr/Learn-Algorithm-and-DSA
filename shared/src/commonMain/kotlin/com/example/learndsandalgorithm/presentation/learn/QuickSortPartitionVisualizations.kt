@@ -36,7 +36,8 @@ internal fun QuickSortPartitionVisualizationCard(
     title: String = "Quick Sort Fundamentals and Partitioning"
 ) {
     val steps = QuickSortPartitionTrace.stepsForPartition()
-    var isExpanded by rememberSaveable { mutableStateOf(false) }
+    val autoExpand = LocalAutoExpandVisualizer.current
+    var isExpanded by rememberSaveable { mutableStateOf(autoExpand) }
 
     val playback = rememberVisualizerPlaybackState(
         stepCount = steps.size,
@@ -47,8 +48,10 @@ internal fun QuickSortPartitionVisualizationCard(
     val isCompleted = playback.isCompleted
     val step = steps[stepIndex]
 
-    ArrayWindowButton(text = "Open quick sort visualizer") {
-        isExpanded = true
+    if (!autoExpand) {
+        ArrayWindowButton(text = "Open quick sort visualizer") {
+            isExpanded = true
+        }
     }
 
     if (isExpanded) {

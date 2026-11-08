@@ -33,4 +33,16 @@ class MockProgressRepository : ProgressRepository {
             totalXp += xp
         }
     }
+
+    private val questionAnswers = mutableMapOf<String, MutableMap<String, Int>>()
+
+    override fun saveQuestionAnswer(lessonId: String, questionId: String, originalOptionIndex: Int) {
+        if (lessonId.isBlank() || questionId.isBlank()) return
+        val answersForLesson = questionAnswers.getOrPut(lessonId) { mutableMapOf() }
+        answersForLesson[questionId] = originalOptionIndex
+    }
+
+    override fun getQuestionAnswers(lessonId: String): Map<String, Int> {
+        return questionAnswers[lessonId]?.toMap() ?: emptyMap()
+    }
 }

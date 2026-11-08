@@ -67,4 +67,65 @@ class SettingsProgressRepositoryTest {
         assertEquals(setOf("lesson_arrays_1", "searching_1"), repo2.getCompletedLessonIds())
         assertEquals(75, repo2.getTotalXp())
     }
+
+    @Test
+    fun testSaveAndRestoreAnsweredQuestion() {
+        val settings = MapSettings()
+        val repository = SettingsProgressRepository(settings)
+
+        repository.saveQuestionAnswer("lesson_arrays_1", "q1", 0)
+
+        val answers = repository.getQuestionAnswers("lesson_arrays_1")
+        assertEquals(mapOf("q1" to 0), answers)
+    }
+
+    @Test
+    fun testSaveAndRestoreIncorrectAnswerAsAnswered() {
+        val settings = MapSettings()
+        val repository = SettingsProgressRepository(settings)
+
+        repository.saveQuestionAnswer("lesson_arrays_1", "q1", 3) // Option 3 is incorrect
+
+        val answers = repository.getQuestionAnswers("lesson_arrays_1")
+        assertEquals(mapOf("q1" to 3), answers)
+        assertTrue(answers.containsKey("q1"), "Incorrect answer must count as answered")
+    }
+
+    @Test
+    fun testAnswersIsolatedBetweenLessons() {
+        val settings = MapSettings()
+        val repository = SettingsProgressRepository(settings)
+
+        repository.saveQuestionAnswer("lesson_arrays_1", "q1", 0)
+        repository.saveQuestionAnswer("lesson_arrays_2", "q2", 1)
+
+        assertEquals(mapOf("q1" to 0), repository.getQuestionAnswers("lesson_arrays_1"))
+        assertEquals(mapOf("q2" to 1), repository.getQuestionAnswers("lesson_arrays_2"))
+    }
+
+    @Test
+    fun testAnswersIsolatedBetweenQuestionIds() {
+        val settings = MapSettings()
+        val repository = SettingsProgressRepository(settings)
+
+        repository.saveQuestionAnswer("lesson_arrays_1", "q1", 0)
+        repository.saveQuestionAnswer("lesson_arrays_1", "q2", 2)
+
+        val answers = repository.getQuestionAnswers("lesson_arrays_1")
+        assertEquals(2, answers.size)
+        assertEquals(0, answers["q1"])
+        assertEquals(2, answers["q2"])
+    }
+
+    @Test
+    fun testUpdatingExistingAnswerPreservesAnsweredStatus() {
+        val settings = MapSettings()
+        val repository = SettingsProgressRepository(settings)
+
+        repository.saveQuestionAnswer("lesson_arrays_1", "q1", 1)
+        repository.saveQuestionAnswer("lesson_arrays_1", "q1", 3) // Update answer
+
+        val answers = repository.getQuestionAnswers("lesson_arrays_1")
+        assertEquals(mapOf("q1" to 3), answers)
+    }
 }

@@ -11,6 +11,7 @@ class SettingsProgressRepository(
     companion object {
         private const val KEY_COMPLETED_LESSON_IDS = "completed_lesson_ids"
         private const val KEY_TOTAL_XP = "total_xp"
+        private const val KEY_PREFIX_LESSON_ANSWERS = "lesson_answers_"
     }
 
     override fun getProgress(): Progress {
@@ -44,5 +45,34 @@ class SettingsProgressRepository(
             val currentXp = getTotalXp()
             settings.putInt(KEY_TOTAL_XP, currentXp + xp)
         }
+    }
+
+    override fun saveQuestionAnswer(lessonId: String, questionId: String, originalOptionIndex: Int) {
+        if (lessonId.isBlank() || questionId.isBlank()) return
+        val key = KEY_PREFIX_LESSON_ANSWERS + lessonId
+        val currentAnswers = getQuestionAnswers(lessonId).toMutableMap()
+        currentAnswers[questionId] = originalOptionIndex
+        val serialized = currentAnswers.entries.joinToString(",") { "${it.key}:${it.value}" }
+        settings.putString(key, serialized)
+    }
+
+    override fun getQuestionAnswers(lessonId: String): Map<String, Int> {
+        if (lessonId.isBlank()) return emptyMap()
+        val key = KEY_PREFIX_LESSON_ANSWERS + lessonId
+        val rawString = settings.getString(key, "")
+        if (rawString.isBlank()) return emptyMap()
+
+        val result = mutableMapOf<String, Int>()
+        rawString.split(",").forEach { pairStr ->
+            val parts = pairStr.split(":")
+            if (parts.size == 2) {
+                val qId = parts[0].trim()
+                val optIdx = parts[1].trim().toIntOrNull()
+                if (qId.isNotBlank() && optIdx != null) {
+                    result[qId] = optIdx
+                }
+            }
+        }
+        return result
     }
 }

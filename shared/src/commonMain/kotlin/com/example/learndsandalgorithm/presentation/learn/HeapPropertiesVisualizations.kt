@@ -38,7 +38,8 @@ internal fun HeapPropertiesVisualizationCard(
 ) {
     var selectedTopic by rememberSaveable { mutableStateOf(HeapPropertyTopic.MIN_HEAP_STRUCTURE) }
     val steps = HeapPropertiesTrace.stepsForTopic(selectedTopic)
-    var isExpanded by rememberSaveable { mutableStateOf(false) }
+    val autoExpand = LocalAutoExpandVisualizer.current
+    var isExpanded by rememberSaveable { mutableStateOf(autoExpand) }
 
     val playback = rememberVisualizerPlaybackState(
         stepCount = steps.size,
@@ -50,8 +51,10 @@ internal fun HeapPropertiesVisualizationCard(
     val isCompleted = playback.isCompleted
     val step = steps[stepIndex]
 
-    ArrayWindowButton(text = "Open heap properties visualizer") {
-        isExpanded = true
+    if (!autoExpand) {
+        ArrayWindowButton(text = "Open heap properties visualizer") {
+            isExpanded = true
+        }
     }
 
     if (isExpanded) {

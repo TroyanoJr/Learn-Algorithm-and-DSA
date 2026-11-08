@@ -40,7 +40,8 @@ internal fun GreedyCoinChangeVisualizationCard(
     title: String = "Greedy Coin Change"
 ) {
     val steps = GreedyCoinChangeTrace.createTrace()
-    var isExpanded by rememberSaveable { mutableStateOf(false) }
+    val autoExpand = LocalAutoExpandVisualizer.current
+    var isExpanded by rememberSaveable { mutableStateOf(autoExpand) }
 
     val playback = rememberVisualizerPlaybackState(
         stepCount = steps.size,
@@ -51,8 +52,10 @@ internal fun GreedyCoinChangeVisualizationCard(
     val isCompleted = playback.isCompleted
     val step = steps[stepIndex]
 
-    ArrayWindowButton(text = "Open coin change visualizer") {
-        isExpanded = true
+    if (!autoExpand) {
+        ArrayWindowButton(text = "Open coin change visualizer") {
+            isExpanded = true
+        }
     }
 
     if (isExpanded) {

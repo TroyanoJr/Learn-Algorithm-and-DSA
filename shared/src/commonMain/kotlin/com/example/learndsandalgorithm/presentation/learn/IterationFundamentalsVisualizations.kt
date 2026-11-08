@@ -37,7 +37,8 @@ internal fun IterationFundamentalsVisualizationCard(
     title: String = "Iteration Fundamentals"
 ) {
     val steps = IterationFundamentalsTrace.createTrace()
-    var isExpanded by rememberSaveable { mutableStateOf(false) }
+    val autoExpand = LocalAutoExpandVisualizer.current
+    var isExpanded by rememberSaveable { mutableStateOf(autoExpand) }
 
     val playback = rememberVisualizerPlaybackState(
         stepCount = steps.size,
@@ -48,8 +49,10 @@ internal fun IterationFundamentalsVisualizationCard(
     val isCompleted = playback.isCompleted
     val step = steps[stepIndex]
 
-    ArrayWindowButton(text = "Open iteration visualizer") {
-        isExpanded = true
+    if (!autoExpand) {
+        ArrayWindowButton(text = "Open iteration visualizer") {
+            isExpanded = true
+        }
     }
 
     if (isExpanded) {

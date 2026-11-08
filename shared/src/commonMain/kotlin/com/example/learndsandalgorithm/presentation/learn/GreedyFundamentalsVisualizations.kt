@@ -39,7 +39,8 @@ internal fun GreedyFundamentalsVisualizationCard(
     title: String = "Greedy Algorithm Fundamentals"
 ) {
     val steps = GreedyFundamentalsTrace.createTrace()
-    var isExpanded by rememberSaveable { mutableStateOf(false) }
+    val autoExpand = LocalAutoExpandVisualizer.current
+    var isExpanded by rememberSaveable { mutableStateOf(autoExpand) }
 
     val playback = rememberVisualizerPlaybackState(
         stepCount = steps.size,
@@ -50,8 +51,10 @@ internal fun GreedyFundamentalsVisualizationCard(
     val isCompleted = playback.isCompleted
     val step = steps[stepIndex]
 
-    ArrayWindowButton(text = "Open greedy fundamentals visualizer") {
-        isExpanded = true
+    if (!autoExpand) {
+        ArrayWindowButton(text = "Open greedy fundamentals visualizer") {
+            isExpanded = true
+        }
     }
 
     if (isExpanded) {

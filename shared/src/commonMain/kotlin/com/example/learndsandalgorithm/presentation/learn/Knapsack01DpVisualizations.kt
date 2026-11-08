@@ -37,7 +37,8 @@ internal fun Knapsack01DpVisualizationCard(
     title: String = "0/1 Knapsack Problem"
 ) {
     val steps = Knapsack01DpTrace.createTrace()
-    var isExpanded by rememberSaveable { mutableStateOf(false) }
+    val autoExpand = LocalAutoExpandVisualizer.current
+    var isExpanded by rememberSaveable { mutableStateOf(autoExpand) }
 
     val playback = rememberVisualizerPlaybackState(
         stepCount = steps.size,
@@ -48,8 +49,10 @@ internal fun Knapsack01DpVisualizationCard(
     val isCompleted = playback.isCompleted
     val step = steps[stepIndex]
 
-    ArrayWindowButton(text = "Open 0/1 knapsack visualizer") {
-        isExpanded = true
+    if (!autoExpand) {
+        ArrayWindowButton(text = "Open 0/1 knapsack visualizer") {
+            isExpanded = true
+        }
     }
 
     if (isExpanded) {

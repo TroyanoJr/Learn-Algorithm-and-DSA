@@ -37,7 +37,8 @@ internal fun BestFirstSearchVisualizationCard(
     title: String = "Best-First Search and Priority Queues"
 ) {
     val steps = BestFirstSearchTrace.createTrace()
-    var isExpanded by rememberSaveable { mutableStateOf(false) }
+    val autoExpand = LocalAutoExpandVisualizer.current
+    var isExpanded by rememberSaveable { mutableStateOf(autoExpand) }
 
     val playback = rememberVisualizerPlaybackState(
         stepCount = steps.size,
@@ -48,8 +49,10 @@ internal fun BestFirstSearchVisualizationCard(
     val isCompleted = playback.isCompleted
     val step = steps[stepIndex]
 
-    ArrayWindowButton(text = "Open best-first search visualizer") {
-        isExpanded = true
+    if (!autoExpand) {
+        ArrayWindowButton(text = "Open best-first search visualizer") {
+            isExpanded = true
+        }
     }
 
     if (isExpanded) {

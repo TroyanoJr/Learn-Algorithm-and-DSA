@@ -37,7 +37,8 @@ internal fun LcsDpVisualizationCard(
     title: String = "Sequence Alignment: Longest Common Subsequence (LCS)"
 ) {
     val steps = LcsDpTrace.createTrace()
-    var isExpanded by rememberSaveable { mutableStateOf(false) }
+    val autoExpand = LocalAutoExpandVisualizer.current
+    var isExpanded by rememberSaveable { mutableStateOf(autoExpand) }
 
     val playback = rememberVisualizerPlaybackState(
         stepCount = steps.size,
@@ -48,8 +49,10 @@ internal fun LcsDpVisualizationCard(
     val isCompleted = playback.isCompleted
     val step = steps[stepIndex]
 
-    ArrayWindowButton(text = "Open LCS visualizer") {
-        isExpanded = true
+    if (!autoExpand) {
+        ArrayWindowButton(text = "Open LCS visualizer") {
+            isExpanded = true
+        }
     }
 
     if (isExpanded) {

@@ -37,7 +37,8 @@ internal fun RecursionFundamentalsVisualizationCard(
     title: String = "Recursion Fundamentals"
 ) {
     val steps = RecursionFundamentalsTrace.createTrace()
-    var isExpanded by rememberSaveable { mutableStateOf(false) }
+    val autoExpand = LocalAutoExpandVisualizer.current
+    var isExpanded by rememberSaveable { mutableStateOf(autoExpand) }
 
     val playback = rememberVisualizerPlaybackState(
         stepCount = steps.size,
@@ -48,8 +49,10 @@ internal fun RecursionFundamentalsVisualizationCard(
     val isCompleted = playback.isCompleted
     val step = steps[stepIndex]
 
-    ArrayWindowButton(text = "Open recursion visualizer") {
-        isExpanded = true
+    if (!autoExpand) {
+        ArrayWindowButton(text = "Open recursion visualizer") {
+            isExpanded = true
+        }
     }
 
     if (isExpanded) {

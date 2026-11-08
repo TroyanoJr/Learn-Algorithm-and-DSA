@@ -34,7 +34,8 @@ internal fun HeapInsertSiftUpVisualizationCard(
     title: String = "Heap Insertion and Sift Up"
 ) {
     val steps = HeapInsertSiftUpTrace.stepsForInsert()
-    var isExpanded by rememberSaveable { mutableStateOf(false) }
+    val autoExpand = LocalAutoExpandVisualizer.current
+    var isExpanded by rememberSaveable { mutableStateOf(autoExpand) }
 
     val playback = rememberVisualizerPlaybackState(
         stepCount = steps.size,
@@ -45,8 +46,10 @@ internal fun HeapInsertSiftUpVisualizationCard(
     val isCompleted = playback.isCompleted
     val step = steps[stepIndex]
 
-    ArrayWindowButton(text = "Open heap insertion visualizer") {
-        isExpanded = true
+    if (!autoExpand) {
+        ArrayWindowButton(text = "Open heap insertion visualizer") {
+            isExpanded = true
+        }
     }
 
     if (isExpanded) {
