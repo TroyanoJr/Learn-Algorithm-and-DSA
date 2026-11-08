@@ -113,8 +113,8 @@ print("Upper bound:", compute_upper_bound(10.0, 0.0, 0.0, items, 0))
 
 ## Complexity Analysis
 
-- **Time Complexity**: Fractional relaxations take $O(N \log N)$ sorting time, reducing overall search space exploration time significantly.
-- **Space Complexity**: $O(N)$ auxiliary call stack and priority queue space.
+- **Time Complexity**: Fractional relaxations take `O(N log N)` sorting time, reducing overall search space exploration time significantly.
+- **Space Complexity**: `O(N)` auxiliary call stack and priority queue space.
 
 ## Summary
 

@@ -46,8 +46,7 @@ import androidx.compose.ui.text.style.TextAlign
 private val TextPrimary = Color(0xFFFFFFFF)
 private val TextSecondary = Color(0xFF9CA3AF)
 private val CodeBgColor = Color(0xFF0F0F14)
-private val CodeBorderColor = Color(0xFF262634)
-private val InlineCodeBgColor = Color(0xFF22222E)
+  private val CodeBorderColor = Color(0xFF262634)
 private val AccentColor = Color(0xFFFA6E13)
 private val GreenAccent = Color(0xFF10B981)
 
@@ -905,7 +904,6 @@ private fun parseInlineMarkdown(text: String): AnnotatedString {
                     withStyle(
                         SpanStyle(
                             fontFamily = FontFamily.Monospace,
-                            background = InlineCodeBgColor,
                             color = Color(0xFF38BDF8),
                             fontSize = 13.sp
                         )
