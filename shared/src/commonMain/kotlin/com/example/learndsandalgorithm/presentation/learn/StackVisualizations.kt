@@ -238,10 +238,10 @@ private fun StackVisualizationContent(
                                 color = if (index == step.highlightedIndex) Color(0xFF2A1C12) else Color(0xFF13131C),
                                 shape = RoundedCornerShape(6.dp),
                                 border = BorderStroke(1.dp, if (index == step.highlightedIndex) OrangeAccent else CardBorderColor),
-                                modifier = Modifier.width(72.dp * scale).height(25.dp * scale)
+                                modifier = Modifier.width(80.dp * scale).height(32.dp * scale)
                             ) {
                                 Box(contentAlignment = Alignment.Center) {
-                                    Text(step.values[index], color = if (index == step.highlightedIndex) OrangeAccent else TextPrimary, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                                    Text(step.values[index], color = if (index == step.highlightedIndex) OrangeAccent else TextPrimary, fontSize = 13.sp, fontWeight = FontWeight.Bold)
                                 }
                             }
                             Box(
@@ -270,14 +270,14 @@ private fun StackVisualizationContent(
                                 color = if (index == step.highlightedIndex) Color(0xFF2A1C12) else Color(0xFF13131C),
                                 shape = RoundedCornerShape(6.dp),
                                 border = BorderStroke(1.dp, if (index == step.highlightedIndex) OrangeAccent else CardBorderColor),
-                                modifier = Modifier.width(46.dp * scale).height(32.dp * scale)
+                                modifier = Modifier.width(52.dp * scale).height(36.dp * scale)
                             ) {
                                 Row(
                                     modifier = Modifier.fillMaxSize().padding(horizontal = 4.dp),
                                     verticalAlignment = Alignment.CenterVertically,
                                     horizontalArrangement = Arrangement.SpaceBetween
                                 ) {
-                                    Text(step.values[index], color = if (index == step.highlightedIndex) OrangeAccent else TextPrimary, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                                    Text(step.values[index], color = if (index == step.highlightedIndex) OrangeAccent else TextPrimary, fontSize = 13.sp, fontWeight = FontWeight.Bold)
                                     Surface(
                                         color = CardBorderColor,
                                         shape = RoundedCornerShape(3.dp),
@@ -298,7 +298,7 @@ private fun StackVisualizationContent(
                 Surface(
                     color = Color(0xFF13131C), shape = RoundedCornerShape(8.dp),
                     border = BorderStroke(1.dp, CardBorderColor),
-                    modifier = Modifier.width(120.dp * scale).height(38.dp * scale)
+                    modifier = Modifier.width(130.dp * scale).height(38.dp * scale)
                 ) {
                     Box(contentAlignment = Alignment.Center) {
                         Text("EMPTY", color = TextSecondary, fontSize = 12.sp, fontWeight = FontWeight.Bold)
@@ -311,10 +311,10 @@ private fun StackVisualizationContent(
                         color = if (highlighted) Color(0xFF2A1C12) else Color(0xFF13131C),
                         shape = RoundedCornerShape(8.dp),
                         border = BorderStroke(1.dp, if (highlighted) OrangeAccent else CardBorderColor),
-                        modifier = Modifier.width(120.dp * scale).height(24.dp * scale)
+                        modifier = Modifier.width(130.dp * scale).height(32.dp * scale)
                     ) {
                         Box(contentAlignment = Alignment.Center) {
-                            Text(step.values[index], color = if (highlighted) OrangeAccent else TextPrimary, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                            Text(step.values[index], color = if (highlighted) OrangeAccent else TextPrimary, fontSize = 13.sp, fontWeight = FontWeight.Bold)
                         }
                     }
                 }

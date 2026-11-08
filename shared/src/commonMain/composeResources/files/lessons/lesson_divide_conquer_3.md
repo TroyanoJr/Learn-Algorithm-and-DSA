@@ -4,7 +4,7 @@
 
 ## Key Concepts of Merge Sort
 
-1. **Divide**: Split the unsorted array of size $N$ into two halves approximately equal in size ($N/2$ each).
+1. **Divide**: Split the unsorted array of size `N` into two halves approximately equal in size (`N/2` each).
 2. **Conquer**: Sort each half recursively by applying merge sort to them repeatedly until subproblems reach size 1 (a single element is inherently sorted).
 3. **Combine**: **Merge** the two sorted halves back together into a single, fully sorted array.
 

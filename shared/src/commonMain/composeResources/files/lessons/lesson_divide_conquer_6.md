@@ -5,13 +5,13 @@ Comparing divide-and-conquer sorting algorithms like **Merge Sort** and **Quick 
 ## Complexity Comparison
 
 - **Merge Sort** — Best case: O(N log N); average case: O(N log N); worst case: O(N log N); auxiliary space: O(N); stable: yes.
-- **Quick Sort** — Best case: O(N log N); average case: O(N log N); worst case: O(N^2); auxiliary space: O(log N) typical/average with reasonably balanced partitions and O(N) worst case (call stack); stable: no.
+- **Quick Sort** — Best case: O(N log N); average case: O(N log N); worst case: O(N²); auxiliary space: O(log N) typical/average with reasonably balanced partitions and O(N) worst case (call stack); stable: no.
 
 ## Key Trade-offs
 
 1. **Worst-Case Performance**:
    - Merge Sort guarantees O(N log N) performance regardless of input initial order.
-   - Quick Sort degrades to O(N^2) if the pivot consistently divides the array into unbalanced partitions (e.g., choosing the smallest or largest element as pivot on already sorted data). Randomized pivot selection mitigates this.
+   - Quick Sort degrades to O(N²) if the pivot consistently divides the array into unbalanced partitions (e.g., choosing the smallest or largest element as pivot on already sorted data). Randomized pivot selection mitigates this.
 2. **Memory (Auxiliary Space)**:
    - Merge Sort requires O(N) extra memory for temporary merging buffers.
    - Quick Sort sorts *in-place*. With reasonably balanced partitions, its call stack is typically O(log N); consistently unbalanced partitions can produce O(N) recursive depth and stack space.
@@ -80,7 +80,7 @@ evaluate_partition(10)
 ## Remember
 
 - **Merge Sort** guarantees O(N log N) time and O(N) space and is **stable**.
-- **Quick Sort** runs in O(N log N) average time and sorts **in-place**. Its call stack is typically O(log N) with reasonably balanced partitions, but can reach O(N) for consistently unbalanced partitions; time can degrade to O(N^2).
+- **Quick Sort** runs in O(N log N) average time and sorts **in-place**. Its call stack is typically O(log N) with reasonably balanced partitions, but can reach O(N) for consistently unbalanced partitions; time can degrade to O(N²).
 - Not all divide-and-conquer algorithms have identical complexity; partition balance dictates Quick Sort's efficiency.
 
 ## Summary

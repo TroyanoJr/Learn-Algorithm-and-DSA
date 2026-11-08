@@ -17,7 +17,7 @@ A problem can be efficiently solved using Dynamic Programming if it exhibits two
 
 ### Code Example: Fibonacci with Top-Down Memoization
 
-The standard recursive Fibonacci calculation takes exponential `O(2^N)` time because it recomputes `Fib(N-2)` repeatedly. Memoization stores computed values, reducing time complexity to linear `O(N)`. 
+The standard recursive Fibonacci calculation takes exponential `O(2ⁿ)` time because it recomputes `Fib(N-2)` repeatedly. Memoization stores computed values, reducing time complexity to linear `O(N)`.
 
 *Note on Integer Overflow*: Standard 32-bit signed integers overflow for `N >= 47` (`Fib(47) = 2,971,215,073`). We use 64-bit integers (`long long` in C++, `long` in Java) to safely support large Fibonacci numbers up to `N = 47` and beyond.
 
@@ -99,7 +99,7 @@ print(fib_memo(47))
 
 - DP requires **optimal substructure** and **overlapping subproblems**.
 - **Memoization (Top-Down)** caches recursive function calls to eliminate redundant operations.
-- Memoizing Fibonacci reduces execution time from exponential `O(2^N)` to linear `O(N)`.
+- Memoizing Fibonacci reduces execution time from exponential `O(2ⁿ)` to linear `O(N)`.
 
 ## Summary
 

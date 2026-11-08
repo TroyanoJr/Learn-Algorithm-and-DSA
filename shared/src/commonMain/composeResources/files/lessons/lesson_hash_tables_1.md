@@ -11,7 +11,7 @@ A **hash table** (or hash map) is a data structure that stores data as **key-val
 
 ## How Hash Tables Work
 
-In a standard array, accessing element `A[i]` is instant $O(1)$ because `i` is an integer index. However, if keys are strings (like `"apple"`), floating-point numbers, or complex objects, they cannot be directly used as array indices.
+In a standard array, accessing element `A[i]` is instant `O(1)` because `i` is an integer index. However, if keys are strings (like `"apple"`), floating-point numbers, or complex objects, they cannot be directly used as array indices.
 
 A hash function solves this problem by mapping non-integer keys to integer indices:
 
@@ -95,4 +95,4 @@ print(index)
 
 ## Summary
 
-Hash tables map keys to array bucket indices using a hash function. When designed well, this mapping enables constant-time $O(1)$ key-value lookups.
+Hash tables map keys to array bucket indices using a hash function. When designed well, this mapping enables constant-time `O(1)` key-value lookups.
