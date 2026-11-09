@@ -43,7 +43,13 @@ class LessonViewModel(
     private var currentQuestionOriginalIndices: Map<String, List<Int>> = emptyMap()
 
     fun loadLesson(lessonId: String) {
-        _uiState.value = LessonUiState.Loading
+        val currentState = _uiState.value
+        if (currentState is LessonUiState.Success && currentState.lesson.id == lessonId) {
+            return
+        }
+        if (currentState !is LessonUiState.Success) {
+            _uiState.value = LessonUiState.Loading
+        }
         viewModelScope.launch(mainDispatcher) {
             try {
                 val lesson = contentRepository.getLessonById(lessonId)
