@@ -22,6 +22,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -29,21 +30,26 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.learndsandalgorithm.domain.model.QuestionType
 import com.example.learndsandalgorithm.presentation.components.MarkdownContent
+import com.example.learndsandalgorithm.presentation.theme.AppCardPadding
+import com.example.learndsandalgorithm.presentation.theme.AppCornerRadius
+import com.example.learndsandalgorithm.presentation.theme.AppIconSize
+import com.example.learndsandalgorithm.presentation.theme.AppSpacing
+import com.example.learndsandalgorithm.presentation.theme.AppTouchTarget
+import com.example.learndsandalgorithm.presentation.theme.AppTypography
 
 private val DarkBgColor = Color(0xFF111115)
 private val DarkCardBgColor = Color(0xFF181820)
@@ -96,19 +102,19 @@ fun LessonDetailScreen(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 10.dp),
+                .padding(horizontal = AppSpacing.large, vertical = AppSpacing.medium),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                horizontalArrangement = Arrangement.spacedBy(AppSpacing.medium),
                 modifier = Modifier.weight(1f)
             ) {
                 // Back Button
                 Box(
                     modifier = Modifier
-                        .size(36.dp)
+                        .size(AppIconSize.boxSmall)
                         .clip(CircleShape)
                         .background(DarkCardBgColor)
                         .clickable { onBack() },
@@ -117,8 +123,7 @@ fun LessonDetailScreen(
                     Text(
                         text = "←",
                         color = TextPrimary,
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.Bold
+                        style = AppTypography.cardTitle
                     )
                 }
 
@@ -126,16 +131,13 @@ fun LessonDetailScreen(
                     val lessonOrder = (uiState as? LessonUiState.Success)?.lesson?.order ?: 1
                     Text(
                         text = "LESSON $lessonOrder",
-                        color = OrangeAccent,
-                        fontSize = 10.sp,
-                        fontWeight = FontWeight.Bold,
-                        letterSpacing = 1.2.sp
+                        style = AppTypography.sectionHeader,
+                        color = OrangeAccent
                     )
                     Text(
                         text = (uiState as? LessonUiState.Success)?.lesson?.title ?: "Lesson Detail",
-                        color = TextPrimary,
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.Bold
+                        style = AppTypography.sectionTitle,
+                        color = TextPrimary
                     )
                 }
             }
@@ -143,33 +145,31 @@ fun LessonDetailScreen(
             // XP and Duration Badges
             Row(
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(6.dp)
+                horizontalArrangement = Arrangement.spacedBy(AppSpacing.extraSmall)
             ) {
                 Box(
                     modifier = Modifier
                         .clip(RoundedCornerShape(4.dp))
                         .background(Color(0xFF22222E))
-                        .padding(horizontal = 8.dp, vertical = 4.dp)
+                        .padding(horizontal = AppSpacing.small, vertical = 4.dp)
                 ) {
                     Text(
                         text = "4 min",
                         color = TextSecondary,
-                        fontSize = 11.sp,
-                        fontWeight = FontWeight.Medium
+                        style = AppTypography.badge.copy(fontWeight = FontWeight.Medium)
                     )
                 }
                 Box(
                     modifier = Modifier
                         .clip(RoundedCornerShape(4.dp))
                         .background(Color(0xFF2A1C12))
-                        .padding(horizontal = 8.dp, vertical = 4.dp)
+                        .padding(horizontal = AppSpacing.small, vertical = 4.dp)
                 ) {
                     val xp = (uiState as? LessonUiState.Success)?.lesson?.xp ?: 30
                     Text(
                         text = "$xp XP",
                         color = OrangeAccent,
-                        fontSize = 11.sp,
-                        fontWeight = FontWeight.Bold
+                        style = AppTypography.badge
                     )
                 }
             }
@@ -189,35 +189,33 @@ fun LessonDetailScreen(
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
-                        .padding(20.dp),
+                        .padding(AppSpacing.large),
                     contentAlignment = Alignment.Center
                 ) {
                     Column(
                         horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.spacedBy(12.dp)
+                        verticalArrangement = Arrangement.spacedBy(AppSpacing.medium)
                     ) {
                         Text(
                             text = "Error Loading Lesson",
-                            color = OrangeAccent,
-                            fontSize = 18.sp,
-                            fontWeight = FontWeight.Bold
+                            style = AppTypography.sectionTitle,
+                            color = OrangeAccent
                         )
                         Text(
                             text = state.message,
-                            color = TextSecondary,
-                            fontSize = 14.sp
+                            style = AppTypography.bodySecondary,
+                            color = TextSecondary
                         )
                         Surface(
                             color = OrangeAccent,
-                            shape = RoundedCornerShape(8.dp),
+                            shape = RoundedCornerShape(AppCornerRadius.compact),
                             modifier = Modifier.clickable { viewModel.loadLesson(lessonId) }
                         ) {
                             Text(
                                 text = "Retry",
                                 color = DarkBgColor,
-                                fontSize = 14.sp,
-                                fontWeight = FontWeight.Bold,
-                                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+                                style = AppTypography.bodyPrimary.copy(fontWeight = FontWeight.Bold),
+                                modifier = Modifier.padding(horizontal = AppSpacing.large, vertical = AppSpacing.small)
                             )
                         }
                     }
@@ -264,8 +262,8 @@ fun LessonDetailScreen(
                         modifier = Modifier
                             .fillMaxSize()
                             .verticalScroll(scrollState)
-                            .padding(horizontal = 16.dp, vertical = 10.dp),
-                        verticalArrangement = Arrangement.spacedBy(12.dp)
+                            .padding(horizontal = AppSpacing.large, vertical = AppSpacing.medium),
+                        verticalArrangement = Arrangement.spacedBy(AppSpacing.medium)
                     ) {
                         // Theory & Key Concepts Markdown Content
                         MarkdownContent(content = state.markdownContent)
@@ -274,15 +272,15 @@ fun LessonDetailScreen(
                         if (hasVisualizerForLesson(state.lesson.id)) {
                             Surface(
                                 color = DarkCardBgColor,
-                                shape = RoundedCornerShape(16.dp),
+                                shape = RoundedCornerShape(AppCornerRadius.card),
                                 border = BorderStroke(1.dp, CardBorderColor),
                                 modifier = Modifier.fillMaxWidth()
                             ) {
                                 Column(
                                     modifier = Modifier
                                         .fillMaxWidth()
-                                        .padding(14.dp),
-                                    verticalArrangement = Arrangement.spacedBy(10.dp)
+                                        .padding(AppCardPadding.standard),
+                                    verticalArrangement = Arrangement.spacedBy(AppSpacing.small)
                                 ) {
                                     Row(
                                         modifier = Modifier.fillMaxWidth(),
@@ -291,57 +289,52 @@ fun LessonDetailScreen(
                                     ) {
                                         Text(
                                             text = "INTERACTIVE VISUALIZER",
-                                            color = OrangeAccent,
-                                            fontSize = 11.sp,
-                                            fontWeight = FontWeight.Bold,
-                                            letterSpacing = 1.2.sp
+                                            style = AppTypography.sectionHeader,
+                                            color = OrangeAccent
                                         )
                                         Surface(
                                             color = Color(0xFF22222E),
-                                            shape = RoundedCornerShape(6.dp)
+                                            shape = RoundedCornerShape(AppCornerRadius.compact)
                                         ) {
                                             Text(
                                                 text = "Interactive",
                                                 color = TextSecondary,
-                                                fontSize = 10.sp,
-                                                fontWeight = FontWeight.Medium,
-                                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                                                style = AppTypography.badge.copy(fontWeight = FontWeight.Medium),
+                                                modifier = Modifier.padding(horizontal = AppSpacing.small, vertical = 4.dp)
                                             )
                                         }
                                     }
 
                                     Text(
                                         text = "Interactive Data Structure Visualization",
-                                        color = TextPrimary,
-                                        fontSize = 16.sp,
-                                        fontWeight = FontWeight.Bold
+                                        style = AppTypography.cardTitle,
+                                        color = TextPrimary
                                     )
 
                                     Text(
                                         text = "Step through algorithm operations interactively with custom trace controls and step-by-step state logs.",
-                                        color = TextSecondary,
-                                        fontSize = 13.sp,
-                                        lineHeight = 18.sp
+                                        style = AppTypography.bodySecondary,
+                                        color = TextSecondary
                                     )
 
                                     Surface(
                                         color = OrangeAccent,
-                                        shape = RoundedCornerShape(12.dp),
+                                        shape = RoundedCornerShape(AppCornerRadius.card),
                                         modifier = Modifier
                                             .fillMaxWidth()
+                                            .heightIn(min = AppTouchTarget.buttonHeight)
                                             .clickable { showVisualizerModal = true }
                                     ) {
                                         Box(
                                             modifier = Modifier
                                                 .fillMaxWidth()
-                                                .padding(vertical = 11.dp),
+                                                .padding(vertical = AppSpacing.medium),
                                             contentAlignment = Alignment.Center
                                         ) {
                                             Text(
                                                 text = "Launch Visualizer ➔",
                                                 color = Color(0xFF111115),
-                                                fontSize = 15.sp,
-                                                fontWeight = FontWeight.Bold
+                                                style = AppTypography.cardTitle
                                             )
                                         }
                                     }
@@ -377,15 +370,15 @@ fun LessonDetailScreen(
 
                             Surface(
                                 color = DarkCardBgColor,
-                                shape = RoundedCornerShape(16.dp),
+                                shape = RoundedCornerShape(AppCornerRadius.card),
                                 border = cardBorder,
                                 modifier = Modifier.fillMaxWidth()
                             ) {
                                 Column(
                                     modifier = Modifier
                                         .fillMaxWidth()
-                                        .padding(14.dp),
-                                    verticalArrangement = Arrangement.spacedBy(10.dp)
+                                        .padding(AppCardPadding.standard),
+                                    verticalArrangement = Arrangement.spacedBy(AppSpacing.small)
                                 ) {
                                     Row(
                                         modifier = Modifier.fillMaxWidth(),
@@ -394,14 +387,12 @@ fun LessonDetailScreen(
                                     ) {
                                         Text(
                                             text = "LESSON QUESTIONS",
-                                            color = OrangeAccent,
-                                            fontSize = 11.sp,
-                                            fontWeight = FontWeight.Bold,
-                                            letterSpacing = 1.2.sp
+                                            style = AppTypography.sectionHeader,
+                                            color = OrangeAccent
                                         )
                                         Surface(
                                             color = if (state.allQuestionsAnswered) Color(0xFF092317) else Color(0xFF2A1C12),
-                                            shape = RoundedCornerShape(6.dp),
+                                            shape = RoundedCornerShape(AppCornerRadius.compact),
                                             border = BorderStroke(1.dp, if (state.allQuestionsAnswered) GreenAccent else OrangeAccent),
                                             modifier = Modifier.graphicsLayer {
                                                 scaleX = badgeScale
@@ -411,62 +402,58 @@ fun LessonDetailScreen(
                                             Text(
                                                 text = if (state.allQuestionsAnswered) "Completed ✓" else "$answeredCount of $totalQuestions Answered",
                                                 color = if (state.allQuestionsAnswered) GreenAccent else OrangeAccent,
-                                                fontSize = 10.sp,
-                                                fontWeight = FontWeight.Bold,
-                                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                                                style = AppTypography.badge,
+                                                modifier = Modifier.padding(horizontal = AppSpacing.small, vertical = 4.dp)
                                             )
                                         }
                                     }
 
                                     Text(
                                         text = "Check Your Understanding",
-                                        color = TextPrimary,
-                                        fontSize = 16.sp,
-                                        fontWeight = FontWeight.Bold
+                                        style = AppTypography.cardTitle,
+                                        color = TextPrimary
                                     )
 
                                     if (state.completionBlocked) {
                                         Surface(
                                             color = Color(0xFF210C0D),
-                                            shape = RoundedCornerShape(8.dp),
+                                            shape = RoundedCornerShape(AppCornerRadius.compact),
                                             border = BorderStroke(1.dp, RedAccent),
                                             modifier = Modifier.fillMaxWidth()
                                         ) {
                                             Text(
                                                 text = "Please answer all $totalQuestions questions before completing the lesson.",
                                                 color = RedAccent,
-                                                fontSize = 12.sp,
-                                                fontWeight = FontWeight.Bold,
-                                                modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp)
+                                                style = AppTypography.caption.copy(fontWeight = FontWeight.Bold),
+                                                modifier = Modifier.padding(horizontal = AppSpacing.small, vertical = 6.dp)
                                             )
                                         }
                                     } else {
                                         Text(
                                             text = "Test your knowledge with multiple-choice and code output questions.",
-                                            color = TextSecondary,
-                                            fontSize = 13.sp,
-                                            lineHeight = 18.sp
+                                            style = AppTypography.bodySecondary,
+                                            color = TextSecondary
                                         )
                                     }
 
                                     Surface(
                                         color = if (state.allQuestionsAnswered) GreenAccent else OrangeAccent,
-                                        shape = RoundedCornerShape(12.dp),
+                                        shape = RoundedCornerShape(AppCornerRadius.card),
                                         modifier = Modifier
                                             .fillMaxWidth()
+                                            .heightIn(min = AppTouchTarget.buttonHeight)
                                             .clickable { showQuestionsModal = true }
                                     ) {
                                         Box(
                                             modifier = Modifier
                                                 .fillMaxWidth()
-                                                .padding(vertical = 11.dp),
+                                                .padding(vertical = AppSpacing.medium),
                                             contentAlignment = Alignment.Center
                                         ) {
                                             Text(
                                                 text = if (state.allQuestionsAnswered) "Review Questions ➔" else "Start Quiz ➔",
                                                 color = Color(0xFF111115),
-                                                fontSize = 15.sp,
-                                                fontWeight = FontWeight.Bold
+                                                style = AppTypography.cardTitle
                                             )
                                         }
                                     }
@@ -490,7 +477,7 @@ fun LessonDetailScreen(
                             onBackToTopic = onBack
                         )
 
-                        Spacer(modifier = Modifier.height(16.dp))
+                        Spacer(modifier = Modifier.height(AppSpacing.large))
                     }
 
                     // Direct Interactive Fullscreen Visualizer Dialog
@@ -518,16 +505,16 @@ fun LessonDetailScreen(
                                 .fillMaxSize()
                                 .background(DarkBgColor)
                                 .clickable(enabled = false) {}
-                                .padding(14.dp),
+                                .padding(AppSpacing.medium),
                             contentAlignment = Alignment.Center
                         ) {
                             Column(
                                 modifier = Modifier
                                     .fillMaxSize()
-                                    .clip(RoundedCornerShape(18.dp))
+                                    .clip(RoundedCornerShape(AppCornerRadius.cardLarge))
                                     .background(DarkCardBgColor)
-                                    .border(1.dp, CardBorderColor, RoundedCornerShape(18.dp))
-                                    .padding(14.dp),
+                                    .border(1.dp, CardBorderColor, RoundedCornerShape(AppCornerRadius.cardLarge))
+                                    .padding(AppCardPadding.standard),
                                 verticalArrangement = Arrangement.SpaceBetween
                             ) {
                                 // Top Header Bar
@@ -539,22 +526,19 @@ fun LessonDetailScreen(
                                     Column {
                                         Text(
                                             text = "LESSON QUIZ",
-                                            color = OrangeAccent,
-                                            fontSize = 10.sp,
-                                            fontWeight = FontWeight.Bold,
-                                            letterSpacing = 1.2.sp
+                                            style = AppTypography.sectionHeader,
+                                            color = OrangeAccent
                                         )
                                         Text(
                                             text = "Question ${questionIndex + 1} of ${state.questions.size}",
-                                            color = TextPrimary,
-                                            fontSize = 16.sp,
-                                            fontWeight = FontWeight.Bold
+                                            style = AppTypography.cardTitle,
+                                            color = TextPrimary
                                         )
                                     }
 
                                     Box(
                                         modifier = Modifier
-                                            .size(34.dp)
+                                            .size(AppIconSize.boxSmall)
                                             .clip(CircleShape)
                                             .background(Color(0xFF22222E))
                                             .clickable { showQuestionsModal = false },
@@ -562,9 +546,8 @@ fun LessonDetailScreen(
                                     ) {
                                         Text(
                                             text = "✕",
-                                            color = TextPrimary,
-                                            fontSize = 15.sp,
-                                            fontWeight = FontWeight.Bold
+                                            style = AppTypography.bodyPrimary.copy(fontWeight = FontWeight.Bold),
+                                            color = TextPrimary
                                         )
                                     }
                                 }
@@ -575,7 +558,7 @@ fun LessonDetailScreen(
                                         .weight(1f)
                                         .fillMaxWidth()
                                         .verticalScroll(rememberScrollState())
-                                        .padding(vertical = 10.dp)
+                                        .padding(vertical = AppSpacing.small)
                                 ) {
                                     CheckYourUnderstandingSection(
                                         statement = question.statement,
@@ -603,9 +586,10 @@ fun LessonDetailScreen(
                                 ) {
                                     Surface(
                                         color = if (questionIndex > 0) Color(0xFF22222E) else Color(0xFF14141A),
-                                        shape = RoundedCornerShape(10.dp),
+                                        shape = RoundedCornerShape(AppCornerRadius.compact),
                                         border = BorderStroke(1.dp, if (questionIndex > 0) CardBorderColor else Color(0xFF1E1E28)),
                                         modifier = Modifier
+                                            .heightIn(min = AppTouchTarget.buttonHeight)
                                             .clickable(enabled = questionIndex > 0) {
                                                 lessonQuestionIndex = (questionIndex - 1).coerceAtLeast(0)
                                             }
@@ -613,16 +597,16 @@ fun LessonDetailScreen(
                                         Text(
                                             text = "‹ Previous",
                                             color = if (questionIndex > 0) TextPrimary else TextSecondary.copy(alpha = 0.4f),
-                                            fontSize = 13.sp,
-                                            fontWeight = FontWeight.Bold,
-                                            modifier = Modifier.padding(horizontal = 16.dp, vertical = 10.dp)
+                                            style = AppTypography.bodySecondary.copy(fontWeight = FontWeight.Bold),
+                                            modifier = Modifier.padding(horizontal = AppSpacing.large, vertical = AppSpacing.small)
                                         )
                                     }
 
                                     Surface(
                                         color = OrangeAccent,
-                                        shape = RoundedCornerShape(10.dp),
+                                        shape = RoundedCornerShape(AppCornerRadius.compact),
                                         modifier = Modifier
+                                            .heightIn(min = AppTouchTarget.buttonHeight)
                                             .clickable {
                                                 if (questionIndex < state.questions.lastIndex) {
                                                     lessonQuestionIndex = (questionIndex + 1).coerceAtMost(state.questions.lastIndex)
@@ -634,9 +618,8 @@ fun LessonDetailScreen(
                                         Text(
                                             text = if (questionIndex < state.questions.lastIndex) "Next Question ›" else "Finish Review ➔",
                                             color = Color(0xFF111115),
-                                            fontSize = 13.sp,
-                                            fontWeight = FontWeight.Bold,
-                                            modifier = Modifier.padding(horizontal = 16.dp, vertical = 10.dp)
+                                            style = AppTypography.bodySecondary.copy(fontWeight = FontWeight.Bold),
+                                            modifier = Modifier.padding(horizontal = AppSpacing.large, vertical = AppSpacing.small)
                                         )
                                     }
                                 }
@@ -686,22 +669,20 @@ private fun CheckYourUnderstandingSection(
 ) {
     Surface(
         color = DarkCardBgColor,
-        shape = RoundedCornerShape(16.dp),
+        shape = RoundedCornerShape(AppCornerRadius.card),
         border = BorderStroke(1.dp, CardBorderColor),
         modifier = Modifier.fillMaxWidth()
     ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(12.dp),
-            verticalArrangement = Arrangement.spacedBy(10.dp)
+                .padding(AppCardPadding.standard),
+            verticalArrangement = Arrangement.spacedBy(AppSpacing.small)
         ) {
             Text(
                 text = "CHECK YOUR UNDERSTANDING",
-                color = OrangeAccent,
-                fontSize = 10.sp,
-                fontWeight = FontWeight.Bold,
-                letterSpacing = 1.2.sp
+                style = AppTypography.sectionHeader,
+                color = OrangeAccent
             )
 
             if (showProgress) {
@@ -721,9 +702,8 @@ private fun CheckYourUnderstandingSection(
                             QuestionType.CODE_OUTPUT -> "CODE OUTPUT"
                             QuestionType.MULTIPLE_CHOICE -> "MULTIPLE CHOICE"
                         }}",
+                        style = AppTypography.badge,
                         color = TextSecondary,
-                        fontSize = 9.sp,
-                        fontWeight = FontWeight.Bold,
                         textAlign = TextAlign.Center
                     )
                     QuestionNavigationArrow(
@@ -739,15 +719,13 @@ private fun CheckYourUnderstandingSection(
             } else {
                 Text(
                     text = statement,
-                    color = TextPrimary,
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Bold,
-                    lineHeight = 22.sp
+                    style = AppTypography.cardTitle,
+                    color = TextPrimary
                 )
             }
 
             // Options list
-            Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+            Column(verticalArrangement = Arrangement.spacedBy(AppSpacing.extraSmall)) {
                 options.forEachIndexed { index, optionText ->
                     val isSelected = selectedOption == index
                     val isCorrectOption = index == correctIndex
@@ -762,17 +740,18 @@ private fun CheckYourUnderstandingSection(
 
                     Surface(
                         color = style.bgColor,
-                        shape = RoundedCornerShape(10.dp),
+                        shape = RoundedCornerShape(AppCornerRadius.compact),
                         border = BorderStroke(1.dp, style.borderColor),
                         modifier = Modifier
                             .fillMaxWidth()
+                            .heightIn(min = AppTouchTarget.minimum)
                             .clickable { onSelectOption(index) }
                     ) {
                         Column(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(horizontal = 12.dp, vertical = 8.dp),
-                            verticalArrangement = Arrangement.spacedBy(4.dp)
+                                .padding(horizontal = AppSpacing.medium, vertical = AppSpacing.small),
+                            verticalArrangement = Arrangement.spacedBy(AppSpacing.extraSmall)
                         ) {
                             Row(
                                 modifier = Modifier.fillMaxWidth(),
@@ -782,16 +761,14 @@ private fun CheckYourUnderstandingSection(
                                 Text(
                                     text = optionText,
                                     color = style.textColor,
-                                    fontSize = 15.sp,
-                                    fontWeight = FontWeight.SemiBold,
+                                    style = AppTypography.bodyPrimary.copy(fontWeight = FontWeight.SemiBold),
                                     modifier = Modifier.weight(1f)
                                 )
                                 if (style.iconStr != null) {
                                     Text(
                                         text = style.iconStr,
                                         color = style.textColor,
-                                        fontSize = 16.sp,
-                                        fontWeight = FontWeight.Bold
+                                        style = AppTypography.cardTitle
                                     )
                                 }
                             }
@@ -800,8 +777,7 @@ private fun CheckYourUnderstandingSection(
                                 Text(
                                     text = explanation,
                                     color = style.textColor.copy(alpha = 0.9f),
-                                    fontSize = 12.sp,
-                                    lineHeight = 17.sp,
+                                    style = AppTypography.caption,
                                     modifier = Modifier.padding(top = 2.dp)
                                 )
                             }
@@ -822,18 +798,17 @@ private fun QuestionNavigationArrow(
 ) {
     Surface(
         color = if (enabled) Color(0xFF22222C) else Color(0xFF13131C),
-        shape = RoundedCornerShape(8.dp),
+        shape = RoundedCornerShape(AppCornerRadius.compact),
         border = BorderStroke(1.dp, if (enabled) CardBorderColor else Color(0xFF202027)),
         modifier = Modifier
-            .size(32.dp)
+            .size(AppIconSize.boxSmall)
             .clickable(enabled = enabled, onClick = onClick)
     ) {
         Box(contentAlignment = Alignment.Center) {
             Text(
                 text = symbol,
                 color = if (enabled) TextPrimary else TextSecondary.copy(alpha = 0.45f),
-                fontSize = 22.sp,
-                fontWeight = FontWeight.Medium,
+                style = AppTypography.headerTitle,
                 lineHeight = 22.sp
             )
         }
@@ -851,20 +826,20 @@ private fun FinishLessonSection(
     if (isCompleted) {
         Column(
             modifier = Modifier.fillMaxWidth(),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
+            verticalArrangement = Arrangement.spacedBy(AppSpacing.small)
         ) {
             Surface(
                 color = Color(0xFF092317),
-                shape = RoundedCornerShape(14.dp),
+                shape = RoundedCornerShape(AppCornerRadius.card),
                 border = BorderStroke(1.dp, GreenAccent),
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(12.dp),
+                        .padding(AppCardPadding.standard),
                     verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(10.dp)
+                    horizontalArrangement = Arrangement.spacedBy(AppSpacing.medium)
                 ) {
                     Box(
                         modifier = Modifier
@@ -876,21 +851,19 @@ private fun FinishLessonSection(
                         Text(
                             text = "✓",
                             color = Color(0xFF111115),
-                            fontSize = 15.sp,
-                            fontWeight = FontWeight.Bold
+                            style = AppTypography.bodyPrimary.copy(fontWeight = FontWeight.Bold)
                         )
                     }
                     Column {
                         Text(
                             text = "Lesson Completed",
                             color = GreenAccent,
-                            fontSize = 15.sp,
-                            fontWeight = FontWeight.Bold
+                            style = AppTypography.bodyPrimary.copy(fontWeight = FontWeight.Bold)
                         )
                         Text(
                             text = "Great job! You've mastered this section.",
                             color = TextSecondary,
-                            fontSize = 12.sp
+                            style = AppTypography.caption
                         )
                     }
                 }
@@ -899,9 +872,10 @@ private fun FinishLessonSection(
             // Next Lesson or Back to Topic Button
             Surface(
                 color = OrangeAccent,
-                shape = RoundedCornerShape(12.dp),
+                shape = RoundedCornerShape(AppCornerRadius.card),
                 modifier = Modifier
                     .fillMaxWidth()
+                    .heightIn(min = AppTouchTarget.buttonHeight)
                     .clickable {
                         if (nextLessonId != null) {
                             onNavigateToNextLesson(nextLessonId)
@@ -913,14 +887,13 @@ private fun FinishLessonSection(
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(vertical = 11.dp),
+                        .padding(vertical = AppSpacing.medium),
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
                         text = if (nextLessonId != null) "Next Lesson →" else "Back to Topic →",
                         color = Color(0xFF111115),
-                        fontSize = 15.sp,
-                        fontWeight = FontWeight.Bold
+                        style = AppTypography.cardTitle
                     )
                 }
             }
@@ -928,22 +901,22 @@ private fun FinishLessonSection(
     } else {
         Surface(
             color = OrangeAccent,
-            shape = RoundedCornerShape(12.dp),
+            shape = RoundedCornerShape(AppCornerRadius.card),
             modifier = Modifier
                 .fillMaxWidth()
+                .heightIn(min = AppTouchTarget.buttonHeight)
                 .clickable { onComplete() }
         ) {
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(vertical = 11.dp),
+                    .padding(vertical = AppSpacing.medium),
                 contentAlignment = Alignment.Center
             ) {
                 Text(
                     text = "Complete Lesson ➔",
                     color = Color(0xFF111115),
-                    fontSize = 15.sp,
-                    fontWeight = FontWeight.Bold
+                    style = AppTypography.cardTitle
                 )
             }
         }
@@ -970,7 +943,7 @@ private fun LessonCompletionCelebrationOverlay(
             .fillMaxSize()
             .background(Color(0xF2111115))
             .clickable(enabled = false) {}
-            .padding(horizontal = 18.dp, vertical = 14.dp),
+            .padding(horizontal = AppSpacing.large, vertical = AppSpacing.medium),
         contentAlignment = Alignment.Center
     ) {
         Column(
@@ -984,12 +957,12 @@ private fun LessonCompletionCelebrationOverlay(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.SpaceBetween
         ) {
-            Spacer(modifier = Modifier.height(6.dp))
+            Spacer(modifier = Modifier.height(AppSpacing.extraSmall))
 
             // Center Content
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(9.dp)
+                verticalArrangement = Arrangement.spacedBy(AppSpacing.small)
             ) {
                 // Celebration Badge Container with spark accents
                 Box(contentAlignment = Alignment.Center) {
@@ -1017,7 +990,7 @@ private fun LessonCompletionCelebrationOverlay(
                         Box(contentAlignment = Alignment.Center) {
                             Surface(
                                 color = Color.Transparent,
-                                shape = RoundedCornerShape(16.dp),
+                                shape = RoundedCornerShape(AppCornerRadius.card),
                                 border = BorderStroke(2.dp, OrangeAccent),
                                 modifier = Modifier.size(36.dp)
                             ) {
@@ -1025,8 +998,7 @@ private fun LessonCompletionCelebrationOverlay(
                                     Text(
                                         text = "✓",
                                         color = OrangeAccent,
-                                        fontSize = 24.sp,
-                                        fontWeight = FontWeight.Bold
+                                        style = AppTypography.displayTitle
                                     )
                                 }
                             }
@@ -1038,62 +1010,55 @@ private fun LessonCompletionCelebrationOverlay(
 
                 Text(
                     text = "LESSON COMPLETE",
-                    color = OrangeAccent,
-                    fontSize = 11.sp,
-                    fontWeight = FontWeight.Bold,
-                    letterSpacing = 1.5.sp
+                    style = AppTypography.sectionHeader,
+                    color = OrangeAccent
                 )
 
                 Text(
                     text = "Lesson completed!",
-                    color = TextPrimary,
-                    fontSize = 24.sp,
-                    fontWeight = FontWeight.Bold
+                    style = AppTypography.displayTitle,
+                    color = TextPrimary
                 )
 
                 Text(
                     text = lessonTitle,
-                    color = TextSecondary,
-                    fontSize = 15.sp,
-                    fontWeight = FontWeight.Medium
+                    style = AppTypography.bodyPrimary.copy(fontWeight = FontWeight.Medium),
+                    color = TextSecondary
                 )
 
-                Spacer(modifier = Modifier.height(4.dp))
+                Spacer(modifier = Modifier.height(AppSpacing.extraSmall))
 
                 // XP Reward Card
                 Surface(
                     color = Color(0xFF1E1713),
                     shape = RoundedCornerShape(18.dp),
                     border = BorderStroke(1.dp, OrangeAccent.copy(alpha = 0.35f)),
-                    modifier = Modifier.padding(horizontal = 16.dp)
+                    modifier = Modifier.padding(horizontal = AppSpacing.large)
                 ) {
                     Column(
-                        modifier = Modifier.padding(horizontal = 26.dp, vertical = 9.dp),
+                        modifier = Modifier.padding(horizontal = 26.dp, vertical = AppSpacing.small),
                         horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.spacedBy(4.dp)
+                        verticalArrangement = Arrangement.spacedBy(AppSpacing.extraSmall)
                     ) {
                         Text(
                             text = "LESSON REWARD",
-                            color = TextSecondary,
-                            fontSize = 10.sp,
-                            fontWeight = FontWeight.Bold,
-                            letterSpacing = 1.2.sp
+                            style = AppTypography.sectionHeader,
+                            color = TextSecondary
                         )
                         Text(
                             text = "+$xpAmount XP",
-                            color = OrangeAccent,
-                            fontSize = 24.sp,
-                            fontWeight = FontWeight.Bold
+                            style = AppTypography.displayTitle,
+                            color = OrangeAccent
                         )
                     }
                 }
 
-                Spacer(modifier = Modifier.height(4.dp))
+                Spacer(modifier = Modifier.height(AppSpacing.extraSmall))
 
                 // Saved Progress Confirmation Row
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    horizontalArrangement = Arrangement.spacedBy(AppSpacing.small)
                 ) {
                     Box(
                         modifier = Modifier
@@ -1106,14 +1071,13 @@ private fun LessonCompletionCelebrationOverlay(
                         Text(
                             text = "✓",
                             color = GreenAccent,
-                            fontSize = 11.sp,
-                            fontWeight = FontWeight.Bold
+                            style = AppTypography.badge
                         )
                     }
                     Text(
                         text = "Your progress has been saved.",
-                        color = Color(0xFFD1D5DB),
-                        fontSize = 13.sp
+                        style = AppTypography.bodySecondary,
+                        color = Color(0xFFD1D5DB)
                     )
                 }
             }
@@ -1121,28 +1085,27 @@ private fun LessonCompletionCelebrationOverlay(
             // Bottom Action Buttons
             Column(
                 modifier = Modifier.fillMaxWidth(),
-                verticalArrangement = Arrangement.spacedBy(7.dp)
+                verticalArrangement = Arrangement.spacedBy(AppSpacing.small)
             ) {
                 // Primary: Continue to next lesson
                 Surface(
                     color = OrangeAccent,
-                    shape = RoundedCornerShape(14.dp),
+                    shape = RoundedCornerShape(AppCornerRadius.card),
                     modifier = Modifier
                         .fillMaxWidth()
-                        .heightIn(min = 44.dp)
+                        .heightIn(min = AppTouchTarget.buttonHeight)
                         .clickable { onContinue() }
                 ) {
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(vertical = 10.dp),
+                            .padding(vertical = AppSpacing.medium),
                         contentAlignment = Alignment.Center
                     ) {
                         Text(
                             text = if (nextLessonId != null) "Continue to next lesson →" else "Back to Topic →",
                             color = Color(0xFF111115),
-                            fontSize = 16.sp,
-                            fontWeight = FontWeight.Bold
+                            style = AppTypography.cardTitle
                         )
                     }
                 }
@@ -1150,24 +1113,23 @@ private fun LessonCompletionCelebrationOverlay(
                 // Secondary: Review lesson
                 Surface(
                     color = DarkCardBgColor,
-                    shape = RoundedCornerShape(14.dp),
+                    shape = RoundedCornerShape(AppCornerRadius.card),
                     border = BorderStroke(1.dp, CardBorderColor),
                     modifier = Modifier
                         .fillMaxWidth()
-                        .heightIn(min = 44.dp)
+                        .heightIn(min = AppTouchTarget.buttonHeight)
                         .clickable { onReview() }
                 ) {
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(vertical = 10.dp),
+                            .padding(vertical = AppSpacing.medium),
                         contentAlignment = Alignment.Center
                     ) {
                         Text(
                             text = "Review lesson",
                             color = TextPrimary,
-                            fontSize = 16.sp,
-                            fontWeight = FontWeight.Bold
+                            style = AppTypography.cardTitle
                         )
                     }
                 }

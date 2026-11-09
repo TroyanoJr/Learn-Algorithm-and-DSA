@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -38,6 +39,14 @@ import androidx.compose.ui.graphics.vector.path
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
+import com.example.learndsandalgorithm.presentation.theme.AppCardPadding
+import com.example.learndsandalgorithm.presentation.theme.AppCornerRadius
+import com.example.learndsandalgorithm.presentation.theme.AppIconSize
+import com.example.learndsandalgorithm.presentation.theme.AppSpacing
+import com.example.learndsandalgorithm.presentation.theme.AppTouchTarget
+import com.example.learndsandalgorithm.presentation.theme.AppTypography
 
 private val DarkBgColor = Color(0xFF111115)
 private val DarkCardBgColor = Color(0xFF181820)
@@ -206,6 +215,7 @@ fun PracticeScreen(
     onOpenTopicQuiz: () -> Unit = {}
 ) {
     var selectedModeId by remember { mutableStateOf("topic_quiz") }
+    var activeDialogMode by remember { mutableStateOf<PracticeMode?>(null) }
 
     val practiceModes = remember {
         listOf(
@@ -288,8 +298,6 @@ fun PracticeScreen(
         )
     }
 
-    val selectedMode = practiceModes.find { it.id == selectedModeId } ?: practiceModes.first()
-
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -297,40 +305,40 @@ fun PracticeScreen(
     ) {
         Column(
             modifier = Modifier
-                .fillMaxWidth()
-                .weight(1f)
+                .fillMaxSize()
                 .verticalScroll(rememberScrollState())
-                .padding(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 4.dp),
-            verticalArrangement = Arrangement.spacedBy(14.dp)
+                .padding(horizontal = AppSpacing.large, vertical = AppSpacing.large),
+            verticalArrangement = Arrangement.spacedBy(AppSpacing.medium)
         ) {
             PracticeHeader()
             RecommendedCard(onOpenTopicQuiz = onOpenTopicQuiz)
             PracticeModesSection(
                 modes = practiceModes,
                 selectedModeId = selectedModeId,
-                onSelectMode = { modeId -> selectedModeId = modeId },
+                onSelectMode = { modeId ->
+                    selectedModeId = modeId
+                    activeDialogMode = practiceModes.find { it.id == modeId }
+                },
                 onStartMode = { modeId ->
-                    if (modeId == "topic_quiz") {
-                        onOpenTopicQuiz()
-                    }
+                    selectedModeId = modeId
+                    activeDialogMode = practiceModes.find { it.id == modeId }
                 }
             )
         }
+    }
 
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(start = 16.dp, end = 16.dp, top = 6.dp, bottom = 3.dp)
-        ) {
-            PracticeFeaturedCard(
-                mode = selectedMode,
-                onStart = {
-                    if (selectedMode.isAvailable) {
-                        onOpenTopicQuiz()
-                    }
+    if (activeDialogMode != null) {
+        val mode = activeDialogMode!!
+        PracticeModeInfoDialog(
+            mode = mode,
+            onDismiss = { activeDialogMode = null },
+            onStart = {
+                activeDialogMode = null
+                if (mode.isAvailable) {
+                    onOpenTopicQuiz()
                 }
-            )
-        }
+            }
+        )
     }
 }
 
@@ -344,29 +352,26 @@ private fun PracticeHeader() {
         Column {
             Text(
                 text = "SHARPEN YOUR SKILLS",
-                color = OrangeAccent,
-                fontSize = 11.sp,
-                fontWeight = FontWeight.Bold,
-                letterSpacing = 1.5.sp
+                style = AppTypography.sectionHeader,
+                color = OrangeAccent
             )
-            Spacer(modifier = Modifier.height(4.dp))
+            Spacer(modifier = Modifier.height(AppSpacing.extraSmall))
             Text(
                 text = "Practice",
-                color = TextPrimary,
-                fontSize = 24.sp,
-                fontWeight = FontWeight.Bold
+                style = AppTypography.displayTitle,
+                color = TextPrimary
             )
             Spacer(modifier = Modifier.height(2.dp))
             Text(
                 text = "Turn knowledge into confidence.",
-                color = TextSecondary,
-                fontSize = 14.sp
+                style = AppTypography.bodySecondary,
+                color = TextSecondary
             )
         }
 
         Box(
             modifier = Modifier
-                .size(38.dp)
+                .size(AppIconSize.boxMedium)
                 .clip(CircleShape)
                 .background(Color(0xFF1E1E28))
                 .border(1.dp, CardBorderColor, CircleShape),
@@ -374,9 +379,8 @@ private fun PracticeHeader() {
         ) {
             Text(
                 text = "DSA",
-                color = OrangeAccent,
-                fontSize = 13.sp,
-                fontWeight = FontWeight.Bold
+                style = AppTypography.bodySecondary.copy(fontWeight = FontWeight.Bold),
+                color = OrangeAccent
             )
         }
     }
@@ -386,28 +390,29 @@ private fun PracticeHeader() {
 private fun RecommendedCard(onOpenTopicQuiz: () -> Unit) {
     Surface(
         color = DarkCardBgColor,
-        shape = RoundedCornerShape(16.dp),
+        shape = RoundedCornerShape(AppCornerRadius.card),
         border = BorderStroke(1.dp, HighlightedBorderColor),
         modifier = Modifier
             .fillMaxWidth()
+            .heightIn(min = AppTouchTarget.minimum)
             .clickable { onOpenTopicQuiz() }
     ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(10.dp),
+                .padding(AppCardPadding.standard),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                horizontalArrangement = Arrangement.spacedBy(AppSpacing.medium),
                 modifier = Modifier.weight(1f)
             ) {
                 // Play Icon Box
                 Box(
                     modifier = Modifier
-                        .size(42.dp)
+                        .size(AppIconSize.boxLarge)
                         .clip(RoundedCornerShape(12.dp))
                         .background(Color(0xFF2A180E)),
                     contentAlignment = Alignment.Center
@@ -425,31 +430,28 @@ private fun RecommendedCard(onOpenTopicQuiz: () -> Unit) {
                 ) {
                     Text(
                         text = "RECOMMENDED FOR YOU",
-                        color = OrangeAccent,
-                        fontSize = 10.sp,
-                        fontWeight = FontWeight.Bold,
-                        letterSpacing = 1.sp
+                        style = AppTypography.sectionHeader,
+                        color = OrangeAccent
                     )
                     Text(
                         text = "Topic Quiz",
-                        color = TextPrimary,
-                        fontSize = 17.sp,
-                        fontWeight = FontWeight.Bold
+                        style = AppTypography.cardTitle,
+                        color = TextPrimary
                     )
                     Text(
                         text = "8 questions per topic · Arrays, Searching & Sorting",
-                        color = TextSecondary,
-                        fontSize = 12.sp
+                        style = AppTypography.caption,
+                        color = TextSecondary
                     )
                 }
             }
 
-            Spacer(modifier = Modifier.width(8.dp))
+            Spacer(modifier = Modifier.width(AppSpacing.small))
 
             // Action Button
             Box(
                 modifier = Modifier
-                    .size(36.dp)
+                    .size(AppIconSize.boxSmall)
                     .clip(CircleShape)
                     .background(OrangeAccent),
                 contentAlignment = Alignment.Center
@@ -474,7 +476,7 @@ private fun PracticeModesSection(
 ) {
     Column(
         modifier = Modifier.fillMaxWidth(),
-        verticalArrangement = Arrangement.spacedBy(10.dp)
+        verticalArrangement = Arrangement.spacedBy(AppSpacing.small)
     ) {
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -484,24 +486,21 @@ private fun PracticeModesSection(
             Column {
                 Text(
                     text = "CHOOSE YOUR PACE",
-                    color = OrangeAccent,
-                    fontSize = 10.sp,
-                    fontWeight = FontWeight.Bold,
-                    letterSpacing = 1.2.sp
+                    style = AppTypography.sectionHeader,
+                    color = OrangeAccent
                 )
                 Spacer(modifier = Modifier.height(2.dp))
                 Text(
                     text = "Practice modes",
-                    color = TextPrimary,
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.Bold
+                    style = AppTypography.sectionTitle,
+                    color = TextPrimary
                 )
             }
 
             Text(
                 text = "1 available mode",
-                color = TextSecondary,
-                fontSize = 12.sp
+                style = AppTypography.caption,
+                color = TextSecondary
             )
         }
 
@@ -531,23 +530,25 @@ private fun PracticeModeCard(
 ) {
     Surface(
         color = DarkCardBgColor,
-        shape = RoundedCornerShape(16.dp),
+        shape = RoundedCornerShape(AppCornerRadius.card),
         border = BorderStroke(
             width = if (isSelected) 1.5.dp else 1.dp,
             color = if (isSelected) OrangeAccent else CardBorderColor
         ),
-        modifier = Modifier.fillMaxWidth()
+        modifier = Modifier
+            .fillMaxWidth()
+            .heightIn(min = AppTouchTarget.minimum)
     ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(10.dp),
+                .padding(AppCardPadding.standard),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                horizontalArrangement = Arrangement.spacedBy(AppSpacing.medium),
                 modifier = Modifier
                     .weight(1f)
                     .clickable { onClickMode() }
@@ -555,7 +556,7 @@ private fun PracticeModeCard(
                 // Icon Box
                 Box(
                     modifier = Modifier
-                        .size(42.dp)
+                        .size(AppIconSize.boxLarge)
                         .clip(RoundedCornerShape(12.dp))
                         .background(mode.iconBgColor)
                         .border(1.dp, mode.iconBorderColor.copy(alpha = 0.35f), RoundedCornerShape(12.dp)),
@@ -570,17 +571,17 @@ private fun PracticeModeCard(
                 }
 
                 Column(
-                    verticalArrangement = Arrangement.spacedBy(2.dp)
+                    verticalArrangement = Arrangement.spacedBy(2.dp),
+                    modifier = Modifier.weight(1f)
                 ) {
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        horizontalArrangement = Arrangement.spacedBy(AppSpacing.small)
                     ) {
                         Text(
                             text = mode.title,
                             color = if (mode.isAvailable) TextPrimary else TextSecondary,
-                            fontSize = 16.sp,
-                            fontWeight = FontWeight.Bold
+                            style = AppTypography.cardTitle
                         )
                         if (!mode.isAvailable) {
                             Box(
@@ -592,8 +593,7 @@ private fun PracticeModeCard(
                                 Text(
                                     text = "Coming Soon",
                                     color = TextSecondary,
-                                    fontSize = 9.sp,
-                                    fontWeight = FontWeight.Bold
+                                    style = AppTypography.badge.copy(fontSize = 9.sp)
                                 )
                             }
                         }
@@ -602,20 +602,21 @@ private fun PracticeModeCard(
                     Text(
                         text = mode.description,
                         color = TextSecondary,
-                        fontSize = 13.sp
+                        style = AppTypography.bodySecondary
                     )
                     Text(
                         text = mode.metaText,
                         color = if (mode.isAvailable) OrangeAccent else TextSecondary,
-                        fontSize = 12.sp,
-                        fontWeight = if (mode.isAvailable) FontWeight.Bold else FontWeight.Normal
+                        style = AppTypography.caption.copy(
+                            fontWeight = if (mode.isAvailable) FontWeight.Bold else FontWeight.Normal
+                        )
                     )
                 }
             }
 
             Box(
                 modifier = Modifier
-                    .padding(start = 8.dp)
+                    .padding(start = AppSpacing.small)
                     .clickable(enabled = mode.isAvailable) { onClickArrow() }
             ) {
                 if (mode.isAvailable) {
@@ -639,103 +640,6 @@ private fun PracticeModeCard(
 }
 
 @Composable
-private fun PracticeFeaturedCard(
-    mode: PracticeMode,
-    onStart: () -> Unit
-) {
-    Surface(
-        color = DarkCardBgColor,
-        shape = RoundedCornerShape(16.dp),
-        border = BorderStroke(1.dp, CardBorderColor),
-        modifier = Modifier.fillMaxWidth()
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(4.dp),
-            verticalArrangement = Arrangement.spacedBy(4.dp)
-        ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = mode.featuredHeader,
-                    color = OrangeAccent,
-                    fontSize = 10.sp,
-                    fontWeight = FontWeight.Bold,
-                    letterSpacing = 1.2.sp
-                )
-
-                // Score / Availability Badge Pill
-                Box(
-                    modifier = Modifier
-                        .clip(RoundedCornerShape(6.dp))
-                        .background(if (mode.isAvailable) Color(0xFF092317) else Color(0xFF22222E))
-                        .padding(horizontal = 10.dp, vertical = 4.dp)
-                ) {
-                    Text(
-                        text = mode.featuredBadge,
-                        color = if (mode.isAvailable) GreenAccent else TextSecondary,
-                        fontSize = 12.sp,
-                        fontWeight = FontWeight.Bold
-                    )
-                }
-            }
-
-            Text(
-                text = mode.featuredTitle,
-                color = TextPrimary,
-                fontSize = 18.sp,
-                fontWeight = FontWeight.Bold
-            )
-
-            // 2 Stat Tiles
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(4.dp)
-            ) {
-                StatTile(
-                    modifier = Modifier.weight(1f),
-                    mainText = mode.stat1Main,
-                    subText = mode.stat1Sub
-                )
-                StatTile(
-                    modifier = Modifier.weight(1f),
-                    mainText = mode.stat2Main,
-                    subText = mode.stat2Sub
-                )
-            }
-
-            // Start / Coming Soon Button
-            Surface(
-                color = if (mode.isAvailable) OrangeAccent else Color(0xFF22222E),
-                shape = RoundedCornerShape(12.dp),
-                border = BorderStroke(1.dp, if (mode.isAvailable) Color.Transparent else CardBorderColor),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clickable(enabled = mode.isAvailable) { onStart() }
-            ) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 6.dp),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        text = mode.buttonText,
-                        color = if (mode.isAvailable) Color(0xFF111115) else TextSecondary,
-                        fontSize = 15.sp,
-                        fontWeight = FontWeight.Bold
-                    )
-                }
-            }
-        }
-    }
-}
-
-@Composable
 private fun StatTile(
     modifier: Modifier = Modifier,
     mainText: String,
@@ -745,7 +649,7 @@ private fun StatTile(
         modifier = modifier
             .clip(RoundedCornerShape(12.dp))
             .background(Color(0xFF1E1E28))
-            .padding(vertical = 4.dp, horizontal = 6.dp)
+            .padding(vertical = AppSpacing.extraSmall, horizontal = AppSpacing.small)
     ) {
         Column(
             verticalArrangement = Arrangement.spacedBy(2.dp)
@@ -753,14 +657,165 @@ private fun StatTile(
             Text(
                 text = mainText,
                 color = TextPrimary,
-                fontSize = 15.sp,
-                fontWeight = FontWeight.Bold
+                style = AppTypography.bodyPrimary.copy(fontWeight = FontWeight.Bold)
             )
             Text(
                 text = subText,
                 color = TextSecondary,
-                fontSize = 11.sp
+                style = AppTypography.badge.copy(fontWeight = FontWeight.Normal)
             )
+        }
+    }
+}
+
+@Composable
+private fun PracticeModeInfoDialog(
+    mode: PracticeMode,
+    onDismiss: () -> Unit,
+    onStart: () -> Unit
+) {
+    Dialog(
+        onDismissRequest = onDismiss,
+        properties = DialogProperties(usePlatformDefaultWidth = false)
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color(0xF2111115))
+                .clickable(enabled = false) {}
+                .padding(AppSpacing.large),
+            contentAlignment = Alignment.Center
+        ) {
+            Surface(
+                color = DarkCardBgColor,
+                shape = RoundedCornerShape(AppCornerRadius.cardLarge),
+                border = BorderStroke(1.dp, CardBorderColor),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .verticalScroll(rememberScrollState())
+                        .padding(AppCardPadding.large),
+                    verticalArrangement = Arrangement.spacedBy(AppSpacing.medium)
+                ) {
+                    // Top Bar
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = mode.featuredHeader,
+                            style = AppTypography.sectionHeader,
+                            color = OrangeAccent
+                        )
+                        Box(
+                            modifier = Modifier
+                                .size(AppIconSize.boxSmall)
+                                .clip(CircleShape)
+                                .background(Color(0xFF22222E))
+                                .clickable { onDismiss() },
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = "✕",
+                                color = TextPrimary,
+                                style = AppTypography.bodyPrimary.copy(fontWeight = FontWeight.Bold)
+                            )
+                        }
+                    }
+
+                    // Mode Icon & Title Row
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(AppSpacing.medium)
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .size(48.dp)
+                                .clip(RoundedCornerShape(14.dp))
+                                .background(mode.iconBgColor)
+                                .border(1.dp, mode.iconBorderColor.copy(alpha = 0.4f), RoundedCornerShape(14.dp)),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                imageVector = mode.icon,
+                                contentDescription = null,
+                                tint = mode.iconTextColor,
+                                modifier = Modifier.size(AppIconSize.large)
+                            )
+                        }
+
+                        Column(verticalArrangement = Arrangement.spacedBy(3.dp)) {
+                            Text(
+                                text = mode.title,
+                                style = AppTypography.headerTitle,
+                                color = TextPrimary
+                            )
+                            Box(
+                                modifier = Modifier
+                                    .clip(RoundedCornerShape(6.dp))
+                                    .background(if (mode.isAvailable) Color(0xFF092317) else Color(0xFF22222E))
+                                    .padding(horizontal = AppSpacing.small, vertical = 3.dp)
+                            ) {
+                                Text(
+                                    text = mode.featuredBadge,
+                                    color = if (mode.isAvailable) GreenAccent else TextSecondary,
+                                    style = AppTypography.badge
+                                )
+                            }
+                        }
+                    }
+
+                    Text(
+                        text = mode.featuredTitle,
+                        style = AppTypography.cardTitle.copy(fontWeight = FontWeight.Medium),
+                        color = TextPrimary
+                    )
+
+                    // Stat tiles
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(AppSpacing.small)
+                    ) {
+                        StatTile(
+                            modifier = Modifier.weight(1f),
+                            mainText = mode.stat1Main,
+                            subText = mode.stat1Sub
+                        )
+                        StatTile(
+                            modifier = Modifier.weight(1f),
+                            mainText = mode.stat2Main,
+                            subText = mode.stat2Sub
+                        )
+                    }
+
+                    // Action Button
+                    Surface(
+                        color = if (mode.isAvailable) OrangeAccent else Color(0xFF22222E),
+                        shape = RoundedCornerShape(12.dp),
+                        border = BorderStroke(1.dp, if (mode.isAvailable) Color.Transparent else CardBorderColor),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .heightIn(min = AppTouchTarget.buttonHeight)
+                            .clickable(enabled = mode.isAvailable) { onStart() }
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = AppSpacing.medium),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = mode.buttonText,
+                                color = if (mode.isAvailable) Color(0xFF111115) else TextSecondary,
+                                style = AppTypography.bodyPrimary.copy(fontWeight = FontWeight.Bold)
+                            )
+                        }
+                    }
+                }
+            }
         }
     }
 }

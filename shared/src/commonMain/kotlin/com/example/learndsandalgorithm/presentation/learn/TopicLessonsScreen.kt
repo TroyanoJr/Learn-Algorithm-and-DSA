@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
@@ -42,6 +43,12 @@ import androidx.compose.ui.unit.sp
 import com.example.learndsandalgorithm.data.repository.ProgressRepository
 import com.example.learndsandalgorithm.domain.model.Lesson
 import com.example.learndsandalgorithm.domain.repository.ContentRepository
+import com.example.learndsandalgorithm.presentation.theme.AppCardPadding
+import com.example.learndsandalgorithm.presentation.theme.AppCornerRadius
+import com.example.learndsandalgorithm.presentation.theme.AppIconSize
+import com.example.learndsandalgorithm.presentation.theme.AppSpacing
+import com.example.learndsandalgorithm.presentation.theme.AppTouchTarget
+import com.example.learndsandalgorithm.presentation.theme.AppTypography
 
 private val DarkBgColor = Color(0xFF111115)
 private val DarkCardBgColor = Color(0xFF181820)
@@ -131,13 +138,13 @@ fun TopicLessonsScreen(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 20.dp, vertical = 16.dp),
+                .padding(horizontal = AppSpacing.large, vertical = AppSpacing.medium),
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(12.dp)
+            horizontalArrangement = Arrangement.spacedBy(AppSpacing.medium)
         ) {
             Box(
                 modifier = Modifier
-                    .size(36.dp)
+                    .size(AppIconSize.boxSmall)
                     .clip(CircleShape)
                     .background(DarkCardBgColor)
                     .clickable { onBack() },
@@ -154,16 +161,13 @@ fun TopicLessonsScreen(
             Column {
                 Text(
                     text = "TOPIC LESSONS",
-                    color = OrangeAccent,
-                    fontSize = 11.sp,
-                    fontWeight = FontWeight.Bold,
-                    letterSpacing = 1.2.sp
+                    style = AppTypography.sectionHeader,
+                    color = OrangeAccent
                 )
                 Text(
                     text = topicTitle,
-                    color = TextPrimary,
-                    fontSize = 20.sp,
-                    fontWeight = FontWeight.Bold
+                    style = AppTypography.headerTitle,
+                    color = TextPrimary
                 )
             }
         }
@@ -180,14 +184,15 @@ fun TopicLessonsScreen(
                 modifier = Modifier
                     .fillMaxSize()
                     .verticalScroll(rememberScrollState())
-                    .padding(horizontal = 20.dp, vertical = 12.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp)
+                    .padding(horizontal = AppSpacing.large, vertical = AppSpacing.medium),
+                verticalArrangement = Arrangement.spacedBy(AppSpacing.medium)
             ) {
                 Text(
                     text = if (totalCount > 0) "$completedCount of $totalCount lessons complete" else "0 lessons available",
-                    color = if (completedCount > 0) GreenAccent else TextSecondary,
-                    fontSize = 13.sp,
-                    fontWeight = if (completedCount > 0) FontWeight.Bold else FontWeight.Normal
+                    style = AppTypography.bodySecondary.copy(
+                        fontWeight = if (completedCount > 0) FontWeight.Bold else FontWeight.Normal
+                    ),
+                    color = if (completedCount > 0) GreenAccent else TextSecondary
                 )
 
                 lessons.forEach { lesson ->
@@ -211,26 +216,27 @@ private fun LessonCardRow(
 ) {
     Surface(
         color = DarkCardBgColor,
-        shape = RoundedCornerShape(16.dp),
+        shape = RoundedCornerShape(AppCornerRadius.card),
         border = BorderStroke(1.dp, if (isCompleted) GreenAccent.copy(alpha = 0.4f) else CardBorderColor),
         modifier = Modifier
             .fillMaxWidth()
+            .heightIn(min = AppTouchTarget.minimum)
             .clickable(onClick = onClick)
     ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp),
+                .padding(AppCardPadding.large),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             Column(
-                verticalArrangement = Arrangement.spacedBy(4.dp),
+                verticalArrangement = Arrangement.spacedBy(AppSpacing.extraSmall),
                 modifier = Modifier.weight(1f)
             ) {
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    horizontalArrangement = Arrangement.spacedBy(AppSpacing.small)
                 ) {
                     Box(
                         modifier = Modifier
@@ -241,8 +247,7 @@ private fun LessonCardRow(
                         Text(
                             text = "Lesson ${lesson.order}",
                             color = OrangeAccent,
-                            fontSize = 10.sp,
-                            fontWeight = FontWeight.Bold
+                            style = AppTypography.badge.copy(fontSize = 10.sp)
                         )
                     }
                     Box(
@@ -254,8 +259,7 @@ private fun LessonCardRow(
                         Text(
                             text = "+${lesson.xp} XP",
                             color = Color(0xFF38BDF8),
-                            fontSize = 10.sp,
-                            fontWeight = FontWeight.Bold
+                            style = AppTypography.badge.copy(fontSize = 10.sp)
                         )
                     }
                     if (isCompleted) {
@@ -268,8 +272,7 @@ private fun LessonCardRow(
                             Text(
                                 text = "✓ Complete",
                                 color = GreenAccent,
-                                fontSize = 10.sp,
-                                fontWeight = FontWeight.Bold
+                                style = AppTypography.badge.copy(fontSize = 10.sp)
                             )
                         }
                     }
@@ -279,15 +282,15 @@ private fun LessonCardRow(
 
                 Text(
                     text = lesson.title,
-                    color = TextPrimary,
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Bold
+                    style = AppTypography.cardTitle,
+                    color = TextPrimary
                 )
             }
 
             Box(
                 modifier = Modifier
-                    .size(32.dp)
+                    .padding(start = AppSpacing.small)
+                    .size(AppIconSize.boxSmall)
                     .clip(CircleShape)
                     .background(if (isCompleted) Color(0xFF092317) else Color(0xFF2A1C12))
                     .border(width = if (isCompleted) 1.dp else 0.dp, color = if (isCompleted) GreenAccent else Color.Transparent, shape = CircleShape),
