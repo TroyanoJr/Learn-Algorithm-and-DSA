@@ -48,7 +48,8 @@ internal fun LinearSearchVisualizationCard() {
     val target = LinearSearchTrace.target
     val totalItems = LinearSearchTrace.values.size
 
-    var isExpanded by rememberSaveable { mutableStateOf(false) }
+    val autoExpand = LocalAutoExpandVisualizer.current
+    var isExpanded by rememberSaveable { mutableStateOf(autoExpand) }
 
     val playback = rememberVisualizerPlaybackState(stepCount = traceSteps.size, initialStep = -1)
     val currentIndex = playback.safeStepIndex
@@ -61,7 +62,9 @@ internal fun LinearSearchVisualizationCard() {
     val isFinished = currentStep?.isTerminal == true
     val inspectedCount = currentStep?.inspectedCount ?: 0
 
-    ArrayWindowButton(text = "Open linear search visualizer") { isExpanded = true }
+    if (!autoExpand) {
+        ArrayWindowButton(text = "Open linear search visualizer") { isExpanded = true }
+    }
 
     if (isExpanded) {
         val badgeText = when {
@@ -187,7 +190,8 @@ internal fun BinarySearchVisualizationCard() {
     val target = BinarySearchTrace.target
     val totalSteps = BinarySearchTrace.steps.size
 
-    var isExpanded by rememberSaveable { mutableStateOf(false) }
+    val autoExpand = LocalAutoExpandVisualizer.current
+    var isExpanded by rememberSaveable { mutableStateOf(autoExpand) }
 
     val playback = rememberVisualizerPlaybackState(stepCount = totalSteps, initialStep = -1)
     val stepIndex = playback.safeStepIndex
@@ -198,7 +202,9 @@ internal fun BinarySearchVisualizationCard() {
     val arrayData = currentStep?.values ?: BinarySearchTrace.values
     val isFound = currentStep?.foundIndex != null
 
-    ArrayWindowButton(text = "Open binary search visualizer") { isExpanded = true }
+    if (!autoExpand) {
+        ArrayWindowButton(text = "Open binary search visualizer") { isExpanded = true }
+    }
 
     if (isExpanded) {
         val badgeText = when {

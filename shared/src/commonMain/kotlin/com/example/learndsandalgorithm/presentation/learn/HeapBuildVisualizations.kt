@@ -34,7 +34,8 @@ internal fun HeapBuildVisualizationCard(
     title: String = "Building a Heap"
 ) {
     val steps = HeapBuildTrace.stepsForBuild()
-    var isExpanded by rememberSaveable { mutableStateOf(false) }
+    val autoExpand = LocalAutoExpandVisualizer.current
+    var isExpanded by rememberSaveable { mutableStateOf(autoExpand) }
 
     val playback = rememberVisualizerPlaybackState(
         stepCount = steps.size,
@@ -45,8 +46,10 @@ internal fun HeapBuildVisualizationCard(
     val isCompleted = playback.isCompleted
     val step = steps[stepIndex]
 
-    ArrayWindowButton(text = "Open build heap visualizer") {
-        isExpanded = true
+    if (!autoExpand) {
+        ArrayWindowButton(text = "Open build heap visualizer") {
+            isExpanded = true
+        }
     }
 
     if (isExpanded) {

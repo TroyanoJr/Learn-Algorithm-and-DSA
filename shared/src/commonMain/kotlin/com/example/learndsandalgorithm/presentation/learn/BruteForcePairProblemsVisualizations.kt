@@ -37,7 +37,8 @@ internal fun BruteForcePairProblemsVisualizationCard(
     title: String = "Brute Force for Pair Problems"
 ) {
     val steps = BruteForcePairProblemsTrace.stepsForFindPair()
-    var isExpanded by rememberSaveable { mutableStateOf(false) }
+    val autoExpand = LocalAutoExpandVisualizer.current
+    var isExpanded by rememberSaveable { mutableStateOf(autoExpand) }
 
     val playback = rememberVisualizerPlaybackState(
         stepCount = steps.size,
@@ -48,8 +49,10 @@ internal fun BruteForcePairProblemsVisualizationCard(
     val isCompleted = playback.isCompleted
     val step = steps[stepIndex]
 
-    ArrayWindowButton(text = "Open pair problems visualizer") {
-        isExpanded = true
+    if (!autoExpand) {
+        ArrayWindowButton(text = "Open pair problems visualizer") {
+            isExpanded = true
+        }
     }
 
     if (isExpanded) {

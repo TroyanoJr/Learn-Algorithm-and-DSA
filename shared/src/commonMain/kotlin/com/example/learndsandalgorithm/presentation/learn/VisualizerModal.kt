@@ -119,10 +119,13 @@ internal fun VisualizerModal(
     visualContent: @Composable () -> Unit,
     detailsContent: @Composable () -> Unit
 ) {
-    Dialog(
-        onDismissRequest = onClose,
-        properties = DialogProperties(usePlatformDefaultWidth = false)
-    ) {
+    val localClose = LocalVisualizerClose.current
+    val combinedClose = {
+        onClose()
+        localClose()
+    }
+
+    val content: @Composable () -> Unit = {
         LandscapeOrientationEffect(enabled = true)
         BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
             val isLandscape = maxWidth > maxHeight
@@ -161,7 +164,7 @@ internal fun VisualizerModal(
                                     fontWeight = FontWeight.Bold
                                 )
                             }
-                            ArrayWindowButton(text = "Close", icon = "✕", onClick = onClose)
+                            ArrayWindowButton(text = "Close", icon = "✕", onClick = combinedClose)
                         }
 
                         // Region A Scenario Selector Tabs (if provided)
@@ -255,5 +258,12 @@ internal fun VisualizerModal(
                 }
             }
         }
+    }
+
+    Dialog(
+        onDismissRequest = combinedClose,
+        properties = DialogProperties(usePlatformDefaultWidth = false)
+    ) {
+        content()
     }
 }

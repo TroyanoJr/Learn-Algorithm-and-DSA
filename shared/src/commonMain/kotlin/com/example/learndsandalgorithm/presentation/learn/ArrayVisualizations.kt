@@ -195,7 +195,8 @@ internal fun ArrayStorageRow(
 
 @Composable
 internal fun ArrayResizeVisualizationCard() {
-    var isExpanded by remember { mutableStateOf(false) }
+    val autoExpand = LocalAutoExpandVisualizer.current
+    var isExpanded by remember { mutableStateOf(autoExpand) }
 
     val steps = remember { ArrayTrace.resizeSteps() }
     val totalSteps = 4
@@ -211,7 +212,9 @@ internal fun ArrayResizeVisualizationCard() {
     val highlightedIndices = currentStep.highlightedIndices
     val explanationText = currentStep.explanationText
 
-    ArrayWindowButton(text = "Open resize visualizer") { isExpanded = true }
+    if (!autoExpand) {
+        ArrayWindowButton(text = "Open resize visualizer") { isExpanded = true }
+    }
 
     if (isExpanded) {
         ArrayResizeExpandedDialog(
@@ -316,7 +319,8 @@ internal fun ArrayResizeExpandedDialog(
 
 @Composable
 internal fun ArrayTraversalVisualizationCard() {
-    var isExpanded by remember { mutableStateOf(false) }
+    val autoExpand = LocalAutoExpandVisualizer.current
+    var isExpanded by remember { mutableStateOf(autoExpand) }
 
     val steps = remember { ArrayTrace.traversalSteps() }
     val totalElements = ArrayTrace.defaultTraversalData.size
@@ -337,7 +341,9 @@ internal fun ArrayTraversalVisualizationCard() {
     }
     val explanationText = currentStep.explanationText
 
-    ArrayWindowButton(text = "Open traversal visualizer") { isExpanded = true }
+    if (!autoExpand) {
+        ArrayWindowButton(text = "Open traversal visualizer") { isExpanded = true }
+    }
 
     if (isExpanded) {
         ArrayTraversalExpandedDialog(
@@ -419,7 +425,8 @@ internal fun ArrayTraversalExpandedDialog(
 @Composable
 internal fun ArrayInsertDeleteVisualizationCard() {
     var operationMode by remember { mutableStateOf("INSERT") }
-    var isExpanded by remember { mutableStateOf(false) }
+    val autoExpand = LocalAutoExpandVisualizer.current
+    var isExpanded by remember { mutableStateOf(autoExpand) }
 
     val steps = remember(operationMode) { ArrayTrace.insertDeleteSteps(operationMode) }
     val totalSteps = steps.lastIndex
@@ -440,7 +447,9 @@ internal fun ArrayInsertDeleteVisualizationCard() {
         else -> BlueAccent
     }
 
-    ArrayWindowButton(text = "Open insert / delete visualizer") { isExpanded = true }
+    if (!autoExpand) {
+        ArrayWindowButton(text = "Open insert / delete visualizer") { isExpanded = true }
+    }
 
     if (isExpanded) {
         ArrayInsertDeleteExpandedDialog(

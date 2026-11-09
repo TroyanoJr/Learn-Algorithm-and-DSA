@@ -6,8 +6,11 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -41,6 +44,12 @@ import com.example.learndsandalgorithm.presentation.learn.LessonViewModel
 import com.example.learndsandalgorithm.presentation.learn.TopicLessonsScreen
 import com.example.learndsandalgorithm.presentation.practice.PracticeScreen
 import com.example.learndsandalgorithm.presentation.practice.TopicQuizFlow
+import com.example.learndsandalgorithm.presentation.theme.AppCardPadding
+import com.example.learndsandalgorithm.presentation.theme.AppCornerRadius
+import com.example.learndsandalgorithm.presentation.theme.AppIconSize
+import com.example.learndsandalgorithm.presentation.theme.AppSpacing
+import com.example.learndsandalgorithm.presentation.theme.AppTouchTarget
+import com.example.learndsandalgorithm.presentation.theme.AppTypography
 
 private val DarkBgColor = Color(0xFF111115)
 private val DarkCardBgColor = Color(0xFF1A1A22)
@@ -138,17 +147,21 @@ fun AppNavigation(
     var isTopicQuizActive by remember { mutableStateOf(false) }
     var learnExpandedCategoryId by remember { mutableStateOf<String?>(null) }
 
+    val showBottomBar = selectedLessonId == null && selectedTopicId == null && !isTopicQuizActive
+
     Scaffold(
         bottomBar = {
-            AppBottomNavigation(
-                currentDestination = currentDestination,
-                onNavigate = { destination ->
-                    selectedLessonId = null
-                    selectedTopicId = null
-                    isTopicQuizActive = false
-                    currentDestination = destination
-                }
-            )
+            if (showBottomBar) {
+                AppBottomNavigation(
+                    currentDestination = currentDestination,
+                    onNavigate = { destination ->
+                        selectedLessonId = null
+                        selectedTopicId = null
+                        isTopicQuizActive = false
+                        currentDestination = destination
+                    }
+                )
+            }
         },
         containerColor = DarkBgColor
     ) { innerPadding ->
@@ -240,16 +253,16 @@ fun AppBottomNavigation(
     Surface(
         color = DarkCardBgColor,
         border = BorderStroke(1.dp, SubtleBorderColor),
-        shape = RoundedCornerShape(20.dp),
+        shape = RoundedCornerShape(AppCornerRadius.cardLarge),
         modifier = Modifier
             .fillMaxWidth()
             .navigationBarsPadding()
-            .padding(start = 16.dp, end = 16.dp, top = 4.dp, bottom = 2.dp)
+            .padding(start = AppSpacing.large, end = AppSpacing.large, top = AppSpacing.extraSmall, bottom = 2.dp)
     ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(vertical = 5.dp),
+                .padding(vertical = 4.dp),
             horizontalArrangement = Arrangement.SpaceAround,
             verticalAlignment = Alignment.CenterVertically
         ) {
@@ -274,22 +287,23 @@ fun BottomNavItem(
 ) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(2.dp),
+        verticalArrangement = Arrangement.Center,
         modifier = Modifier
+            .heightIn(min = AppTouchTarget.minimum)
             .clickable(onClick = onClick)
-            .padding(horizontal = 12.dp, vertical = 1.dp)
+            .padding(horizontal = AppSpacing.medium, vertical = AppSpacing.extraSmall)
     ) {
         Icon(
             imageVector = icon,
             contentDescription = text,
             tint = if (isSelected) OrangeAccent else TextSecondary,
-            modifier = Modifier.size(20.dp)
+            modifier = Modifier.size(AppIconSize.medium)
         )
+        Spacer(modifier = Modifier.size(2.dp))
         Text(
             text = text,
             color = if (isSelected) OrangeAccent else TextSecondary,
-            fontSize = 11.sp,
-            fontWeight = FontWeight.Medium
+            style = AppTypography.badge.copy(fontWeight = FontWeight.Medium)
         )
     }
 }

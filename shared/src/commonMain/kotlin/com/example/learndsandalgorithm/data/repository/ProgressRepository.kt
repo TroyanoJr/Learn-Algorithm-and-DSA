@@ -8,4 +8,6 @@ interface ProgressRepository {
     fun getCompletedLessonIds(): Set<String>
     fun getTotalXp(): Int
     fun markLessonCompleted(lessonId: String, xp: Int)
+    fun saveQuestionAnswer(lessonId: String, questionId: String, originalOptionIndex: Int)
+    fun getQuestionAnswers(lessonId: String): Map<String, Int>
 }

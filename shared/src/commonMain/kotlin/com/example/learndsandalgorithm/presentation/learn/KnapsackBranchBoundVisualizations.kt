@@ -37,7 +37,8 @@ internal fun KnapsackBranchBoundVisualizationCard(
     title: String = "0/1 Knapsack with Branch and Bound"
 ) {
     val steps = KnapsackBranchBoundTrace.createTrace()
-    var isExpanded by rememberSaveable { mutableStateOf(false) }
+    val autoExpand = LocalAutoExpandVisualizer.current
+    var isExpanded by rememberSaveable { mutableStateOf(autoExpand) }
 
     val playback = rememberVisualizerPlaybackState(
         stepCount = steps.size,
@@ -48,8 +49,10 @@ internal fun KnapsackBranchBoundVisualizationCard(
     val isCompleted = playback.isCompleted
     val step = steps[stepIndex]
 
-    ArrayWindowButton(text = "Open knapsack B&B visualizer") {
-        isExpanded = true
+    if (!autoExpand) {
+        ArrayWindowButton(text = "Open knapsack B&B visualizer") {
+            isExpanded = true
+        }
     }
 
     if (isExpanded) {

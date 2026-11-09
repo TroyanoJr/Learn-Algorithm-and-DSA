@@ -37,7 +37,8 @@ internal fun CoinChangeDpVisualizationCard(
     title: String = "Unbounded Choice: Coin Change Problem"
 ) {
     val steps = CoinChangeDpTrace.createTrace()
-    var isExpanded by rememberSaveable { mutableStateOf(false) }
+    val autoExpand = LocalAutoExpandVisualizer.current
+    var isExpanded by rememberSaveable { mutableStateOf(autoExpand) }
 
     val playback = rememberVisualizerPlaybackState(
         stepCount = steps.size,
@@ -48,8 +49,10 @@ internal fun CoinChangeDpVisualizationCard(
     val isCompleted = playback.isCompleted
     val step = steps[stepIndex]
 
-    ArrayWindowButton(text = "Open coin change DP visualizer") {
-        isExpanded = true
+    if (!autoExpand) {
+        ArrayWindowButton(text = "Open coin change DP visualizer") {
+            isExpanded = true
+        }
     }
 
     if (isExpanded) {

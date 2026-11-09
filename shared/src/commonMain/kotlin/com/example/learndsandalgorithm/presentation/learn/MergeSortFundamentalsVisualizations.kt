@@ -35,7 +35,8 @@ internal fun MergeSortFundamentalsVisualizationCard(
     title: String = "Merge Sort Fundamentals"
 ) {
     val steps = MergeSortFundamentalsTrace.stepsForMerge()
-    var isExpanded by rememberSaveable { mutableStateOf(false) }
+    val autoExpand = LocalAutoExpandVisualizer.current
+    var isExpanded by rememberSaveable { mutableStateOf(autoExpand) }
 
     val playback = rememberVisualizerPlaybackState(
         stepCount = steps.size,
@@ -46,8 +47,10 @@ internal fun MergeSortFundamentalsVisualizationCard(
     val isCompleted = playback.isCompleted
     val step = steps[stepIndex]
 
-    ArrayWindowButton(text = "Open merge step visualizer") {
-        isExpanded = true
+    if (!autoExpand) {
+        ArrayWindowButton(text = "Open merge step visualizer") {
+            isExpanded = true
+        }
     }
 
     if (isExpanded) {

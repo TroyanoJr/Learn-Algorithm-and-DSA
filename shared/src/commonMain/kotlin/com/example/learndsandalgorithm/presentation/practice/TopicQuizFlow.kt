@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -47,6 +48,12 @@ import com.example.learndsandalgorithm.domain.model.TopicCategory
 import com.example.learndsandalgorithm.domain.repository.ContentRepository
 import com.example.learndsandalgorithm.presentation.components.MarkdownContent
 import com.example.learndsandalgorithm.presentation.components.TopicIcon
+import com.example.learndsandalgorithm.presentation.theme.AppCardPadding
+import com.example.learndsandalgorithm.presentation.theme.AppCornerRadius
+import com.example.learndsandalgorithm.presentation.theme.AppIconSize
+import com.example.learndsandalgorithm.presentation.theme.AppSpacing
+import com.example.learndsandalgorithm.presentation.theme.AppTouchTarget
+import com.example.learndsandalgorithm.presentation.theme.AppTypography
 
 private val DarkBgColor = Color(0xFF111115)
 private val DarkCardBgColor = Color(0xFF181820)
@@ -137,8 +144,8 @@ private data class QuizTopicState(
 private enum class QuizFlowState {
     TOPIC_SELECTION,
     QUESTION,
-    QUIZ_COMPLETE,
-    QUIZ_RESULT
+    QUIZ_RESULT,
+    QUIZ_REVIEW
 }
 
 internal fun prepareQuizQuestions(rawQuestions: List<Question>): List<QuizQuestionState> {
@@ -180,11 +187,23 @@ fun TopicQuizFlow(
     var selectedTopicId by remember { mutableStateOf("arrays") }
     var activeTopic by remember { mutableStateOf<QuizTopicState?>(null) }
 
+    var activeAttemptQuestions by remember { mutableStateOf<List<QuizQuestionState>>(emptyList()) }
+    var activeAttemptSelectedAnswers by remember { mutableStateOf<Map<String, Int>>(emptyMap()) }
+
     var flowState by remember { mutableStateOf(QuizFlowState.TOPIC_SELECTION) }
     var currentQuestionIndex by remember { mutableStateOf(0) }
     var selectedOptionIndex by remember { mutableStateOf<Int?>(null) }
     var correctCount by remember { mutableStateOf(0) }
     var incorrectCount by remember { mutableStateOf(0) }
+
+    fun resetAttempt() {
+        activeAttemptQuestions = emptyList()
+        activeAttemptSelectedAnswers = emptyMap()
+        currentQuestionIndex = 0
+        selectedOptionIndex = null
+        correctCount = 0
+        incorrectCount = 0
+    }
 
     LaunchedEffect(initialTopicId) {
         isLoading = true
@@ -219,7 +238,10 @@ fun TopicQuizFlow(
             selectedTopicId = initialTarget.id
 
             if (initialTopicId != null) {
-                activeTopic = initialTarget.copy(questions = shuffleQuizQuestionOrder(initialTarget.questions))
+                val shuffled = shuffleQuizQuestionOrder(initialTarget.questions)
+                activeTopic = initialTarget.copy(questions = shuffled)
+                activeAttemptQuestions = shuffled
+                activeAttemptSelectedAnswers = emptyMap()
                 currentQuestionIndex = 0
                 selectedOptionIndex = null
                 correctCount = 0
@@ -244,35 +266,33 @@ fun TopicQuizFlow(
             modifier = Modifier
                 .fillMaxSize()
                 .background(DarkBgColor)
-                .padding(20.dp),
+                .padding(AppSpacing.large),
             contentAlignment = Alignment.Center
         ) {
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(12.dp)
+                verticalArrangement = Arrangement.spacedBy(AppSpacing.medium)
             ) {
                 Text(
                     text = "No Quiz Topics Available",
-                    color = OrangeAccent,
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.Bold
+                    style = AppTypography.sectionTitle,
+                    color = OrangeAccent
                 )
                 Text(
                     text = "No quiz questions found in repository.",
-                    color = TextSecondary,
-                    fontSize = 14.sp
+                    style = AppTypography.bodySecondary,
+                    color = TextSecondary
                 )
                 Surface(
                     color = OrangeAccent,
-                    shape = RoundedCornerShape(8.dp),
-                    modifier = Modifier.clickable { onBackToPractice() }
+                    shape = RoundedCornerShape(AppCornerRadius.compact),
+                    modifier = Modifier.clickable { resetAttempt(); onBackToPractice() }
                 ) {
                     Text(
                         text = "Back to Practice",
                         color = DarkBgColor,
-                        fontSize = 14.sp,
-                        fontWeight = FontWeight.Bold,
-                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+                        style = AppTypography.bodyPrimary.copy(fontWeight = FontWeight.Bold),
+                        modifier = Modifier.padding(horizontal = AppSpacing.large, vertical = AppSpacing.small)
                     )
                 }
             }
@@ -285,14 +305,20 @@ fun TopicQuizFlow(
                     selectedTopicId = selectedTopicId,
                     onSelectTopic = { selectedTopicId = it },
                     onStartQuizForTopic = { topic ->
-                        activeTopic = topic.copy(questions = shuffleQuizQuestionOrder(topic.questions))
+                        val shuffled = shuffleQuizQuestionOrder(topic.questions)
+                        activeTopic = topic.copy(questions = shuffled)
+                        activeAttemptQuestions = shuffled
+                        activeAttemptSelectedAnswers = emptyMap()
                         currentQuestionIndex = 0
                         selectedOptionIndex = null
                         correctCount = 0
                         incorrectCount = 0
                         flowState = QuizFlowState.QUESTION
                     },
-                    onBack = onBackToPractice
+                    onBack = {
+                        resetAttempt()
+                        onBackToPractice()
+                    }
                 )
             }
 
@@ -306,9 +332,11 @@ fun TopicQuizFlow(
                     totalQuestions = topic.questions.size,
                     question = question,
                     selectedOptionIndex = selectedOptionIndex,
+                    isReviewMode = false,
                     onSelectOption = { index ->
                         if (selectedOptionIndex == null) {
                             selectedOptionIndex = index
+                            activeAttemptSelectedAnswers = activeAttemptSelectedAnswers + (question.id to index)
                             if (index == question.correctOptionIndex) {
                                 correctCount++
                             } else {
@@ -321,20 +349,13 @@ fun TopicQuizFlow(
                             currentQuestionIndex++
                             selectedOptionIndex = null
                         } else {
-                            flowState = QuizFlowState.QUIZ_COMPLETE
+                            flowState = QuizFlowState.QUIZ_RESULT
                         }
                     },
-                    onBack = { flowState = QuizFlowState.TOPIC_SELECTION }
-                )
-            }
-
-            QuizFlowState.QUIZ_COMPLETE -> {
-                val topic = activeTopic ?: topics.first()
-                QuizCompleteScreen(
-                    topicTitle = topic.title,
-                    totalQuestions = topic.questions.size,
-                    onViewResult = { flowState = QuizFlowState.QUIZ_RESULT },
-                    onBack = { flowState = QuizFlowState.TOPIC_SELECTION }
+                    onBack = {
+                        resetAttempt()
+                        flowState = QuizFlowState.TOPIC_SELECTION
+                    }
                 )
             }
 
@@ -350,17 +371,52 @@ fun TopicQuizFlow(
                     totalQuestions = total,
                     percentage = percentage,
                     onTryAgain = {
-                        activeTopic = topic.copy(questions = shuffleQuizQuestionOrder(topic.questions))
+                        val shuffled = shuffleQuizQuestionOrder(topic.questions)
+                        activeTopic = topic.copy(questions = shuffled)
+                        activeAttemptQuestions = shuffled
+                        activeAttemptSelectedAnswers = emptyMap()
                         currentQuestionIndex = 0
                         selectedOptionIndex = null
                         correctCount = 0
                         incorrectCount = 0
                         flowState = QuizFlowState.QUESTION
                     },
+                    onReviewAnswers = {
+                        currentQuestionIndex = 0
+                        flowState = QuizFlowState.QUIZ_REVIEW
+                    },
                     onBackToTopicSelection = {
+                        resetAttempt()
                         flowState = QuizFlowState.TOPIC_SELECTION
                     },
-                    onBackToPractice = onBackToPractice
+                    onBackToPractice = {
+                        resetAttempt()
+                        onBackToPractice()
+                    }
+                )
+            }
+
+            QuizFlowState.QUIZ_REVIEW -> {
+                val topic = activeTopic ?: topics.first()
+                val question = activeAttemptQuestions.getOrNull(currentQuestionIndex) ?: activeAttemptQuestions.first()
+                val userSelectedIdx = activeAttemptSelectedAnswers[question.id]
+
+                QuizQuestionScreen(
+                    topicTitle = "${topic.title} (Review)",
+                    questionIndex = currentQuestionIndex,
+                    totalQuestions = activeAttemptQuestions.size,
+                    question = question,
+                    selectedOptionIndex = userSelectedIdx,
+                    isReviewMode = true,
+                    onSelectOption = { /* Read-only: no-op */ },
+                    onNextQuestion = {
+                        if (currentQuestionIndex + 1 < activeAttemptQuestions.size) {
+                            currentQuestionIndex++
+                        } else {
+                            flowState = QuizFlowState.QUIZ_RESULT
+                        }
+                    },
+                    onBack = { flowState = QuizFlowState.QUIZ_RESULT }
                 )
             }
         }
@@ -380,18 +436,18 @@ private fun TopicQuizSelectionScreen(
             .fillMaxSize()
             .background(DarkBgColor)
             .verticalScroll(rememberScrollState())
-            .padding(horizontal = 16.dp, vertical = 12.dp),
-        verticalArrangement = Arrangement.spacedBy(10.dp)
+            .padding(horizontal = AppSpacing.large, vertical = AppSpacing.medium),
+        verticalArrangement = Arrangement.spacedBy(AppSpacing.medium)
     ) {
         // Top Bar
         Row(
             modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(12.dp)
+            horizontalArrangement = Arrangement.spacedBy(AppSpacing.medium)
         ) {
             Box(
                 modifier = Modifier
-                    .size(32.dp)
+                    .size(AppIconSize.boxSmall)
                     .clip(RoundedCornerShape(10.dp))
                     .background(DarkCardBgColor)
                     .clickable { onBack() },
@@ -401,10 +457,8 @@ private fun TopicQuizSelectionScreen(
             }
             Text(
                 text = "TOPIC QUIZ",
-                color = OrangeAccent,
-                fontSize = 11.sp,
-                fontWeight = FontWeight.Bold,
-                letterSpacing = 1.5.sp
+                style = AppTypography.sectionHeader,
+                color = OrangeAccent
             )
         }
 
@@ -417,36 +471,36 @@ private fun TopicQuizSelectionScreen(
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = "CHOOSE A TOPIC",
-                    color = OrangeAccent,
-                    fontSize = 10.sp,
-                    fontWeight = FontWeight.Bold,
-                    letterSpacing = 1.2.sp
+                    style = AppTypography.sectionHeader,
+                    color = OrangeAccent
                 )
-                Spacer(modifier = Modifier.height(4.dp))
+                Spacer(modifier = Modifier.height(AppSpacing.extraSmall))
                 Text(
                     text = "What do you want to practice?",
-                    color = TextPrimary,
-                    fontSize = 24.sp,
-                    fontWeight = FontWeight.Bold,
-                    lineHeight = 28.sp
+                    style = AppTypography.displayTitle,
+                    color = TextPrimary
                 )
                 Spacer(modifier = Modifier.height(6.dp))
                 Text(
                     text = "Pick a focused set and sharpen one concept at a time.",
-                    color = TextSecondary,
-                    fontSize = 14.sp
+                    style = AppTypography.bodySecondary,
+                    color = TextSecondary
                 )
             }
 
             Box(
                 modifier = Modifier
-                    .size(38.dp)
+                    .size(AppIconSize.boxMedium)
                     .clip(CircleShape)
                     .background(Color(0xFF1E1E28))
                     .border(1.dp, CardBorderColor, CircleShape),
                 contentAlignment = Alignment.Center
             ) {
-                Text(text = "DSA", color = OrangeAccent, fontSize = 13.sp, fontWeight = FontWeight.Bold)
+                Text(
+                    text = "DSA",
+                    style = AppTypography.bodySecondary.copy(fontWeight = FontWeight.Bold),
+                    color = OrangeAccent
+                )
             }
         }
 
@@ -455,62 +509,63 @@ private fun TopicQuizSelectionScreen(
             val isSelected = topic.id == selectedTopicId
             Surface(
                 color = DarkCardBgColor,
-                shape = RoundedCornerShape(16.dp),
+                shape = RoundedCornerShape(AppCornerRadius.card),
                 border = BorderStroke(
                     width = if (isSelected) 1.5.dp else 1.dp,
                     color = if (isSelected) OrangeAccent else CardBorderColor
                 ),
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .heightIn(min = AppTouchTarget.minimum)
+                    .clickable {
+                        onSelectTopic(topic.id)
+                        onStartQuizForTopic(topic)
+                    }
             ) {
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(10.dp),
+                        .padding(AppCardPadding.compact),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    // Topic content area (clickable to select topic details)
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(10.dp),
-                        modifier = Modifier
-                            .weight(1f)
-                            .clickable { onSelectTopic(topic.id) }
+                        horizontalArrangement = Arrangement.spacedBy(AppSpacing.small),
+                        modifier = Modifier.weight(1f)
                     ) {
                         TopicIcon(
                             topicId = topic.id,
-                            containerSize = 36.dp,
+                            containerSize = AppIconSize.boxSmall,
                             iconSize = 18.dp
                         )
 
-                        Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                        Column(verticalArrangement = Arrangement.spacedBy(2.dp), modifier = Modifier.weight(1f)) {
                             Text(
                                 text = topic.title,
-                                color = TextPrimary,
-                                fontSize = 16.sp,
-                                fontWeight = FontWeight.Bold
+                                style = AppTypography.cardTitle,
+                                color = TextPrimary
                             )
                             Text(
                                 text = topic.category,
-                                color = TextSecondary,
-                                fontSize = 12.sp
+                                style = AppTypography.caption,
+                                color = TextSecondary
                             )
                             Text(
                                 text = "${topic.questionCount} questions",
-                                color = TextPrimary,
-                                fontSize = 12.sp,
-                                fontWeight = FontWeight.Medium
+                                style = AppTypography.badge,
+                                color = TextPrimary
                             )
                         }
                     }
 
-                    // Chevron action button (clickable to start quiz)
+                    // Chevron action button
                     Box(
                         modifier = Modifier
+                            .padding(start = AppSpacing.small)
                             .size(28.dp)
                             .clip(CircleShape)
-                            .background(Color(0xFF262634))
-                            .clickable { onStartQuizForTopic(topic) },
+                            .background(Color(0xFF262634)),
                         contentAlignment = Alignment.Center
                     ) {
                         Icon(
@@ -523,7 +578,6 @@ private fun TopicQuizSelectionScreen(
                 }
             }
         }
-
     }
 }
 
@@ -534,6 +588,7 @@ private fun QuizQuestionScreen(
     totalQuestions: Int,
     question: QuizQuestionState,
     selectedOptionIndex: Int?,
+    isReviewMode: Boolean = false,
     onSelectOption: (Int) -> Unit,
     onNextQuestion: () -> Unit,
     onBack: () -> Unit
@@ -545,8 +600,8 @@ private fun QuizQuestionScreen(
             .fillMaxSize()
             .background(DarkBgColor)
             .verticalScroll(rememberScrollState())
-            .padding(horizontal = 16.dp, vertical = 10.dp),
-        verticalArrangement = Arrangement.spacedBy(8.dp)
+            .padding(horizontal = AppSpacing.large, vertical = AppSpacing.medium),
+        verticalArrangement = Arrangement.spacedBy(AppSpacing.small)
     ) {
         // Header Row
         Row(
@@ -556,11 +611,11 @@ private fun QuizQuestionScreen(
         ) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
+                horizontalArrangement = Arrangement.spacedBy(AppSpacing.medium)
             ) {
                 Box(
                     modifier = Modifier
-                        .size(36.dp)
+                        .size(AppIconSize.boxSmall)
                         .clip(RoundedCornerShape(10.dp))
                         .background(DarkCardBgColor)
                         .clickable { onBack() },
@@ -571,26 +626,22 @@ private fun QuizQuestionScreen(
 
                 Column {
                     Text(
-                        text = "TOPIC QUIZ",
-                        color = TextSecondary,
-                        fontSize = 10.sp,
-                        fontWeight = FontWeight.Bold,
-                        letterSpacing = 1.2.sp
+                        text = if (isReviewMode) "REVIEW ANSWERS" else "TOPIC QUIZ",
+                        style = AppTypography.sectionHeader,
+                        color = OrangeAccent
                     )
                     Text(
                         text = topicTitle,
-                        color = TextPrimary,
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.Bold
+                        style = AppTypography.sectionTitle,
+                        color = TextPrimary
                     )
                 }
             }
 
             Text(
                 text = "${questionIndex + 1} / $totalQuestions",
-                color = OrangeAccent,
-                fontSize = 15.sp,
-                fontWeight = FontWeight.Bold
+                style = AppTypography.bodyPrimary.copy(fontWeight = FontWeight.Bold),
+                color = OrangeAccent
             )
         }
 
@@ -611,26 +662,22 @@ private fun QuizQuestionScreen(
             )
         }
 
-        Spacer(modifier = Modifier.height(4.dp))
+        Spacer(modifier = Modifier.height(AppSpacing.extraSmall))
 
         // Question Statement
-        Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+        Column(verticalArrangement = Arrangement.spacedBy(AppSpacing.extraSmall)) {
             Text(
                 text = "QUESTION ${questionIndex + 1} · ${question.type.name.replace('_', ' ')}",
-                color = OrangeAccent,
-                fontSize = 10.sp,
-                fontWeight = FontWeight.Bold,
-                letterSpacing = 1.2.sp
+                style = AppTypography.sectionHeader,
+                color = OrangeAccent
             )
             if (question.type == QuestionType.CODE_OUTPUT) {
                 MarkdownContent(content = question.statement)
             } else {
                 Text(
                     text = question.statement,
-                    color = TextPrimary,
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.Bold,
-                    lineHeight = 23.sp
+                    style = AppTypography.sectionTitle,
+                    color = TextPrimary
                 )
             }
         }
@@ -686,229 +733,99 @@ private fun QuizQuestionScreen(
 
             Surface(
                 color = bgColor,
-                shape = RoundedCornerShape(12.dp),
+                shape = RoundedCornerShape(AppCornerRadius.card),
                 border = BorderStroke(1.dp, borderColor),
                 modifier = Modifier
                     .fillMaxWidth()
-                    .clickable(enabled = !isAnswered) { onSelectOption(index) }
+                    .heightIn(min = AppTouchTarget.minimum)
+                    .clickable(enabled = !isAnswered && !isReviewMode) { onSelectOption(index) }
             ) {
-                Row(
+                Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 12.dp, vertical = 8.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween
+                        .padding(AppCardPadding.standard),
+                    verticalArrangement = Arrangement.spacedBy(AppSpacing.extraSmall)
                 ) {
                     Row(
+                        modifier = Modifier.fillMaxWidth(),
                         verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(10.dp),
-                        modifier = Modifier.weight(1f)
+                        horizontalArrangement = Arrangement.SpaceBetween
                     ) {
-                        Box(
-                            modifier = Modifier
-                                .size(28.dp)
-                                .clip(RoundedCornerShape(6.dp))
-                                .background(letterBgColor),
-                            contentAlignment = Alignment.Center
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(AppSpacing.small),
+                            modifier = Modifier.weight(1f)
                         ) {
+                            Box(
+                                modifier = Modifier
+                                    .size(28.dp)
+                                    .clip(RoundedCornerShape(6.dp))
+                                    .background(letterBgColor),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text(
+                                    text = optionLabels.getOrElse(index) { "?" },
+                                    color = letterTextColor,
+                                    style = AppTypography.badge
+                                )
+                            }
+
                             Text(
-                                text = optionLabels.getOrElse(index) { "?" },
-                                color = letterTextColor,
-                                fontSize = 12.sp,
-                                fontWeight = FontWeight.Bold
+                                text = optionText,
+                                style = AppTypography.bodyPrimary.copy(fontWeight = FontWeight.Medium),
+                                color = TextPrimary
                             )
                         }
 
-                        Text(
-                            text = optionText,
-                            color = TextPrimary,
-                            fontSize = 14.sp,
-                            fontWeight = FontWeight.Medium
-                        )
+                        if (iconVector != null) {
+                            Icon(
+                                imageVector = iconVector,
+                                contentDescription = null,
+                                tint = iconColor,
+                                modifier = Modifier.size(18.dp)
+                            )
+                        }
                     }
 
-                    if (iconVector != null) {
-                        Icon(
-                            imageVector = iconVector,
-                            contentDescription = null,
-                            tint = iconColor,
-                            modifier = Modifier.size(18.dp)
+                    if (isSelected) {
+                        Text(
+                            text = question.explanation,
+                            style = AppTypography.caption,
+                            color = TextPrimary.copy(alpha = 0.9f),
+                            modifier = Modifier.padding(top = 2.dp)
                         )
                     }
                 }
             }
         }
 
-        // Feedback Section
-        if (selectedOptionIndex != null) {
-            val isCorrect = selectedOptionIndex == question.correctOptionIndex
-            val feedbackBgColor = if (isCorrect) Color(0xFF092317) else Color(0xFF210C0D)
-            val feedbackBorderColor = if (isCorrect) GreenAccent else RedAccent
-
-            Surface(
-                color = feedbackBgColor,
-                shape = RoundedCornerShape(12.dp),
-                border = BorderStroke(1.dp, feedbackBorderColor),
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(12.dp),
-                    verticalArrangement = Arrangement.spacedBy(4.dp)
-                ) {
-                    Text(
-                        text = if (isCorrect) "Correct!" else "Incorrect",
-                        color = if (isCorrect) GreenAccent else RedAccent,
-                        fontSize = 15.sp,
-                        fontWeight = FontWeight.Bold
-                    )
-                    Text(
-                        text = question.explanation,
-                        color = Color(0xFFD1D5DB),
-                        fontSize = 12.sp,
-                        lineHeight = 16.sp
-                    )
-                }
-            }
-
-            // Next Question Button
+        // Navigation Action Button
+        if (selectedOptionIndex != null || isReviewMode) {
             Surface(
                 color = OrangeAccent,
-                shape = RoundedCornerShape(12.dp),
+                shape = RoundedCornerShape(AppCornerRadius.card),
                 modifier = Modifier
                     .fillMaxWidth()
+                    .heightIn(min = AppTouchTarget.buttonHeight)
                     .clickable { onNextQuestion() }
             ) {
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(vertical = 11.dp),
+                        .padding(vertical = AppSpacing.medium),
                     contentAlignment = Alignment.Center
                 ) {
+                    val nextButtonText = when {
+                        isReviewMode && questionIndex + 1 == totalQuestions -> "Back to Results ➔"
+                        questionIndex + 1 < totalQuestions -> "Next Question ➔"
+                        else -> "Finish Quiz ➔"
+                    }
                     Text(
-                        text = if (questionIndex + 1 < totalQuestions) "Next Question ➔" else "Finish Quiz ➔",
+                        text = nextButtonText,
                         color = Color(0xFF111115),
-                        fontSize = 15.sp,
-                        fontWeight = FontWeight.Bold
+                        style = AppTypography.cardTitle
                     )
                 }
-            }
-        }
-    }
-}
-
-@Composable
-private fun QuizCompleteScreen(
-    topicTitle: String,
-    totalQuestions: Int,
-    onViewResult: () -> Unit,
-    onBack: () -> Unit
-) {
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(DarkBgColor)
-            .verticalScroll(rememberScrollState())
-            .padding(horizontal = 20.dp, vertical = 24.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.SpaceBetween
-    ) {
-        // Back Header
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .clickable { onBack() },
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(6.dp)
-        ) {
-            Icon(imageVector = IconChevronLeft, contentDescription = "Back", tint = TextSecondary, modifier = Modifier.size(16.dp))
-            Text(text = "Back", color = TextSecondary, fontSize = 14.sp)
-        }
-
-        // Center Content
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(16.dp)
-        ) {
-            // Circle Checkmark Icon Container
-            Box(
-                modifier = Modifier
-                    .size(72.dp)
-                    .clip(RoundedCornerShape(20.dp))
-                    .background(Color(0xFF2A1A10))
-                    .border(1.dp, OrangeAccent, RoundedCornerShape(20.dp)),
-                contentAlignment = Alignment.Center
-            ) {
-                Box(
-                    modifier = Modifier
-                        .size(32.dp)
-                        .clip(CircleShape)
-                        .border(2.dp, OrangeAccent, CircleShape),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(text = "✓", color = OrangeAccent, fontSize = 18.sp, fontWeight = FontWeight.Bold)
-                }
-            }
-
-            Text(
-                text = "ALL QUESTIONS ANSWERED",
-                color = OrangeAccent,
-                fontSize = 10.sp,
-                fontWeight = FontWeight.Bold,
-                letterSpacing = 1.2.sp
-            )
-
-            Text(
-                text = "Quiz Complete",
-                color = TextPrimary,
-                fontSize = 24.sp,
-                fontWeight = FontWeight.Bold
-            )
-
-            Text(
-                text = "You completed the $topicTitle quiz.",
-                color = TextSecondary,
-                fontSize = 14.sp
-            )
-
-            Box(
-                modifier = Modifier
-                    .clip(RoundedCornerShape(20.dp))
-                    .background(DarkCardBgColor)
-                    .border(1.dp, CardBorderColor, RoundedCornerShape(20.dp))
-                    .padding(horizontal = 16.dp, vertical = 8.dp)
-            ) {
-                Text(
-                    text = "$totalQuestions QUESTIONS COMPLETED",
-                    color = TextSecondary,
-                    fontSize = 11.sp,
-                    fontWeight = FontWeight.Bold,
-                    letterSpacing = 1.sp
-                )
-            }
-        }
-
-        // Bottom Button
-        Surface(
-            color = OrangeAccent,
-            shape = RoundedCornerShape(12.dp),
-            modifier = Modifier
-                .fillMaxWidth()
-                .clickable { onViewResult() }
-        ) {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 14.dp),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    text = "View Result ➔",
-                    color = Color(0xFF111115),
-                    fontSize = 15.sp,
-                    fontWeight = FontWeight.Bold
-                )
             }
         }
     }
@@ -922,6 +839,7 @@ private fun QuizResultScreen(
     totalQuestions: Int,
     percentage: Int,
     onTryAgain: () -> Unit,
+    onReviewAnswers: () -> Unit,
     onBackToTopicSelection: () -> Unit,
     onBackToPractice: () -> Unit
 ) {
@@ -930,13 +848,13 @@ private fun QuizResultScreen(
             .fillMaxSize()
             .background(DarkBgColor)
             .verticalScroll(rememberScrollState())
-            .padding(horizontal = 16.dp, vertical = 16.dp),
+            .padding(horizontal = AppSpacing.large, vertical = AppSpacing.large),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.SpaceBetween
     ) {
         Column(
             modifier = Modifier.fillMaxWidth(),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
+            verticalArrangement = Arrangement.spacedBy(AppSpacing.medium)
         ) {
             // Header
             Row(
@@ -944,32 +862,28 @@ private fun QuizResultScreen(
                     .fillMaxWidth()
                     .clickable { onBackToTopicSelection() },
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(6.dp)
+                horizontalArrangement = Arrangement.spacedBy(AppSpacing.extraSmall)
             ) {
                 Icon(imageVector = IconChevronLeft, contentDescription = "Back", tint = TextSecondary, modifier = Modifier.size(16.dp))
-                Text(text = "Back", color = TextSecondary, fontSize = 14.sp)
+                Text(text = "Back", style = AppTypography.bodySecondary, color = TextSecondary)
             }
 
             Text(
                 text = "PRACTICE · QUIZ RESULT",
-                color = OrangeAccent,
-                fontSize = 11.sp,
-                fontWeight = FontWeight.Bold,
-                letterSpacing = 1.5.sp
+                style = AppTypography.sectionHeader,
+                color = OrangeAccent
             )
 
             // Topic Name & Fraction
             Column(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(6.dp)
+                verticalArrangement = Arrangement.spacedBy(AppSpacing.extraSmall)
             ) {
                 Text(
                     text = topicTitle.uppercase(),
-                    color = TextSecondary,
-                    fontSize = 11.sp,
-                    fontWeight = FontWeight.Bold,
-                    letterSpacing = 1.5.sp
+                    style = AppTypography.sectionHeader,
+                    color = TextSecondary
                 )
 
                 Row(verticalAlignment = Alignment.Bottom) {
@@ -981,24 +895,22 @@ private fun QuizResultScreen(
                     )
                     Text(
                         text = " / $totalQuestions",
+                        style = AppTypography.displayTitle,
                         color = TextSecondary,
-                        fontSize = 24.sp,
-                        fontWeight = FontWeight.Bold,
                         modifier = Modifier.padding(bottom = 4.dp)
                     )
                 }
 
                 Text(
                     text = "$percentage%",
-                    color = OrangeAccent,
-                    fontSize = 20.sp,
-                    fontWeight = FontWeight.Bold
+                    style = AppTypography.headerTitle,
+                    color = OrangeAccent
                 )
 
                 Text(
                     text = if (percentage >= 70) "Great job! Keep up the good work." else "Good progress. Review the misses and try again.",
+                    style = AppTypography.bodySecondary,
                     color = TextSecondary,
-                    fontSize = 14.sp,
                     textAlign = TextAlign.Center
                 )
             }
@@ -1006,7 +918,7 @@ private fun QuizResultScreen(
             // Stats Grid Card
             Surface(
                 color = DarkCardBgColor,
-                shape = RoundedCornerShape(16.dp),
+                shape = RoundedCornerShape(AppCornerRadius.card),
                 border = BorderStroke(1.dp, CardBorderColor),
                 modifier = Modifier.fillMaxWidth()
             ) {
@@ -1014,17 +926,15 @@ private fun QuizResultScreen(
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(12.dp),
+                            .padding(AppCardPadding.standard),
                         horizontalArrangement = Arrangement.SpaceAround,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
                             Text(
                                 text = "CORRECT",
-                                color = TextSecondary,
-                                fontSize = 10.sp,
-                                fontWeight = FontWeight.Bold,
-                                letterSpacing = 1.sp
+                                style = AppTypography.sectionHeader,
+                                color = TextSecondary
                             )
                             Spacer(modifier = Modifier.height(4.dp))
                             Text(
@@ -1045,10 +955,8 @@ private fun QuizResultScreen(
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
                             Text(
                                 text = "INCORRECT",
-                                color = TextSecondary,
-                                fontSize = 10.sp,
-                                fontWeight = FontWeight.Bold,
-                                letterSpacing = 1.sp
+                                style = AppTypography.sectionHeader,
+                                color = TextSecondary
                             )
                             Spacer(modifier = Modifier.height(4.dp))
                             Text(
@@ -1070,14 +978,14 @@ private fun QuizResultScreen(
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(horizontal = 18.dp, vertical = 14.dp),
+                            .padding(horizontal = AppSpacing.large, vertical = AppSpacing.medium),
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
                             text = "$topicTitle · $totalQuestions questions",
-                            color = TextSecondary,
-                            fontSize = 12.sp
+                            style = AppTypography.caption,
+                            color = TextSecondary
                         )
                     }
                 }
@@ -1086,50 +994,75 @@ private fun QuizResultScreen(
 
         // Action Buttons
         Column(
-            modifier = Modifier.fillMaxWidth(),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = AppSpacing.medium),
+            verticalArrangement = Arrangement.spacedBy(AppSpacing.small)
         ) {
             Surface(
                 color = OrangeAccent,
-                shape = RoundedCornerShape(12.dp),
+                shape = RoundedCornerShape(AppCornerRadius.card),
                 modifier = Modifier
                     .fillMaxWidth()
+                    .heightIn(min = AppTouchTarget.buttonHeight)
+                    .clickable { onReviewAnswers() }
+            ) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = AppSpacing.medium),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "Review Answers 🔍",
+                        color = Color(0xFF111115),
+                        style = AppTypography.cardTitle
+                    )
+                }
+            }
+
+            Surface(
+                color = Color(0xFF22222E),
+                shape = RoundedCornerShape(AppCornerRadius.card),
+                border = BorderStroke(1.dp, CardBorderColor),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .heightIn(min = AppTouchTarget.buttonHeight)
                     .clickable { onTryAgain() }
             ) {
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(vertical = 14.dp),
+                        .padding(vertical = AppSpacing.medium),
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
                         text = "Try Again",
-                        color = Color(0xFF111115),
-                        fontSize = 15.sp,
-                        fontWeight = FontWeight.Bold
+                        color = TextPrimary,
+                        style = AppTypography.cardTitle
                     )
                 }
             }
 
             Surface(
                 color = DarkCardBgColor,
-                shape = RoundedCornerShape(12.dp),
+                shape = RoundedCornerShape(AppCornerRadius.card),
                 border = BorderStroke(1.dp, CardBorderColor),
                 modifier = Modifier
                     .fillMaxWidth()
+                    .heightIn(min = AppTouchTarget.buttonHeight)
                     .clickable { onBackToPractice() }
             ) {
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(vertical = 14.dp),
+                        .padding(vertical = AppSpacing.medium),
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
                         text = "Back to Practice",
-                        color = TextPrimary,
-                        fontSize = 15.sp,
-                        fontWeight = FontWeight.Bold
+                        color = TextSecondary,
+                        style = AppTypography.cardTitle
                     )
                 }
             }

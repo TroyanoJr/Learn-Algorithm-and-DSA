@@ -38,7 +38,8 @@ internal fun TreeTraversalsVisualizationCard(
 ) {
     var selectedOrder by rememberSaveable { mutableStateOf(TraversalOrder.IN_ORDER) }
     val steps = TreeTraversalsTrace.stepsForOrder(selectedOrder)
-    var isExpanded by rememberSaveable { mutableStateOf(false) }
+    val autoExpand = LocalAutoExpandVisualizer.current
+    var isExpanded by rememberSaveable { mutableStateOf(autoExpand) }
 
     val playback = rememberVisualizerPlaybackState(
         stepCount = steps.size,
@@ -50,8 +51,10 @@ internal fun TreeTraversalsVisualizationCard(
     val isCompleted = playback.isCompleted
     val step = steps[stepIndex]
 
-    ArrayWindowButton(text = "Open tree traversals visualizer") {
-        isExpanded = true
+    if (!autoExpand) {
+        ArrayWindowButton(text = "Open tree traversals visualizer") {
+            isExpanded = true
+        }
     }
 
     if (isExpanded) {

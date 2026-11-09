@@ -4,12 +4,29 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.*
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
+import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -29,6 +46,11 @@ import com.example.learndsandalgorithm.domain.model.Topic
 import com.example.learndsandalgorithm.domain.model.TopicCategory
 import com.example.learndsandalgorithm.domain.model.UserStats
 import com.example.learndsandalgorithm.presentation.components.TopicIcon
+import com.example.learndsandalgorithm.presentation.theme.AppCardPadding
+import com.example.learndsandalgorithm.presentation.theme.AppCornerRadius
+import com.example.learndsandalgorithm.presentation.theme.AppIconSize
+import com.example.learndsandalgorithm.presentation.theme.AppSpacing
+import com.example.learndsandalgorithm.presentation.theme.AppTypography
 
 private val DarkBgColor = Color(0xFF111115)
 private val DarkCardBgColor = Color(0xFF1A1A22)
@@ -119,8 +141,6 @@ private val IconCheckCircle = buildVectorIcon("CheckCircle") {
     close()
 }
 
-
-
 @Composable
 fun HomeScreen(
     viewModel: HomeViewModel,
@@ -162,8 +182,8 @@ fun HomeScreenContent(
             .fillMaxSize()
             .padding(innerPadding)
             .verticalScroll(rememberScrollState())
-            .padding(horizontal = 16.dp, vertical = 12.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp)
+            .padding(horizontal = AppSpacing.large, vertical = AppSpacing.medium),
+        verticalArrangement = Arrangement.spacedBy(AppSpacing.medium)
     ) {
         HomeHeader()
         HomeStatistics(uiState.userStats)
@@ -196,22 +216,19 @@ fun HomeHeader() {
         Column {
             Text(
                 text = "GOOD MORNING",
-                color = TextSecondary,
-                fontSize = 11.sp,
-                fontWeight = FontWeight.Bold,
-                letterSpacing = 1.5.sp
+                style = AppTypography.sectionHeader,
+                color = TextSecondary
             )
-            Spacer(modifier = Modifier.height(4.dp))
+            Spacer(modifier = Modifier.height(AppSpacing.extraSmall))
             Text(
                 text = "Ready to learn?",
-                color = TextPrimary,
-                fontSize = 24.sp,
-                fontWeight = FontWeight.Bold
+                style = AppTypography.displayTitle,
+                color = TextPrimary
             )
         }
         Box(
             modifier = Modifier
-                .size(40.dp)
+                .size(AppIconSize.boxMedium)
                 .clip(CircleShape)
                 .background(Color(0xFF262632))
                 .border(BorderStroke(1.dp, OrangeAccent), CircleShape),
@@ -219,9 +236,8 @@ fun HomeHeader() {
         ) {
             Text(
                 text = "DSA",
-                color = OrangeAccent,
-                fontSize = 13.sp,
-                fontWeight = FontWeight.Bold
+                style = AppTypography.bodySecondary.copy(fontWeight = FontWeight.Bold),
+                color = OrangeAccent
             )
         }
     }
@@ -234,7 +250,7 @@ fun HomeStatistics(userStats: UserStats) {
 
     Row(
         modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.spacedBy(12.dp)
+        horizontalArrangement = Arrangement.spacedBy(AppSpacing.medium)
     ) {
         StatCard(
             modifier = Modifier.weight(1f),
@@ -277,36 +293,33 @@ fun StatCard(
 ) {
     Card(
         modifier = modifier
-            .border(BorderStroke(1.dp, SubtleBorderColor), RoundedCornerShape(16.dp)),
+            .border(BorderStroke(1.dp, SubtleBorderColor), RoundedCornerShape(AppCornerRadius.card)),
         colors = CardDefaults.cardColors(containerColor = DarkCardBgColor),
-        shape = RoundedCornerShape(16.dp)
+        shape = RoundedCornerShape(AppCornerRadius.card)
     ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 10.dp, vertical = 9.dp),
+                .padding(horizontal = AppCardPadding.compact, vertical = 9.dp),
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
+            horizontalArrangement = Arrangement.spacedBy(AppSpacing.small)
         ) {
             Icon(
                 imageVector = icon,
                 contentDescription = null,
                 tint = iconTint,
-                modifier = Modifier.size(20.dp)
+                modifier = Modifier.size(AppIconSize.medium)
             )
             Column {
                 Text(
                     text = value,
-                    color = TextPrimary,
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.Bold
+                    style = AppTypography.sectionTitle,
+                    color = TextPrimary
                 )
                 Text(
                     text = label,
-                    color = TextSecondary,
-                    fontSize = 11.sp,
-                    fontWeight = FontWeight.Normal,
-                    lineHeight = 13.sp
+                    style = AppTypography.badge.copy(fontWeight = FontWeight.Normal, lineHeight = 13.sp),
+                    color = TextSecondary
                 )
             }
         }
@@ -321,36 +334,34 @@ fun ContinueLearningSection(
     Column(modifier = Modifier.fillMaxWidth()) {
         Text(
             text = "CONTINUE LEARNING",
-            color = TextSecondary,
-            fontSize = 11.sp,
-            fontWeight = FontWeight.Bold,
-            letterSpacing = 1.5.sp
+            style = AppTypography.sectionHeader,
+            color = TextSecondary
         )
-        Spacer(modifier = Modifier.height(8.dp))
+        Spacer(modifier = Modifier.height(AppSpacing.small))
         Card(
             modifier = Modifier
                 .fillMaxWidth()
-                .border(BorderStroke(1.dp, HighlightedCardBorderColor), RoundedCornerShape(20.dp))
+                .border(BorderStroke(1.dp, HighlightedCardBorderColor), RoundedCornerShape(AppCornerRadius.cardLarge))
                 .clickable { onLessonClick(info.lessonId) },
             colors = CardDefaults.cardColors(containerColor = DarkCardBgColor),
-            shape = RoundedCornerShape(20.dp)
+            shape = RoundedCornerShape(AppCornerRadius.cardLarge)
         ) {
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(10.dp),
+                    .padding(AppCardPadding.compact),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier.weight(1f),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                    horizontalArrangement = Arrangement.spacedBy(AppSpacing.medium)
                 ) {
                     if (info.isAllComplete) {
                         Box(
                             modifier = Modifier
-                                .size(42.dp)
+                                .size(AppIconSize.boxLarge)
                                 .clip(RoundedCornerShape(14.dp))
                                 .background(OrangeAccent.copy(alpha = 0.1f)),
                             contentAlignment = Alignment.Center
@@ -359,28 +370,27 @@ fun ContinueLearningSection(
                                 imageVector = IconCheckCircle,
                                 contentDescription = null,
                                 tint = OrangeAccent,
-                                modifier = Modifier.size(20.dp)
+                                modifier = Modifier.size(AppIconSize.medium)
                             )
                         }
                     } else {
                         TopicIcon(
                             topicId = info.topicId,
-                            containerSize = 42.dp,
-                            iconSize = 20.dp
+                            containerSize = AppIconSize.boxLarge,
+                            iconSize = AppIconSize.medium
                         )
                     }
                     Column {
                         Text(
                             text = info.topicTitle,
-                            color = TextPrimary,
-                            fontSize = 18.sp,
-                            fontWeight = FontWeight.Bold
+                            style = AppTypography.sectionTitle,
+                            color = TextPrimary
                         )
-                        Spacer(modifier = Modifier.height(4.dp))
+                        Spacer(modifier = Modifier.height(AppSpacing.extraSmall))
                         Text(
                             text = if (info.isAllComplete) "All 14 lessons complete" else "Lesson ${info.lessonOrder} of ${info.totalTopicLessons} • ${info.categoryName}",
-                            color = TextSecondary,
-                            fontSize = 12.sp
+                            style = AppTypography.caption,
+                            color = TextSecondary
                         )
                         Spacer(modifier = Modifier.height(6.dp))
                         Box(modifier = Modifier.fillMaxWidth()) {
@@ -422,29 +432,27 @@ fun OverallProgressSection(uiState: HomeUiState) {
         ) {
             Text(
                 text = "OVERALL PROGRESS",
-                color = TextSecondary,
-                fontSize = 11.sp,
-                fontWeight = FontWeight.Bold,
-                letterSpacing = 1.5.sp
+                style = AppTypography.sectionHeader,
+                color = TextSecondary
             )
             Text(
                 text = "$overallPercent% of curriculum complete",
-                color = TextSecondary,
-                fontSize = 11.sp
+                style = AppTypography.caption,
+                color = TextSecondary
             )
         }
-        Spacer(modifier = Modifier.height(8.dp))
+        Spacer(modifier = Modifier.height(AppSpacing.small))
         Card(
             modifier = Modifier
                 .fillMaxWidth()
-                .border(BorderStroke(1.dp, SubtleBorderColor), RoundedCornerShape(20.dp)),
+                .border(BorderStroke(1.dp, SubtleBorderColor), RoundedCornerShape(AppCornerRadius.cardLarge)),
             colors = CardDefaults.cardColors(containerColor = DarkCardBgColor),
-            shape = RoundedCornerShape(20.dp)
+            shape = RoundedCornerShape(AppCornerRadius.cardLarge)
         ) {
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(12.dp)
+                    .padding(AppCardPadding.standard)
             ) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -453,18 +461,18 @@ fun OverallProgressSection(uiState: HomeUiState) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         Row(verticalAlignment = Alignment.Bottom) {
                             Text("${uiState.dsCompletedLessons}", color = Color(0xFF60A5FA), fontSize = 22.sp, fontWeight = FontWeight.Bold)
-                            Text("/${uiState.dsTotalLessons}", color = TextSecondary, fontSize = 14.sp)
+                            Text("/${uiState.dsTotalLessons}", style = AppTypography.bodyPrimary, color = TextSecondary)
                         }
-                        Text("DS Lessons", color = TextSecondary, fontSize = 12.sp)
-                        Text("${uiState.dsProgressPercent}%", color = Color(0xFF60A5FA), fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                        Text("DS Lessons", style = AppTypography.caption, color = TextSecondary)
+                        Text("${uiState.dsProgressPercent}%", style = AppTypography.badge, color = Color(0xFF60A5FA))
                     }
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         Row(verticalAlignment = Alignment.Bottom) {
                             Text("${uiState.algoCompletedLessons}", color = PurpleAccent, fontSize = 22.sp, fontWeight = FontWeight.Bold)
-                            Text("/${uiState.algoTotalLessons}", color = TextSecondary, fontSize = 14.sp)
+                            Text("/${uiState.algoTotalLessons}", style = AppTypography.bodyPrimary, color = TextSecondary)
                         }
-                        Text("Algo Lessons", color = TextSecondary, fontSize = 12.sp)
-                        Text("${uiState.algoProgressPercent}%", color = PurpleAccent, fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                        Text("Algo Lessons", style = AppTypography.caption, color = TextSecondary)
+                        Text("${uiState.algoProgressPercent}%", style = AppTypography.badge, color = PurpleAccent)
                     }
                 }
                 Spacer(modifier = Modifier.height(14.dp))
@@ -493,13 +501,11 @@ fun RecentTopicsSection(uiState: HomeUiState) {
     Column(modifier = Modifier.fillMaxWidth()) {
         Text(
             text = "RECENT TOPICS",
-            color = TextSecondary,
-            fontSize = 11.sp,
-            fontWeight = FontWeight.Bold,
-            letterSpacing = 1.5.sp
+            style = AppTypography.sectionHeader,
+            color = TextSecondary
         )
-        Spacer(modifier = Modifier.height(8.dp))
-        Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+        Spacer(modifier = Modifier.height(AppSpacing.small))
+        Column(verticalArrangement = Arrangement.spacedBy(AppSpacing.small)) {
             recentTopicsList.forEach { topic ->
                 val progress = uiState.recentTopicsProgress[topic.id] ?: 0
                 TopicCardItem(topic = topic, progressPercent = progress)
@@ -515,35 +521,40 @@ fun TopicCardItem(topic: Topic, progressPercent: Int) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .border(BorderStroke(1.dp, SubtleBorderColor), RoundedCornerShape(16.dp)),
+            .border(BorderStroke(1.dp, SubtleBorderColor), RoundedCornerShape(AppCornerRadius.card)),
         colors = CardDefaults.cardColors(containerColor = DarkCardBgColor),
-        shape = RoundedCornerShape(16.dp)
+        shape = RoundedCornerShape(AppCornerRadius.card)
     ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(10.dp),
+                .padding(AppCardPadding.compact),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(10.dp)
+                horizontalArrangement = Arrangement.spacedBy(AppSpacing.small),
+                modifier = Modifier.weight(1f)
             ) {
                 TopicIcon(
                     topicId = topic.id,
-                    containerSize = 36.dp,
+                    containerSize = AppIconSize.boxSmall,
                     iconSize = 18.dp
                 )
                 Column {
-                    Text(text = topic.title, color = TextPrimary, fontSize = 16.sp, fontWeight = FontWeight.Bold)
-                    Spacer(modifier = Modifier.height(2.dp))
-                    Text(text = categoryDisplayName, color = TextSecondary, fontSize = 12.sp)
-                    Spacer(modifier = Modifier.height(2.dp))
-                    Text(text = "$progressPercent%", color = TextSecondary, fontSize = 11.sp)
+                    Text(text = topic.title, style = AppTypography.cardTitle, color = TextPrimary)
+                    Spacer(modifier = Modifier.height(AppSpacing.extraSmall))
+                    Text(text = categoryDisplayName, style = AppTypography.caption, color = TextSecondary)
+                    Spacer(modifier = Modifier.height(AppSpacing.extraSmall))
+                    Text(text = "$progressPercent%", style = AppTypography.badge, color = TextSecondary)
                 }
             }
-            Box(modifier = Modifier.width(100.dp)) {
+            Box(
+                modifier = Modifier
+                    .widthIn(min = 60.dp, max = 80.dp)
+                    .padding(start = AppSpacing.small)
+            ) {
                 LinearProgressIndicator(
                     progress = { (progressPercent / 100f).coerceIn(0f, 1f) },
                     modifier = Modifier
@@ -566,41 +577,38 @@ fun RecommendedPracticeSection(
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .border(BorderStroke(1.dp, HighlightedCardBorderColor), RoundedCornerShape(20.dp))
+            .border(BorderStroke(1.dp, HighlightedCardBorderColor), RoundedCornerShape(AppCornerRadius.cardLarge))
             .clickable { onOpenTopicQuiz(info.topicId) },
         colors = CardDefaults.cardColors(containerColor = DarkCardBgColor),
-        shape = RoundedCornerShape(20.dp)
+        shape = RoundedCornerShape(AppCornerRadius.cardLarge)
     ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(12.dp),
+                .padding(AppCardPadding.standard),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = "RECOMMENDED PRACTICE",
-                    color = TextSecondary,
-                    fontSize = 10.sp,
-                    fontWeight = FontWeight.Bold,
-                    letterSpacing = 1.5.sp
+                    style = AppTypography.sectionHeader,
+                    color = TextSecondary
                 )
                 Spacer(modifier = Modifier.height(6.dp))
                 Text(
                     text = info.topicTitle,
-                    color = TextPrimary,
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.Bold
+                    style = AppTypography.sectionTitle,
+                    color = TextPrimary
                 )
-                Spacer(modifier = Modifier.height(4.dp))
+                Spacer(modifier = Modifier.height(AppSpacing.extraSmall))
                 Text(
                     text = info.description,
-                    color = TextSecondary,
-                    fontSize = 13.sp
+                    style = AppTypography.bodySecondary,
+                    color = TextSecondary
                 )
             }
-            Spacer(modifier = Modifier.width(12.dp))
+            Spacer(modifier = Modifier.width(AppSpacing.medium))
             Box(
                 modifier = Modifier
                     .size(40.dp)

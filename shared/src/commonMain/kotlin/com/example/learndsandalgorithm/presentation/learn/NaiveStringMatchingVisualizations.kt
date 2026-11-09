@@ -37,7 +37,8 @@ internal fun NaiveStringMatchingVisualizationCard(
     title: String = "Naive String Pattern Matching"
 ) {
     val steps = NaiveStringMatchingTrace.stepsForNaiveMatch()
-    var isExpanded by rememberSaveable { mutableStateOf(false) }
+    val autoExpand = LocalAutoExpandVisualizer.current
+    var isExpanded by rememberSaveable { mutableStateOf(autoExpand) }
 
     val playback = rememberVisualizerPlaybackState(
         stepCount = steps.size,
@@ -48,8 +49,10 @@ internal fun NaiveStringMatchingVisualizationCard(
     val isCompleted = playback.isCompleted
     val step = steps[stepIndex]
 
-    ArrayWindowButton(text = "Open naive string matching visualizer") {
-        isExpanded = true
+    if (!autoExpand) {
+        ArrayWindowButton(text = "Open naive string matching visualizer") {
+            isExpanded = true
+        }
     }
 
     if (isExpanded) {

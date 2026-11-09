@@ -14,6 +14,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -31,6 +33,9 @@ internal val VisualizerGreenAccent = Color(0xFF10B981)
 internal val VisualizerRedAccent = Color(0xFFEF4444)
 internal val VisualizerTextPrimary = Color(0xFFFFFFFF)
 internal val VisualizerTextSecondary = Color(0xFF9CA3AF)
+
+internal val LocalAutoExpandVisualizer = compositionLocalOf { false }
+internal val LocalVisualizerClose = compositionLocalOf<() -> Unit> { {} }
 
 @Composable
 internal fun ArrayWindowButton(

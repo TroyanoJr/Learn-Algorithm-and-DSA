@@ -34,7 +34,8 @@ internal fun HeapExtractSiftDownVisualizationCard(
     title: String = "Extracting the Root and Sift Down"
 ) {
     val steps = HeapExtractSiftDownTrace.stepsForExtract()
-    var isExpanded by rememberSaveable { mutableStateOf(false) }
+    val autoExpand = LocalAutoExpandVisualizer.current
+    var isExpanded by rememberSaveable { mutableStateOf(autoExpand) }
 
     val playback = rememberVisualizerPlaybackState(
         stepCount = steps.size,
@@ -45,8 +46,10 @@ internal fun HeapExtractSiftDownVisualizationCard(
     val isCompleted = playback.isCompleted
     val step = steps[stepIndex]
 
-    ArrayWindowButton(text = "Open extract root visualizer") {
-        isExpanded = true
+    if (!autoExpand) {
+        ArrayWindowButton(text = "Open extract root visualizer") {
+            isExpanded = true
+        }
     }
 
     if (isExpanded) {

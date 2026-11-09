@@ -37,7 +37,8 @@ internal fun UniquePathsDpVisualizationCard(
     title: String = "2D Subproblem Grids: Unique Paths in a Grid"
 ) {
     val steps = UniquePathsDpTrace.createTrace()
-    var isExpanded by rememberSaveable { mutableStateOf(false) }
+    val autoExpand = LocalAutoExpandVisualizer.current
+    var isExpanded by rememberSaveable { mutableStateOf(autoExpand) }
 
     val playback = rememberVisualizerPlaybackState(
         stepCount = steps.size,
@@ -48,8 +49,10 @@ internal fun UniquePathsDpVisualizationCard(
     val isCompleted = playback.isCompleted
     val step = steps[stepIndex]
 
-    ArrayWindowButton(text = "Open unique paths visualizer") {
-        isExpanded = true
+    if (!autoExpand) {
+        ArrayWindowButton(text = "Open unique paths visualizer") {
+            isExpanded = true
+        }
     }
 
     if (isExpanded) {

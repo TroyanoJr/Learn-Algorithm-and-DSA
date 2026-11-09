@@ -34,7 +34,8 @@ internal fun HeapSortVisualizationCard(
     title: String = "Priority Queues and Heap Sort"
 ) {
     val steps = HeapSortTrace.stepsForHeapSort()
-    var isExpanded by rememberSaveable { mutableStateOf(false) }
+    val autoExpand = LocalAutoExpandVisualizer.current
+    var isExpanded by rememberSaveable { mutableStateOf(autoExpand) }
 
     val playback = rememberVisualizerPlaybackState(
         stepCount = steps.size,
@@ -45,8 +46,10 @@ internal fun HeapSortVisualizationCard(
     val isCompleted = playback.isCompleted
     val step = steps[stepIndex]
 
-    ArrayWindowButton(text = "Open heap sort visualizer") {
-        isExpanded = true
+    if (!autoExpand) {
+        ArrayWindowButton(text = "Open heap sort visualizer") {
+            isExpanded = true
+        }
     }
 
     if (isExpanded) {

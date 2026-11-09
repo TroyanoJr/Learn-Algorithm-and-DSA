@@ -56,7 +56,8 @@ internal fun SortingBarVisualizationCard(
     steps: List<SortingStep>,
     launchButtonText: String
 ) {
-    var isExpanded by rememberSaveable { mutableStateOf(false) }
+    val autoExpand = LocalAutoExpandVisualizer.current
+    var isExpanded by rememberSaveable { mutableStateOf(autoExpand) }
 
     val playback = rememberVisualizerPlaybackState(stepCount = steps.size, initialStep = 0, key = steps)
     val stepIndex = playback.safeStepIndex
@@ -66,7 +67,11 @@ internal fun SortingBarVisualizationCard(
     val totalSteps = steps.size
     val currentStep = steps.getOrElse(stepIndex) { steps.last() }
 
-    ArrayWindowButton(text = launchButtonText) { isExpanded = true }
+    if (!autoExpand) {
+        ArrayWindowButton(text = launchButtonText) {
+            isExpanded = true
+        }
+    }
 
     if (isExpanded) {
         val badgeText = when {

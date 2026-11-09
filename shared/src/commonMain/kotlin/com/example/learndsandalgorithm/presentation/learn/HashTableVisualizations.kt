@@ -35,7 +35,8 @@ internal fun HashTableVisualizationCard(
     title: String = "Hash Table Fundamentals"
 ) {
     val steps = HashTableTrace.stepsForFundamentals()
-    var isExpanded by rememberSaveable { mutableStateOf(false) }
+    val autoExpand = LocalAutoExpandVisualizer.current
+    var isExpanded by rememberSaveable { mutableStateOf(autoExpand) }
 
     val playback = rememberVisualizerPlaybackState(stepCount = steps.size, initialStep = 0)
     val stepIndex = playback.safeStepIndex
@@ -43,8 +44,10 @@ internal fun HashTableVisualizationCard(
     val isCompleted = playback.isCompleted
     val step = steps[stepIndex]
 
-    ArrayWindowButton(text = "Open hash table visualizer") {
-        isExpanded = true
+    if (!autoExpand) {
+        ArrayWindowButton(text = "Open hash table visualizer") {
+            isExpanded = true
+        }
     }
 
     if (isExpanded) {

@@ -35,7 +35,8 @@ internal fun DijkstraVisualizationCard(
     title: String = "Dijkstra's Algorithm"
 ) {
     val steps = DijkstraTrace.stepsForDijkstra()
-    var isExpanded by rememberSaveable { mutableStateOf(false) }
+    val autoExpand = LocalAutoExpandVisualizer.current
+    var isExpanded by rememberSaveable { mutableStateOf(autoExpand) }
 
     val playback = rememberVisualizerPlaybackState(
         stepCount = steps.size,
@@ -46,8 +47,10 @@ internal fun DijkstraVisualizationCard(
     val isCompleted = playback.isCompleted
     val step = steps[stepIndex]
 
-    ArrayWindowButton(text = "Open Dijkstra visualizer") {
-        isExpanded = true
+    if (!autoExpand) {
+        ArrayWindowButton(text = "Open Dijkstra visualizer") {
+            isExpanded = true
+        }
     }
 
     if (isExpanded) {

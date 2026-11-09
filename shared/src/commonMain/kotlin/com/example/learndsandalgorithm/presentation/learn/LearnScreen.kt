@@ -18,6 +18,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -50,11 +51,17 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.learndsandalgorithm.data.repository.ProgressRepository
 import com.example.learndsandalgorithm.domain.model.Lesson
-import com.example.learndsandalgorithm.presentation.components.TopicIcon
 import com.example.learndsandalgorithm.domain.model.Topic
 import com.example.learndsandalgorithm.domain.model.TopicCategory
 import com.example.learndsandalgorithm.domain.model.TopicLevel
 import com.example.learndsandalgorithm.domain.repository.ContentRepository
+import com.example.learndsandalgorithm.presentation.components.TopicIcon
+import com.example.learndsandalgorithm.presentation.theme.AppCardPadding
+import com.example.learndsandalgorithm.presentation.theme.AppCornerRadius
+import com.example.learndsandalgorithm.presentation.theme.AppIconSize
+import com.example.learndsandalgorithm.presentation.theme.AppSpacing
+import com.example.learndsandalgorithm.presentation.theme.AppTouchTarget
+import com.example.learndsandalgorithm.presentation.theme.AppTypography
 
 private val DarkBgColor = Color(0xFF111115)
 private val DarkCardBgColor = Color(0xFF181820)
@@ -304,8 +311,8 @@ fun LearnScreen(
             .fillMaxSize()
             .background(DarkBgColor)
             .verticalScroll(rememberScrollState())
-            .padding(horizontal = 16.dp, vertical = 12.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp)
+            .padding(horizontal = AppSpacing.large, vertical = AppSpacing.medium),
+        verticalArrangement = Arrangement.spacedBy(AppSpacing.medium)
     ) {
         LearnHeader()
 
@@ -321,7 +328,7 @@ fun LearnScreen(
         } else {
             CourseProgressOverview(overviewData)
 
-            Spacer(modifier = Modifier.height(4.dp))
+            Spacer(modifier = Modifier.height(AppSpacing.extraSmall))
 
             categories.forEach { category ->
                 val isExpanded = category.id == expandedCategoryId
@@ -351,31 +358,25 @@ private fun LearnHeader() {
         Column {
             Text(
                 text = "COURSE CATALOG",
-                color = OrangeAccent,
-                fontSize = 11.sp,
-                fontWeight = FontWeight.Bold,
-                letterSpacing = 1.5.sp
+                style = AppTypography.sectionHeader,
+                color = OrangeAccent
             )
-            Spacer(modifier = Modifier.height(4.dp))
+            Spacer(modifier = Modifier.height(AppSpacing.extraSmall))
             Text(
                 text = "What will you",
-                color = TextPrimary,
-                fontSize = 24.sp,
-                fontWeight = FontWeight.Bold,
-                lineHeight = 28.sp
+                style = AppTypography.displayTitle,
+                color = TextPrimary
             )
             Text(
                 text = "learn today?",
-                color = OrangeAccent,
-                fontSize = 24.sp,
-                fontWeight = FontWeight.Bold,
-                lineHeight = 28.sp
+                style = AppTypography.displayTitle,
+                color = OrangeAccent
             )
         }
 
         Box(
             modifier = Modifier
-                .size(38.dp)
+                .size(AppIconSize.boxMedium)
                 .clip(CircleShape)
                 .background(Color(0xFF1E1E28))
                 .border(1.dp, CardBorderColor, CircleShape),
@@ -383,9 +384,8 @@ private fun LearnHeader() {
         ) {
             Text(
                 text = "DSA",
-                color = OrangeAccent,
-                fontSize = 13.sp,
-                fontWeight = FontWeight.Bold
+                style = AppTypography.bodySecondary.copy(fontWeight = FontWeight.Bold),
+                color = OrangeAccent
             )
         }
     }
@@ -395,7 +395,7 @@ private fun LearnHeader() {
 private fun CourseProgressOverview(overviewData: LearnOverviewData) {
     Column(
         modifier = Modifier.fillMaxWidth(),
-        verticalArrangement = Arrangement.spacedBy(8.dp)
+        verticalArrangement = Arrangement.spacedBy(AppSpacing.small)
     ) {
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -404,14 +404,13 @@ private fun CourseProgressOverview(overviewData: LearnOverviewData) {
         ) {
             Text(
                 text = "${overviewData.totalCompletedTopics} of ${overviewData.totalAvailableTopics} topics complete",
-                color = TextSecondary,
-                fontSize = 14.sp
+                style = AppTypography.bodySecondary,
+                color = TextSecondary
             )
             Text(
                 text = "${overviewData.overallPercent}%",
-                color = OrangeAccent,
-                fontSize = 15.sp,
-                fontWeight = FontWeight.Bold
+                style = AppTypography.cardTitle,
+                color = OrangeAccent
             )
         }
 
@@ -435,8 +434,8 @@ private fun CourseProgressOverview(overviewData: LearnOverviewData) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(top = 4.dp),
-            horizontalArrangement = Arrangement.spacedBy(16.dp),
+                .padding(top = AppSpacing.extraSmall),
+            horizontalArrangement = Arrangement.spacedBy(AppSpacing.large),
             verticalAlignment = Alignment.CenterVertically
         ) {
             StatusLegendItem(dotColor = GreenAccent, label = "Completed")
@@ -444,7 +443,7 @@ private fun CourseProgressOverview(overviewData: LearnOverviewData) {
             StatusLegendItem(dotColor = Color(0xFF6B7280), label = "Not started")
         }
 
-        Spacer(modifier = Modifier.height(4.dp))
+        Spacer(modifier = Modifier.height(AppSpacing.extraSmall))
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -468,8 +467,8 @@ private fun StatusLegendItem(dotColor: Color, label: String) {
         )
         Text(
             text = label,
-            color = TextSecondary,
-            fontSize = 12.sp
+            style = AppTypography.caption,
+            color = TextSecondary
         )
     }
 }
@@ -483,26 +482,27 @@ private fun CourseCategoryCard(
 ) {
     Surface(
         color = DarkCardBgColor,
-        shape = RoundedCornerShape(16.dp),
+        shape = RoundedCornerShape(AppCornerRadius.card),
         border = BorderStroke(1.dp, CardBorderColor),
         modifier = Modifier.fillMaxWidth()
     ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(12.dp)
+                .padding(AppCardPadding.standard)
         ) {
             // Header row
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
+                    .heightIn(min = AppTouchTarget.minimum)
                     .clickable { onToggleExpand() },
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                    horizontalArrangement = Arrangement.spacedBy(AppSpacing.medium),
                     modifier = Modifier.weight(1f)
                 ) {
                     // Left Accent Line
@@ -519,28 +519,26 @@ private fun CourseCategoryCard(
                     ) {
                         Text(
                             text = category.title,
+                            style = AppTypography.cardTitle,
                             color = BlueAccent,
-                            fontSize = 16.sp,
-                            fontWeight = FontWeight.Bold,
                             letterSpacing = 0.5.sp
                         )
                         Text(
                             text = category.topicsCountText,
-                            color = TextSecondary,
-                            fontSize = 12.sp
+                            style = AppTypography.caption,
+                            color = TextSecondary
                         )
                     }
                 }
 
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(10.dp)
+                    horizontalArrangement = Arrangement.spacedBy(AppSpacing.small)
                 ) {
                     Text(
                         text = category.percentageProgressText,
-                        color = GreenAccent,
-                        fontSize = 14.sp,
-                        fontWeight = FontWeight.SemiBold
+                        style = AppTypography.bodyPrimary.copy(fontWeight = FontWeight.SemiBold),
+                        color = GreenAccent
                     )
 
                     // Expand/Collapse Chevron
@@ -548,13 +546,13 @@ private fun CourseCategoryCard(
                         imageVector = if (isExpanded) IconChevronUp else IconChevronDown,
                         contentDescription = if (isExpanded) "Collapse" else "Expand",
                         tint = BlueAccent,
-                        modifier = Modifier.size(16.dp)
+                        modifier = Modifier.size(AppIconSize.small)
                     )
                 }
             }
 
             if (isExpanded) {
-                Spacer(modifier = Modifier.height(12.dp))
+                Spacer(modifier = Modifier.height(AppSpacing.medium))
 
                 // Progress bar inside expanded card
                 Box(
@@ -572,7 +570,7 @@ private fun CourseCategoryCard(
                     )
                 }
 
-                Spacer(modifier = Modifier.height(8.dp))
+                Spacer(modifier = Modifier.height(AppSpacing.small))
 
                 // Status counts row
                 Row(
@@ -582,19 +580,17 @@ private fun CourseCategoryCard(
                 ) {
                     Text(
                         text = category.completedText,
-                        color = GreenAccent,
-                        fontSize = 12.sp,
-                        fontWeight = FontWeight.Medium
+                        style = AppTypography.caption.copy(fontWeight = FontWeight.Medium),
+                        color = GreenAccent
                     )
                     Text(
                         text = category.inProgressText,
-                        color = OrangeAccent,
-                        fontSize = 12.sp,
-                        fontWeight = FontWeight.Medium
+                        style = AppTypography.caption.copy(fontWeight = FontWeight.Medium),
+                        color = OrangeAccent
                     )
                 }
 
-                Spacer(modifier = Modifier.height(12.dp))
+                Spacer(modifier = Modifier.height(AppSpacing.medium))
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -634,6 +630,7 @@ private fun TopicItemRow(
     Row(
         modifier = Modifier
             .fillMaxWidth()
+            .heightIn(min = AppTouchTarget.minimum)
             .clickable(enabled = !topic.isLocked, onClick = onClick)
             .padding(vertical = 6.dp),
         verticalAlignment = Alignment.CenterVertically,
@@ -641,25 +638,25 @@ private fun TopicItemRow(
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(10.dp),
+            horizontalArrangement = Arrangement.spacedBy(AppSpacing.small),
             modifier = Modifier.weight(1f)
         ) {
             // Topic Vector Icon
             TopicIcon(
                 topicId = topic.topicId,
-                containerSize = 32.dp,
-                iconSize = 16.dp,
+                containerSize = AppIconSize.boxSmall,
+                iconSize = AppIconSize.small,
                 isLocked = topic.isLocked
             )
 
             Column(
-                verticalArrangement = Arrangement.spacedBy(2.dp)
+                verticalArrangement = Arrangement.spacedBy(2.dp),
+                modifier = Modifier.weight(1f)
             ) {
                 Text(
                     text = topic.title,
                     color = if (topic.isLocked) Color(0xFF9CA3AF) else TextPrimary,
-                    fontSize = 15.sp,
-                    fontWeight = FontWeight.Bold
+                    style = AppTypography.bodyPrimary.copy(fontWeight = FontWeight.Bold)
                 )
 
                 Row(
@@ -671,9 +668,10 @@ private fun TopicItemRow(
                     Text(
                         text = topic.lessonProgressText,
                         color = TextSecondary,
-                        fontSize = 12.sp,
+                        style = AppTypography.caption,
                         maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier.weight(1f, fill = false)
                     )
                 }
             }
@@ -683,6 +681,7 @@ private fun TopicItemRow(
         if (topic.isLocked) {
             Box(
                 modifier = Modifier
+                    .padding(start = AppSpacing.small)
                     .size(26.dp)
                     .clip(CircleShape)
                     .background(Color(0xFF1E1E28)),
@@ -698,6 +697,7 @@ private fun TopicItemRow(
         } else {
             Box(
                 modifier = Modifier
+                    .padding(start = AppSpacing.small)
                     .size(26.dp)
                     .clip(CircleShape)
                     .background(Color(0xFF2A1C12)),
@@ -797,9 +797,7 @@ private fun TopicLevelBadge(level: TopicLevel) {
         Text(
             text = label,
             color = textColor,
-            fontSize = 9.sp,
-            fontWeight = FontWeight.ExtraBold,
-            letterSpacing = 0.5.sp
+            style = AppTypography.badge.copy(fontSize = 9.sp, letterSpacing = 0.5.sp)
         )
     }
 }

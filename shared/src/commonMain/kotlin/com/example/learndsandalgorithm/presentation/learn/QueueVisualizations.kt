@@ -43,7 +43,8 @@ internal fun QueueVisualizationCard(
     title: String = "Queue Visualizer"
 ) {
     val steps = QueueTrace.stepsFor(demonstration)
-    var isExpanded by rememberSaveable(demonstration) { mutableStateOf(false) }
+    val autoExpand = LocalAutoExpandVisualizer.current
+    var isExpanded by rememberSaveable(demonstration) { mutableStateOf(autoExpand) }
 
     val playback = rememberVisualizerPlaybackState(stepCount = steps.size, initialStep = 0, key = demonstration)
     val stepIndex = playback.safeStepIndex
@@ -51,8 +52,10 @@ internal fun QueueVisualizationCard(
     val isCompleted = playback.isCompleted
     val step = steps[stepIndex]
 
-    ArrayWindowButton(text = "Open queue visualizer") {
-        isExpanded = true
+    if (!autoExpand) {
+        ArrayWindowButton(text = "Open queue visualizer") {
+            isExpanded = true
+        }
     }
 
     if (isExpanded) {

@@ -39,7 +39,8 @@ internal fun BstOperationsVisualizationCard(
 ) {
     var selectedOp by rememberSaveable { mutableStateOf(BstOpType.SEARCH) }
     val steps = BstOperationsTrace.stepsForOperation(selectedOp)
-    var isExpanded by rememberSaveable { mutableStateOf(false) }
+    val autoExpand = LocalAutoExpandVisualizer.current
+    var isExpanded by rememberSaveable { mutableStateOf(autoExpand) }
 
     val playback = rememberVisualizerPlaybackState(
         stepCount = steps.size,
@@ -51,8 +52,10 @@ internal fun BstOperationsVisualizationCard(
     val isCompleted = playback.isCompleted
     val step = steps[stepIndex]
 
-    ArrayWindowButton(text = "Open BST operations visualizer") {
-        isExpanded = true
+    if (!autoExpand) {
+        ArrayWindowButton(text = "Open BST operations visualizer") {
+            isExpanded = true
+        }
     }
 
     if (isExpanded) {

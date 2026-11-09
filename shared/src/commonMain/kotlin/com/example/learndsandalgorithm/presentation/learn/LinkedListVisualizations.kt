@@ -235,7 +235,8 @@ private fun LinkedListIntroductionDetails(stepIndex: Int, totalSteps: Int, isCom
 @Composable
 internal fun LinkedListIntroductionVisualizationCard() {
     val nodeValues = listOf("12", "7", "19")
-    var isExpanded by rememberSaveable { mutableStateOf(false) }
+    val autoExpand = LocalAutoExpandVisualizer.current
+    var isExpanded by rememberSaveable { mutableStateOf(autoExpand) }
 
     val totalSteps = 3
     val playback = rememberVisualizerPlaybackState(stepCount = totalSteps, initialStep = 0)
@@ -243,7 +244,9 @@ internal fun LinkedListIntroductionVisualizationCard() {
     val isPlaying = playback.isPlaying
     val isCompleted = playback.isCompleted
 
-    ArrayWindowButton(text = "Open linked list visualizer") { isExpanded = true }
+    if (!autoExpand) {
+        ArrayWindowButton(text = "Open linked list visualizer") { isExpanded = true }
+    }
 
     if (isExpanded) {
         VisualizerModal(
@@ -412,7 +415,8 @@ private fun LinkedListTraversalDetails(
 @Composable
 internal fun LinkedListTraversalSearchAccessVisualizationCard() {
     var scenario by rememberSaveable { mutableStateOf("ACCESS") } // "ACCESS", "FOUND", "MISSING"
-    var isExpanded by rememberSaveable { mutableStateOf(false) }
+    val autoExpand = LocalAutoExpandVisualizer.current
+    var isExpanded by rememberSaveable { mutableStateOf(autoExpand) }
 
     val nodeValues = LinkedListTrace.initialTraversalNodeValues
     val steps = remember(scenario) { LinkedListTrace.traversalSteps(scenario) }
@@ -424,7 +428,9 @@ internal fun LinkedListTraversalSearchAccessVisualizationCard() {
     val isCompleted = playback.isCompleted
     val currentStep = steps[stepIndex.coerceIn(0, steps.lastIndex)]
 
-    ArrayWindowButton(text = "Open search & access visualizer") { isExpanded = true }
+    if (!autoExpand) {
+        ArrayWindowButton(text = "Open search & access visualizer") { isExpanded = true }
+    }
 
     if (isExpanded) {
         VisualizerModal(
@@ -477,7 +483,8 @@ internal fun LinkedListTraversalSearchAccessVisualizationCard() {
 @Composable
 internal fun LinkedListInsertionVisualizationCard() {
     var scenario by rememberSaveable { mutableStateOf("HEAD") } // "HEAD", "TAIL", "MIDDLE"
-    var isExpanded by rememberSaveable { mutableStateOf(false) }
+    val autoExpand = LocalAutoExpandVisualizer.current
+    var isExpanded by rememberSaveable { mutableStateOf(autoExpand) }
 
     val steps = remember(scenario) { LinkedListTrace.insertionSteps(scenario) }
 
@@ -488,7 +495,9 @@ internal fun LinkedListInsertionVisualizationCard() {
     val isCompleted = playback.isCompleted
     val currentStep = steps[stepIndex.coerceIn(0, steps.lastIndex)]
 
-    ArrayWindowButton(text = "Open insertion visualizer") { isExpanded = true }
+    if (!autoExpand) {
+        ArrayWindowButton(text = "Open insertion visualizer") { isExpanded = true }
+    }
 
     if (isExpanded) {
         VisualizerModal(
@@ -547,7 +556,8 @@ internal fun LinkedListInsertionVisualizationCard() {
 @Composable
 internal fun LinkedListRemovalVisualizationCard() {
     var scenario by rememberSaveable { mutableStateOf("HEAD") } // "HEAD", "TAIL", "MIDDLE"
-    var isExpanded by rememberSaveable { mutableStateOf(false) }
+    val autoExpand = LocalAutoExpandVisualizer.current
+    var isExpanded by rememberSaveable { mutableStateOf(autoExpand) }
 
     val steps = remember(scenario) { LinkedListTrace.removalSteps(scenario) }
 
@@ -558,7 +568,9 @@ internal fun LinkedListRemovalVisualizationCard() {
     val isCompleted = playback.isCompleted
     val currentStep = steps[stepIndex.coerceIn(0, steps.lastIndex)]
 
-    ArrayWindowButton(text = "Open removal visualizer") { isExpanded = true }
+    if (!autoExpand) {
+        ArrayWindowButton(text = "Open removal visualizer") { isExpanded = true }
+    }
 
     if (isExpanded) {
         VisualizerModal(

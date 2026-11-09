@@ -42,7 +42,8 @@ internal fun ActivitySelectionVisualizationCard(
     title: String = "Activity Selection"
 ) {
     val steps = ActivitySelectionTrace.createTrace()
-    var isExpanded by rememberSaveable { mutableStateOf(false) }
+    val autoExpand = LocalAutoExpandVisualizer.current
+    var isExpanded by rememberSaveable { mutableStateOf(autoExpand) }
 
     val playback = rememberVisualizerPlaybackState(
         stepCount = steps.size,
@@ -53,8 +54,10 @@ internal fun ActivitySelectionVisualizationCard(
     val isCompleted = playback.isCompleted
     val step = steps[stepIndex]
 
-    ArrayWindowButton(text = "Open activity selection visualizer") {
-        isExpanded = true
+    if (!autoExpand) {
+        ArrayWindowButton(text = "Open activity selection visualizer") {
+            isExpanded = true
+        }
     }
 
     if (isExpanded) {

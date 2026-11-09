@@ -60,7 +60,8 @@ internal fun StackVisualizationCard(
     var abstractStepIndex by rememberSaveable(demonstration) { mutableIntStateOf(0) }
     var abstractIsPlaying by rememberSaveable(demonstration) { mutableStateOf(false) }
 
-    var isExpanded by rememberSaveable(demonstration) { mutableStateOf(false) }
+    val autoExpand = LocalAutoExpandVisualizer.current
+    var isExpanded by rememberSaveable(demonstration) { mutableStateOf(autoExpand) }
 
     val isArrayAndLinked = demonstration == StackDemonstration.IMPLEMENTATIONS
 
@@ -103,7 +104,9 @@ internal fun StackVisualizationCard(
         }
     }
 
-    ArrayWindowButton(text = "Open stack visualizer") { isExpanded = true }
+    if (!autoExpand) {
+        ArrayWindowButton(text = "Open stack visualizer") { isExpanded = true }
+    }
 
     if (isExpanded) {
         val statusText = when (step.event) {

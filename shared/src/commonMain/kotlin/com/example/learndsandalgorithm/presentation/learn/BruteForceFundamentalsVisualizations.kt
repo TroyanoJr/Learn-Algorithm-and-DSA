@@ -36,7 +36,8 @@ internal fun BruteForceFundamentalsVisualizationCard(
     title: String = "Brute Force Fundamentals"
 ) {
     val steps = BruteForceFundamentalsTrace.stepsForSquareSearch()
-    var isExpanded by rememberSaveable { mutableStateOf(false) }
+    val autoExpand = LocalAutoExpandVisualizer.current
+    var isExpanded by rememberSaveable { mutableStateOf(autoExpand) }
 
     val playback = rememberVisualizerPlaybackState(
         stepCount = steps.size,
@@ -47,8 +48,10 @@ internal fun BruteForceFundamentalsVisualizationCard(
     val isCompleted = playback.isCompleted
     val step = steps[stepIndex]
 
-    ArrayWindowButton(text = "Open brute force visualizer") {
-        isExpanded = true
+    if (!autoExpand) {
+        ArrayWindowButton(text = "Open brute force visualizer") {
+            isExpanded = true
+        }
     }
 
     if (isExpanded) {
