@@ -16,6 +16,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -50,6 +51,21 @@ internal fun TreeTraversalsVisualizationCard(
     val isPlaying = playback.isPlaying
     val isCompleted = playback.isCompleted
     val step = steps[stepIndex]
+
+    val bfsSteps = remember(selectedOrder) {
+        if (selectedOrder == TraversalOrder.LEVEL_ORDER) {
+            TreeTraversalsTrace.stepsForOrder(TraversalOrder.LEVEL_ORDER)
+        } else {
+            emptyList()
+        }
+    }
+    val bfsScenes = remember(bfsSteps) {
+        if (bfsSteps.isNotEmpty()) {
+            TreeTraversalSceneBuilder.buildLevelOrderScenes(bfsSteps)
+        } else {
+            emptyList()
+        }
+    }
 
     if (!autoExpand) {
         ArrayWindowButton(text = "Open tree traversals visualizer") {
@@ -100,8 +116,15 @@ internal fun TreeTraversalsVisualizationCard(
                 )
             },
             visualContent = {
-                FitToPane(modifier = Modifier.fillMaxSize()) {
-                    TreeTraversalsVisualizationContent(step = step, scale = 1f)
+                if (selectedOrder == TraversalOrder.LEVEL_ORDER && stepIndex in bfsScenes.indices) {
+                    TreeSceneRenderer(
+                        scene = bfsScenes[stepIndex],
+                        modifier = Modifier.fillMaxSize()
+                    )
+                } else {
+                    FitToPane(modifier = Modifier.fillMaxSize()) {
+                        TreeTraversalsVisualizationContent(step = step, scale = 1f)
+                    }
                 }
             },
             detailsContent = {

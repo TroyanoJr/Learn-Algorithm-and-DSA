@@ -56,7 +56,7 @@ internal object HeapBuildTrace {
         steps.add(
             snapshot(
                 event = BuildHeapEvent.START,
-                explanation = "Bottom-Up Build Heap: Building Min-Heap from unsorted array [${initialArr.joinToString(", ")}]. Starts at last non-leaf index $startParentIdx down to 0 in O(N) linear time.",
+                explanation = "Bottom-Up Build Heap: Building Min-Heap from array [${initialArr.joinToString(", ")}]. Starts at last non-leaf index $startParentIdx down to 0.",
                 badgeText = "READY · BUILD HEAP (O(N))"
             )
         )
@@ -68,7 +68,7 @@ internal object HeapBuildTrace {
                     parentIdx = parentIdx,
                     siftIdx = parentIdx,
                     event = BuildHeapEvent.START_INDEX_SIFT,
-                    explanation = "SIFT DOWN INDEX $parentIdx: Processing parent node at index $parentIdx (value ${a[parentIdx]}).",
+                    explanation = "SIFT DOWN INDEX $parentIdx: Sifting parent node at index $parentIdx (value ${a[parentIdx]}).",
                     badgeText = "SIFT DOWN INDEX $parentIdx (VAL ${a[parentIdx]})"
                 )
             )
@@ -89,8 +89,8 @@ internal object HeapBuildTrace {
                         siftIdx = i,
                         childIdx = child,
                         event = BuildHeapEvent.COMPARE_CHILDREN,
-                        explanation = "Compare node[$i] ($currVal) with smaller child[$child] ($childVal).",
-                        badgeText = "COMPARE $currVal vs CHILD $childVal"
+                        explanation = "Compare parent node[$i] (val $currVal) with smaller child node[$child] (val $childVal).",
+                        badgeText = "COMPARE VAL $currVal vs CHILD[$child] (VAL $childVal)"
                     )
                 )
 
@@ -109,8 +109,8 @@ internal object HeapBuildTrace {
                         childIdx = child,
                         swapped = Pair(i, child),
                         event = BuildHeapEvent.SWAP_DOWN,
-                        explanation = "Swapped $currVal with smaller child $childVal. Node $currVal moves down to index $child.",
-                        badgeText = "SWAPPED $currVal ↔ $childVal"
+                        explanation = "Swapped parent node[$i] (val $currVal) with smaller child node[$child] (val $childVal). Parent val $currVal sifts down to index $child.",
+                        badgeText = "SWAPPED VAL $currVal ↔ $childVal"
                     )
                 )
 
@@ -122,7 +122,7 @@ internal object HeapBuildTrace {
                     parentIdx = parentIdx,
                     siftIdx = i,
                     event = BuildHeapEvent.INDEX_SIFT_DONE,
-                    explanation = "Index $parentIdx sift-down complete! Subtree rooted at $parentIdx now satisfies min-heap property.",
+                    explanation = "Index $parentIdx sift-down complete. Subtree rooted at index $parentIdx satisfies min-heap property.",
                     badgeText = "INDEX $parentIdx DONE"
                 )
             )
@@ -133,7 +133,7 @@ internal object HeapBuildTrace {
             snapshot(
                 event = BuildHeapEvent.BUILD_COMPLETE,
                 isTerminal = true,
-                explanation = "BOTTOM-UP BUILD HEAP COMPLETE! Resulting Min-Heap: [${a.joinToString(", ")}]. Overall time complexity: O(N) linear time.",
+                explanation = "BOTTOM-UP BUILD HEAP COMPLETE! Resulting Min-Heap: [${a.joinToString(", ")}]. Total time complexity: O(N) linear time.",
                 badgeText = "BUILD COMPLETE [${a.joinToString(", ")}]"
             )
         )

@@ -24,6 +24,7 @@ import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -42,11 +43,18 @@ internal enum class VisualizerLayoutMode {
     SPLIT_VIEW,
 
     /**
-     * Disposición a ancho completo (Landscape): La visualización ocupa el 100% del ancho horizontal disponible,
-     * situando el panel de pasos/explicación inmediatamente debajo.
-     * Utilizado para arreglos horizontales extensos como Searching, Sorting y Arrays.
+     * Presupuesto de pantalla "visual con toda la altura" (Landscape): la visualización ocupa la columna
+     * izquierda (~62 % del ancho) con TODA la altura útil entre la cabecera y la barra de reproducción;
+     * el panel de pasos/explicación va en la columna derecha. El nombre FULL_WIDTH es histórico:
+     * lo escaso en un móvil horizontal es la altura, no el ancho.
      */
-    FULL_WIDTH
+    FULL_WIDTH,
+
+    /**
+     * Disposición apilada (Landscape): visualización arriba (peso 1.8) y detalles abajo (peso 1).
+     * Es el comportamiento ANTERIOR de FULL_WIDTH. Solo para visualizadores muy anchos y bajos.
+     */
+    STACKED
 }
 
 /**
@@ -155,13 +163,17 @@ internal fun VisualizerModal(
                                     text = title.uppercase(),
                                     color = VisualizerOrangeAccent,
                                     fontSize = 12.sp,
-                                    fontWeight = FontWeight.Bold
+                                    fontWeight = FontWeight.Bold,
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis
                                 )
                                 Text(
                                     text = statusText,
                                     color = statusColor,
                                     fontSize = 12.sp,
-                                    fontWeight = FontWeight.Bold
+                                    fontWeight = FontWeight.Bold,
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis
                                 )
                             }
                             ArrayWindowButton(text = "Close", icon = "✕", onClick = combinedClose)
@@ -199,6 +211,28 @@ internal fun VisualizerModal(
                                 }
                             }
                             VisualizerLayoutMode.FULL_WIDTH -> {
+                                Row(
+                                    modifier = Modifier.weight(1f).fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                                    verticalAlignment = Alignment.Top
+                                ) {
+                                    // REGION B: Visual Content - full useful height
+                                    Box(
+                                        modifier = Modifier.weight(1.6f).fillMaxHeight(),
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        visualContent()
+                                    }
+                                    // REGION C: Explanation / Details - full useful height
+                                    Column(
+                                        modifier = Modifier.weight(1f).fillMaxHeight().verticalScroll(rememberScrollState()),
+                                        verticalArrangement = Arrangement.spacedBy(6.dp)
+                                    ) {
+                                        detailsContent()
+                                    }
+                                }
+                            }
+                            VisualizerLayoutMode.STACKED -> {
                                 Column(
                                     modifier = Modifier.weight(1f).fillMaxWidth(),
                                     verticalArrangement = Arrangement.spacedBy(6.dp),
