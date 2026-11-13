@@ -71,7 +71,7 @@ internal class VisualizerCanvasState(
     val minScale: Float = 0.5f,
     val maxScale: Float = 3.5f
 ) {
-    var scale by mutableStateOf(initialScale.coerceIn(minScale, maxScale))
+    var scale by mutableStateOf(initialScale)
         private set
 
     var translationX by mutableStateOf(0f)
@@ -80,34 +80,59 @@ internal class VisualizerCanvasState(
     var translationY by mutableStateOf(0f)
         private set
 
-    var viewportSize by mutableStateOf(IntSize.Zero)
+    private var _viewportSize by mutableStateOf(IntSize.Zero)
+    var viewportSize: IntSize
+        get() = _viewportSize
+        internal set(value) {
+            if (_viewportSize != value) {
+                _viewportSize = value
+                recalculateInitialFitIfNeeded()
+            }
+        }
+
+    private var _contentSize by mutableStateOf(IntSize.Zero)
+    var contentSize: IntSize
+        get() = _contentSize
+        internal set(value) {
+            if (_contentSize != value) {
+                _contentSize = value
+                recalculateInitialFitIfNeeded()
+            }
+        }
+
+    var hasUserInteracted by mutableStateOf(false)
         internal set
 
-    var contentSize by mutableStateOf(IntSize.Zero)
-        internal set
+    var autoFitScale by mutableStateOf(initialScale)
+        private set
 
     private var hasCalculatedInitialFit by mutableStateOf(false)
 
     fun updateViewportSize(size: IntSize) {
-        if (viewportSize != size) {
-            viewportSize = size
-            recalculateInitialFitIfNeeded()
-        }
+        viewportSize = size
     }
 
     fun updateContentSize(size: IntSize) {
-        if (contentSize != size) {
-            contentSize = size
-            recalculateInitialFitIfNeeded()
-        }
+        contentSize = size
     }
 
     private fun recalculateInitialFitIfNeeded() {
-        if (!hasCalculatedInitialFit && viewportSize.width > 0 && viewportSize.height > 0 && contentSize.width > 0 && contentSize.height > 0) {
-            val fitScale = calculateFitScale()
-            scale = fitScale.coerceIn(minScale, maxScale)
-            hasCalculatedInitialFit = true
-            applyClampedTranslation(0f, 0f)
+        if (viewportSize.width > 0 && viewportSize.height > 0 && contentSize.width > 0 && contentSize.height > 0) {
+            if (!hasCalculatedInitialFit) {
+                val fitScale = calculateFitScale().coerceAtMost(maxScale)
+                autoFitScale = fitScale
+                scale = fitScale
+                hasCalculatedInitialFit = true
+                applyClampedTranslation(0f, 0f)
+            } else if (!hasUserInteracted) {
+                // Recalculate automatic fit when dimensions change before manual interaction
+                val fitScale = calculateFitScale().coerceAtMost(maxScale)
+                autoFitScale = fitScale
+                scale = fitScale
+                applyClampedTranslation(0f, 0f)
+            } else {
+                applyClampedTranslation(translationX, translationY)
+            }
         } else {
             applyClampedTranslation(translationX, translationY)
         }
@@ -125,8 +150,10 @@ internal class VisualizerCanvasState(
     }
 
     fun reset() {
-        val fitScale = calculateFitScale()
-        scale = fitScale.coerceIn(minScale, maxScale)
+        hasUserInteracted = false
+        val fitScale = calculateFitScale().coerceAtMost(maxScale)
+        autoFitScale = fitScale
+        scale = fitScale
         translationX = 0f
         translationY = 0f
     }
@@ -163,8 +190,10 @@ internal class VisualizerCanvasState(
             return
         }
 
+        hasUserInteracted = true
         val oldScale = scale
-        val newScale = if (allowZoom) (oldScale * zoomFactor).coerceIn(minScale, maxScale) else oldScale
+        val effectiveMinScale = minOf(minScale, autoFitScale)
+        val newScale = if (allowZoom) (oldScale * zoomFactor).coerceIn(effectiveMinScale, maxScale) else oldScale
         val effectiveZoom = if (oldScale > 0f) newScale / oldScale else 1f
 
         val cW = contentSize.width.toFloat()

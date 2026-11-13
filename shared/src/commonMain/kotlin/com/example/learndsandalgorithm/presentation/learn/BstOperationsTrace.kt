@@ -199,7 +199,14 @@ internal object BstOperationsTrace {
         val steps = mutableListOf<BstOperationsTraceStep>()
         // Delete Root 10 (has 2 children 5 and 15).
         // In-order successor: minimum value in right subtree = 12.
-        val before = listOf(
+        val beforeInitial = listOf(
+            BstNode("N10", 10, "N5", "N15", isHighlighted = true),
+            BstNode("N5", 5),
+            BstNode("N15", 15, "N12", "N20"),
+            BstNode("N12", 12, isSuccessor = false),
+            BstNode("N20", 20)
+        )
+        val beforeSuccessor = listOf(
             BstNode("N10", 10, "N5", "N15", isHighlighted = true),
             BstNode("N5", 5),
             BstNode("N15", 15, "N12", "N20"),
@@ -238,8 +245,8 @@ internal object BstOperationsTrace {
             isTerminal = isTerminal
         )
 
-        steps.add(snapshot(before, null, null, false, "DELETE CASE 3 (TWO CHILDREN): Node [10] has two children. Must find IN-ORDER SUCCESSOR.", "DELETE [10] (2 CHILDREN)"))
-        steps.add(snapshot(before, "N12", 12, false, "In-order Successor: Minimum value in right subtree is Node [12].", "FOUND SUCCESSOR [12]"))
+        steps.add(snapshot(beforeInitial, null, null, false, "DELETE CASE 3 (TWO CHILDREN): Node [10] has two children. Must find IN-ORDER SUCCESSOR.", "DELETE [10] (2 CHILDREN)"))
+        steps.add(snapshot(beforeSuccessor, "N12", 12, false, "In-order Successor: Minimum value in right subtree is Node [12].", "FOUND SUCCESSOR [12]"))
         steps.add(snapshot(stepCopy, "N10", 12, false, "Copy Successor Value: Replace node value 10 with successor value 12.", "COPIED 12 TO ROOT"))
         steps.add(snapshot(finalTree, null, 12, true, "DELETION COMPLETE! Original successor node [12] deleted. BST invariant fully preserved!", "REMOVED SUCCESSOR NODE"))
 

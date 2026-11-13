@@ -1,17 +1,17 @@
 package com.example.learndsandalgorithm.presentation.learn
 
 /**
- * Deterministic builder that transforms BFS / Level Order [TreeTraversalsTraceStep] sequences
- * into abstract [VisualizationScene] models.
+ * Deterministic builder that transforms tree traversal [TreeTraversalsTraceStep] sequences
+ * (PRE_ORDER, IN_ORDER, POST_ORDER, LEVEL_ORDER) into abstract [VisualizationScene] models.
  *
  * Generates three synchronized sub-scenes per step:
  * 1. `tree_traversal_tree`: Full binary tree structure with structural branch connections.
- * 2. `tree_traversal_queue`: BFS queue entries retaining exact FIFO order.
+ * 2. `tree_traversal_queue`: BFS queue entries (empty for DFS traversals).
  * 3. `tree_traversal_visited`: Visited node array sequence in order of traversal.
  */
 internal object TreeTraversalSceneBuilder {
 
-    fun buildLevelOrderScenes(
+    fun buildTraversalScenes(
         steps: List<TreeTraversalsTraceStep>,
         nodes: List<TraversalNode> = TreeTraversalsTrace.treeNodes
     ): List<VisualizationScene> {
@@ -76,6 +76,14 @@ internal object TreeTraversalSceneBuilder {
             )
         }
     }
+
+    /**
+     * Alias for backward compatibility with existing Level-Order BFS callers.
+     */
+    fun buildLevelOrderScenes(
+        steps: List<TreeTraversalsTraceStep>,
+        nodes: List<TraversalNode> = TreeTraversalsTrace.treeNodes
+    ): List<VisualizationScene> = buildTraversalScenes(steps, nodes)
 
     private fun buildSceneForStep(
         stepIndex: Int,
@@ -156,7 +164,7 @@ internal object TreeTraversalSceneBuilder {
             connections = treeConnections
         )
 
-        // --- 2. Queue Sub-Scene ---
+        // --- 2. Queue Sub-Scene (Populated for BFS, empty list for DFS) ---
         val queueEntities = step.queueValues.mapIndexed { idx, qVal ->
             val targetNode = valueToNodeMap.getValue(qVal)
             VisualEntity(

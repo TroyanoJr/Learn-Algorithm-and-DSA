@@ -283,4 +283,74 @@ class TreeTraversalSceneBuilderTest {
             TreeTraversalSceneBuilder.buildLevelOrderScenes(listOf(invalidStep))
         }
     }
+
+    // ==========================================
+    // DFS TRAVERSAL TESTS (Batch 2.4.2)
+    // ==========================================
+
+    @Test
+    fun testPreOrderTraversalScenes() {
+        val steps = TreeTraversalsTrace.stepsForOrder(TraversalOrder.PRE_ORDER)
+        val scenes = TreeTraversalSceneBuilder.buildTraversalScenes(steps)
+
+        assertEquals(steps.size, scenes.size)
+
+        // Terminal scene contains expected Pre-order sequence: [5, 3, 2, 4, 7, 6, 8]
+        val terminalVisitedSub = scenes.last().subScenes.first { it.subPaneId == "tree_traversal_visited" }
+        val visitedValues = terminalVisitedSub.entities.map { it.dataValue.toInt() }
+        assertEquals(listOf(5, 3, 2, 4, 7, 6, 8), visitedValues)
+
+        // Verify DFS queue sub-scene is empty across all steps
+        scenes.forEach { scene ->
+            val queueSub = scene.subScenes.first { it.subPaneId == "tree_traversal_queue" }
+            assertTrue(queueSub.entities.isEmpty(), "DFS queue sub-scene should have empty entities")
+        }
+    }
+
+    @Test
+    fun testInOrderTraversalScenes() {
+        val steps = TreeTraversalsTrace.stepsForOrder(TraversalOrder.IN_ORDER)
+        val scenes = TreeTraversalSceneBuilder.buildTraversalScenes(steps)
+
+        assertEquals(steps.size, scenes.size)
+
+        // Terminal scene contains expected sorted In-order sequence: [2, 3, 4, 5, 6, 7, 8]
+        val terminalVisitedSub = scenes.last().subScenes.first { it.subPaneId == "tree_traversal_visited" }
+        val visitedValues = terminalVisitedSub.entities.map { it.dataValue.toInt() }
+        assertEquals(listOf(2, 3, 4, 5, 6, 7, 8), visitedValues)
+    }
+
+    @Test
+    fun testPostOrderTraversalScenes() {
+        val steps = TreeTraversalsTrace.stepsForOrder(TraversalOrder.POST_ORDER)
+        val scenes = TreeTraversalSceneBuilder.buildTraversalScenes(steps)
+
+        assertEquals(steps.size, scenes.size)
+
+        // Terminal scene contains expected Post-order sequence: [2, 4, 3, 6, 8, 7, 5]
+        val terminalVisitedSub = scenes.last().subScenes.first { it.subPaneId == "tree_traversal_visited" }
+        val visitedValues = terminalVisitedSub.entities.map { it.dataValue.toInt() }
+        assertEquals(listOf(2, 4, 3, 6, 8, 7, 5), visitedValues)
+    }
+
+    @Test
+    fun testActiveStatePrecedenceOverVisited() {
+        val steps = TreeTraversalsTrace.stepsForOrder(TraversalOrder.PRE_ORDER)
+        val scenes = TreeTraversalSceneBuilder.buildTraversalScenes(steps)
+
+        // Step 1: currentNodeId = "N5" (Root)
+        val step1TreeSub = scenes[1].subScenes.first { it.subPaneId == "tree_traversal_tree" }
+        val node5 = step1TreeSub.entities.first { it.elementId == "node:N5" }
+        assertEquals(EntityVisualState.ACTIVE, node5.visualState, "Active node must have ACTIVE visual state")
+    }
+
+    @Test
+    fun testBfsRegressionSafety() {
+        val steps = TreeTraversalsTrace.stepsForOrder(TraversalOrder.LEVEL_ORDER)
+        val levelOrderScenes = TreeTraversalSceneBuilder.buildLevelOrderScenes(steps)
+        val traversalScenes = TreeTraversalSceneBuilder.buildTraversalScenes(steps)
+
+        assertEquals(levelOrderScenes.size, traversalScenes.size)
+        assertEquals(levelOrderScenes, traversalScenes)
+    }
 }

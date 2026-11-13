@@ -185,34 +185,15 @@ internal object TreeSceneLayout {
         // 3. Build connectionLines (boundary-to-boundary)
         val connectionLines = mutableMapOf<String, LineSegment2D>()
         nodes.forEach { node ->
-            val parentId = node.id
-            val parentSlotKey = "tree_slot:$parentId"
+            val parentSlotKey = "tree_slot:${node.id}"
             val parentRect = nodeBounds[parentSlotKey] ?: return@forEach
-            val parentCenter = parentRect.center
-            val radius = parentRect.width / 2f
 
             node.leftId?.let { leftChildId ->
                 val childSlotKey = "tree_slot:$leftChildId"
                 val childRect = nodeBounds[childSlotKey]
                 if (childRect != null) {
-                    val childCenter = childRect.center
-                    val dX = childCenter.x - parentCenter.x
-                    val dY = childCenter.y - parentCenter.y
-                    val dist = max(0.001f, sqrt(dX * dX + dY * dY))
-
-                    val startPoint = Point2D(
-                        x = parentCenter.x + (dX / dist) * radius,
-                        y = parentCenter.y + (dY / dist) * radius
-                    )
-                    val endPoint = Point2D(
-                        x = childCenter.x - (dX / dist) * radius,
-                        y = childCenter.y - (dY / dist) * radius
-                    )
-
-                    connectionLines["branch:$parentSlotKey->$childSlotKey"] = LineSegment2D(
-                        start = startPoint,
-                        end = endPoint
-                    )
+                    connectionLines["branch:$parentSlotKey->$childSlotKey"] =
+                        calculateBoundaryConnectionLine(parentRect, childRect)
                 }
             }
 
@@ -220,24 +201,8 @@ internal object TreeSceneLayout {
                 val childSlotKey = "tree_slot:$rightChildId"
                 val childRect = nodeBounds[childSlotKey]
                 if (childRect != null) {
-                    val childCenter = childRect.center
-                    val dX = childCenter.x - parentCenter.x
-                    val dY = childCenter.y - parentCenter.y
-                    val dist = max(0.001f, sqrt(dX * dX + dY * dY))
-
-                    val startPoint = Point2D(
-                        x = parentCenter.x + (dX / dist) * radius,
-                        y = parentCenter.y + (dY / dist) * radius
-                    )
-                    val endPoint = Point2D(
-                        x = childCenter.x - (dX / dist) * radius,
-                        y = childCenter.y - (dY / dist) * radius
-                    )
-
-                    connectionLines["branch:$parentSlotKey->$childSlotKey"] = LineSegment2D(
-                        start = startPoint,
-                        end = endPoint
-                    )
+                    connectionLines["branch:$parentSlotKey->$childSlotKey"] =
+                        calculateBoundaryConnectionLine(parentRect, childRect)
                 }
             }
         }
@@ -251,6 +216,33 @@ internal object TreeSceneLayout {
             requiredWidth = max(availableWidthDp, maxX + MIN_HORIZONTAL_MARGIN_DP),
             requiredHeight = max(availableHeightDp, maxY + MIN_VERTICAL_MARGIN_DP)
         )
+    }
+
+    /**
+     * Pure geometry helper calculating boundary-to-boundary line segment between two node rectangles.
+     */
+    fun calculateBoundaryConnectionLine(
+        fromRect: Rect2D,
+        toRect: Rect2D
+    ): LineSegment2D {
+        val fromCenter = fromRect.center
+        val toCenter = toRect.center
+        val radius = fromRect.width / 2f
+
+        val dX = toCenter.x - fromCenter.x
+        val dY = toCenter.y - fromCenter.y
+        val dist = max(0.001f, sqrt(dX * dX + dY * dY))
+
+        val startPoint = Point2D(
+            x = fromCenter.x + (dX / dist) * radius,
+            y = fromCenter.y + (dY / dist) * radius
+        )
+        val endPoint = Point2D(
+            x = toCenter.x - (dX / dist) * radius,
+            y = toCenter.y - (dY / dist) * radius
+        )
+
+        return LineSegment2D(start = startPoint, end = endPoint)
     }
 
     private fun findRoot(nodes: List<TraversalNode>): TraversalNode? {

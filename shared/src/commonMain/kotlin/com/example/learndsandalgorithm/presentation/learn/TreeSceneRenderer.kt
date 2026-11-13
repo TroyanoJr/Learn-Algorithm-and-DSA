@@ -37,7 +37,14 @@ internal fun TreeSceneRenderer(
         val heightDp = maxHeight.value
 
         val treeSubScene = scene.subScenes.firstOrNull { it.subPaneId == "tree_traversal_tree" || it.type == StructureType.TREE }
-        val nodes = if (treeSubScene != null) extractTraversalNodes(treeSubScene) else emptyList()
+        val layoutNodesSubScene = if (treeSubScene != null) {
+            if (treeSubScene.referenceConnections.isNotEmpty()) {
+                treeSubScene.copy(connections = treeSubScene.referenceConnections)
+            } else {
+                treeSubScene
+            }
+        } else null
+        val nodes = if (layoutNodesSubScene != null) extractTraversalNodes(layoutNodesSubScene) else emptyList()
 
         val layout = TreeSceneLayout.calculateLayout(
             nodes = nodes,
@@ -55,25 +62,43 @@ internal fun TreeSceneRenderer(
             Canvas(
                 modifier = Modifier.size(canvasWidthDp.dp, canvasHeightDp.dp)
             ) {
+                val entityMap = treeSubScene?.entities?.associateBy { it.visualKey } ?: emptyMap()
+
                 // ==========================================
                 // A. DRAW PARENT-CHILD CONNECTION LINES (First)
                 // ==========================================
                 treeSubScene?.connections?.forEach { conn ->
-                    val line = layout.connectionLines[conn.connectionKey]
-                    if (line != null) {
-                        val startPx = Offset(line.start.x.dp.toPx(), line.start.y.dp.toPx())
-                        val endPx = Offset(line.end.x.dp.toPx(), line.end.y.dp.toPx())
-                        val isHigh = conn.visualState == ConnectionVisualState.HIGHLIGHTED
-                        val strokeW = if (isHigh) 3.dp.toPx() else 1.5.dp.toPx()
-                        val color = if (isHigh) TreeCanvasBranchHighlightColor else TreeCanvasBranchDefaultColor.copy(alpha = 0.6f)
+                    val fromEntity = entityMap[conn.fromVisualKey]
+                    val toEntity = entityMap[conn.toVisualKey]
+                    val areBothPresent = fromEntity?.presenceState == EntityPresenceState.PRESENT &&
+                                         toEntity?.presenceState == EntityPresenceState.PRESENT
+                    if (areBothPresent && fromEntity != null && toEntity != null) {
+                        val fromSlotKey = "tree_slot:${fromEntity.elementId.removePrefix("node:")}"
+                        val toSlotKey = "tree_slot:${toEntity.elementId.removePrefix("node:")}"
+                        val fromRect = layout.nodeBounds[fromSlotKey]
+                        val toRect = layout.nodeBounds[toSlotKey]
 
-                        drawLine(
-                            color = color,
-                            start = startPx,
-                            end = endPx,
-                            strokeWidth = strokeW,
-                            cap = StrokeCap.Round
-                        )
+                        val line = if (fromRect != null && toRect != null) {
+                            TreeSceneLayout.calculateBoundaryConnectionLine(fromRect, toRect)
+                        } else {
+                            layout.connectionLines[conn.connectionKey]
+                        }
+
+                        if (line != null) {
+                            val startPx = Offset(line.start.x.dp.toPx(), line.start.y.dp.toPx())
+                            val endPx = Offset(line.end.x.dp.toPx(), line.end.y.dp.toPx())
+                            val isHigh = conn.visualState == ConnectionVisualState.HIGHLIGHTED
+                            val strokeW = if (isHigh) 3.dp.toPx() else 1.5.dp.toPx()
+                            val color = if (isHigh) TreeCanvasBranchHighlightColor else TreeCanvasBranchDefaultColor.copy(alpha = 0.6f)
+
+                            drawLine(
+                                color = color,
+                                start = startPx,
+                                end = endPx,
+                                strokeWidth = strokeW,
+                                cap = StrokeCap.Round
+                            )
+                        }
                     }
                 }
 
@@ -81,6 +106,7 @@ internal fun TreeSceneRenderer(
                 // B, C, D. DRAW NODE BACKGROUNDS, VALUES, & STATES
                 // ==========================================
                 treeSubScene?.entities?.forEach { entity ->
+                    if (entity.presenceState != EntityPresenceState.PRESENT) return@forEach
                     val slotKey = "tree_slot:${entity.elementId.removePrefix("node:")}"
                     val rect = layout.nodeBounds[slotKey]
                     if (rect != null) {

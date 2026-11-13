@@ -52,16 +52,9 @@ internal fun TreeTraversalsVisualizationCard(
     val isCompleted = playback.isCompleted
     val step = steps[stepIndex]
 
-    val bfsSteps = remember(selectedOrder) {
-        if (selectedOrder == TraversalOrder.LEVEL_ORDER) {
-            TreeTraversalsTrace.stepsForOrder(TraversalOrder.LEVEL_ORDER)
-        } else {
-            emptyList()
-        }
-    }
-    val bfsScenes = remember(bfsSteps) {
-        if (bfsSteps.isNotEmpty()) {
-            TreeTraversalSceneBuilder.buildLevelOrderScenes(bfsSteps)
+    val traversalScenes = remember(steps) {
+        if (steps.isNotEmpty()) {
+            TreeTraversalSceneBuilder.buildTraversalScenes(steps)
         } else {
             emptyList()
         }
@@ -116,9 +109,10 @@ internal fun TreeTraversalsVisualizationCard(
                 )
             },
             visualContent = {
-                if (selectedOrder == TraversalOrder.LEVEL_ORDER && stepIndex in bfsScenes.indices) {
+                val currentScene = if (stepIndex in traversalScenes.indices) traversalScenes[stepIndex] else null
+                if (currentScene != null) {
                     TreeSceneRenderer(
-                        scene = bfsScenes[stepIndex],
+                        scene = currentScene,
                         modifier = Modifier.fillMaxSize()
                     )
                 } else {
@@ -329,28 +323,51 @@ private fun TreeTraversalsDetailsAndStepsContent(
     scale: Float
 ) {
     Column(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier.fillMaxWidth().padding(horizontal = 2.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp * scale)
     ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
+        Surface(
+            color = Color(0xFF161622),
+            shape = RoundedCornerShape(12.dp),
+            modifier = Modifier.fillMaxWidth()
         ) {
-            Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                Text("CURRENT TRAVERSAL STEP", color = TextSecondary, fontSize = 9.sp, fontWeight = FontWeight.Bold)
+            Column(
+                modifier = Modifier.padding(12.dp),
+                verticalArrangement = Arrangement.spacedBy(6.dp)
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text("CURRENT TRAVERSAL STEP", color = TextSecondary, fontSize = 9.sp, fontWeight = FontWeight.Bold)
+                    Surface(
+                        color = Color(0xFF22222E),
+                        shape = RoundedCornerShape(6.dp),
+                        border = BorderStroke(1.dp, CardBorderColor)
+                    ) {
+                        Text(
+                            text = "Visited: ${step.visitedNodes.size} / 7",
+                            color = GreenAccent,
+                            fontSize = 9.sp,
+                            fontWeight = FontWeight.Bold,
+                            modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                        )
+                    }
+                }
+
                 Text(
-                    step.badgeText,
+                    text = step.badgeText,
                     color = when (step.order) {
                         TraversalOrder.IN_ORDER -> GreenAccent
                         TraversalOrder.LEVEL_ORDER -> BlueAccent
                         else -> OrangeAccent
                     },
-                    fontSize = 15.sp,
-                    fontWeight = FontWeight.Bold
+                    fontSize = 13.sp,
+                    fontWeight = FontWeight.Bold,
+                    lineHeight = 18.sp
                 )
             }
-            Text("Visited: ${step.visitedNodes.size} / 7", color = GreenAccent, fontSize = 10.sp, fontWeight = FontWeight.Bold)
         }
 
         StepsCard(

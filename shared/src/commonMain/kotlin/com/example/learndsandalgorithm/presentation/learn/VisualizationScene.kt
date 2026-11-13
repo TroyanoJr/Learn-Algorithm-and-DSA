@@ -90,7 +90,8 @@ internal data class VisualConnection(
     val toVisualKey: String,
     val label: String? = null,
     val type: ConnectionType = ConnectionType.STRUCTURAL_BRANCH,
-    val visualState: ConnectionVisualState = ConnectionVisualState.DEFAULT
+    val visualState: ConnectionVisualState = ConnectionVisualState.DEFAULT,
+    val directed: Boolean = false
 )
 
 /**
@@ -111,7 +112,8 @@ internal data class StructureSubScene(
     val minRequiredWidthDp: Float = 120f,
     val minRequiredHeightDp: Float = 120f,
     val entities: List<VisualEntity> = emptyList(),
-    val connections: List<VisualConnection> = emptyList()
+    val connections: List<VisualConnection> = emptyList(),
+    val referenceConnections: List<VisualConnection> = emptyList()
 )
 
 /**

@@ -221,6 +221,22 @@ class TreeSceneLayoutTest {
         assertEquals(resA.nodeBounds.keys, resB.nodeBounds.keys)
     }
 
+    @Test
+    fun testCalculateBoundaryConnectionLine() {
+        val fromRect = Rect2D(left = 100f, top = 100f, width = 40f, height = 40f) // Center = (120, 120)
+        val toRect = Rect2D(left = 200f, top = 100f, width = 40f, height = 40f)   // Center = (220, 120)
+
+        val line = TreeSceneLayout.calculateBoundaryConnectionLine(fromRect, toRect)
+
+        // Start point should touch fromRect boundary: 120 + 20 = 140
+        assertEquals(140f, line.start.x, 0.01f)
+        assertEquals(120f, line.start.y, 0.01f)
+
+        // End point should touch toRect boundary: 220 - 20 = 200
+        assertEquals(200f, line.end.x, 0.01f)
+        assertEquals(120f, line.end.y, 0.01f)
+    }
+
     // ==========================================
     // ADVERSARIAL TESTS (Batch 2.1.4 / 2.1.6)
     // ==========================================
