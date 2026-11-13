@@ -67,7 +67,7 @@ class HeapSceneLayoutTest {
         )
 
         assertEquals(6, layout.treeNodeBounds.size)
-        assertEquals(5, layout.treeConnectionLines.size) // Connections: 0->1, 0->2, 1->3, 1->4, 2->5
+        assertEquals(5, layout.treeConnectionLines.size)
         assertEquals(6, layout.arrayCellBounds.size)
         assertEquals(6, layout.arrayIndexLabelBounds.size)
 
@@ -127,7 +127,6 @@ class HeapSceneLayoutTest {
             availableHeightDp = 400f
         )
 
-        // Level 1 nodes: slot 1 and slot 2
         val node1 = layout.treeNodeBounds["tree_slot:1"]!!
         val node2 = layout.treeNodeBounds["tree_slot:2"]!!
 
@@ -150,14 +149,12 @@ class HeapSceneLayoutTest {
         val parentCenter = parentRect.center
         val childCenter = leftChildRect.center
 
-        // Distance from parent center to line start must equal node radius
         val parentStartDist = sqrt(
             (line.start.x - parentCenter.x) * (line.start.x - parentCenter.x) +
                 (line.start.y - parentCenter.y) * (line.start.y - parentCenter.y)
         )
         assertEquals(radius, parentStartDist, 0.05f, "Line start must lie on parent node circle boundary")
 
-        // Distance from child center to line end must equal node radius
         val childEndDist = sqrt(
             (line.end.x - childCenter.x) * (line.end.x - childCenter.x) +
                 (line.end.y - childCenter.y) * (line.end.y - childCenter.y)
@@ -215,7 +212,6 @@ class HeapSceneLayoutTest {
 
     @Test
     fun testSlotGeometryInvarianceToOccupants() {
-        // Layout depends strictly on totalElements and available dimensions, NOT on node values or occupants
         val layoutA = HeapSceneLayout.calculateLayout(6, 360f, 400f)
         val layoutB = HeapSceneLayout.calculateLayout(6, 360f, 400f)
 
@@ -278,5 +274,69 @@ class HeapSceneLayoutTest {
         val wideLayout = HeapSceneLayout.calculateLayout(6, 800f, 400f)
 
         assertTrue(wideLayout.requiredSceneWidth > compactLayout.requiredSceneWidth)
+    }
+
+    // Comprehensive tests for independent tree vs array overload
+    @Test
+    fun testIndependentTreeAndArrayElementCountLayout() {
+        val layout = HeapSceneLayout.calculateLayout(
+            treeElementCount = 3,
+            arrayElementCount = 6,
+            availableWidthDp = 360f,
+            availableHeightDp = 400f
+        )
+
+        assertEquals(3, layout.treeNodeBounds.size)
+        assertEquals(2, layout.treeConnectionLines.size)
+        assertEquals(6, layout.arrayCellBounds.size)
+        assertEquals(6, layout.arrayIndexLabelBounds.size)
+        assertTrue(layout.treeRegionBounds.bottom <= layout.arrayRegionBounds.top)
+
+        // Check no negative coordinates
+        layout.treeNodeBounds.values.forEach { assertTrue(it.left >= 0f && it.top >= 0f) }
+        layout.arrayCellBounds.values.forEach { assertTrue(it.left >= 0f && it.top >= 0f) }
+
+        // Check no overlaps in tree
+        val nodes = layout.treeNodeBounds.values.toList()
+        for (i in nodes.indices) {
+            for (j in i + 1 until nodes.size) {
+                val r1 = nodes[i]
+                val r2 = nodes[j]
+                val overlaps = r1.left < r2.right && r1.right > r2.left && r1.top < r2.bottom && r1.bottom > r2.top
+                assertTrue(!overlaps)
+            }
+        }
+    }
+
+    @Test
+    fun testEmptyTreeWithNonEmptyArrayLayout() {
+        val layout = HeapSceneLayout.calculateLayout(
+            treeElementCount = 0,
+            arrayElementCount = 6,
+            availableWidthDp = 360f,
+            availableHeightDp = 400f
+        )
+
+        assertTrue(layout.treeNodeBounds.isEmpty())
+        assertTrue(layout.treeConnectionLines.isEmpty())
+        assertEquals(6, layout.arrayCellBounds.size)
+        assertEquals(6, layout.arrayIndexLabelBounds.size)
+        layout.arrayCellBounds.values.forEach { assertTrue(it.left >= 0f && it.top >= 0f) }
+    }
+
+    @Test
+    fun testNonEmptyTreeWithEmptyArrayLayout() {
+        val layout = HeapSceneLayout.calculateLayout(
+            treeElementCount = 6,
+            arrayElementCount = 0,
+            availableWidthDp = 360f,
+            availableHeightDp = 400f
+        )
+
+        assertEquals(6, layout.treeNodeBounds.size)
+        assertEquals(5, layout.treeConnectionLines.size)
+        assertTrue(layout.arrayCellBounds.isEmpty())
+        assertTrue(layout.arrayIndexLabelBounds.isEmpty())
+        layout.treeNodeBounds.values.forEach { assertTrue(it.left >= 0f && it.top >= 0f) }
     }
 }

@@ -55,11 +55,12 @@ internal object HeapSceneLayout {
     const val GAP_BETWEEN_REGIONS_DP = 20f
 
     fun calculateLayout(
-        totalElements: Int,
+        treeElementCount: Int,
+        arrayElementCount: Int,
         availableWidthDp: Float,
         availableHeightDp: Float
     ): HeapSceneLayoutResult {
-        if (totalElements <= 0) {
+        if (treeElementCount <= 0 && arrayElementCount <= 0) {
             return HeapSceneLayoutResult(
                 treeRegionBounds = Rect2D(0f, 0f, 0f, 0f),
                 arrayRegionBounds = Rect2D(0f, 0f, 0f, 0f),
@@ -72,25 +73,26 @@ internal object HeapSceneLayout {
             )
         }
 
-        val maxLevel = log2(totalElements.toDouble()).toInt()
-        val levelsCount = maxLevel + 1
+        val treeMaxLevel = if (treeElementCount > 0) log2(treeElementCount.toDouble()).toInt() else 0
+        val treeLevelsCount = treeMaxLevel + 1
 
-        val requiredTreeWidth = max(availableWidthDp, MIN_HORIZONTAL_MARGIN_DP * 2 + totalElements * MIN_NODE_SIZE_DP)
-        val requiredTreeHeight = MIN_VERTICAL_MARGIN_DP * 2 + levelsCount * MIN_LEVEL_GAP_DP
+        val requiredTreeWidth = max(availableWidthDp, MIN_HORIZONTAL_MARGIN_DP * 2 + max(1, treeElementCount) * MIN_NODE_SIZE_DP)
+        val requiredTreeHeight = if (treeElementCount > 0) MIN_VERTICAL_MARGIN_DP * 2 + treeLevelsCount * MIN_LEVEL_GAP_DP else 0f
 
-        val cellWidth = max(MIN_ARRAY_CELL_WIDTH_DP, (availableWidthDp - MIN_HORIZONTAL_MARGIN_DP * 2) / totalElements)
-        val requiredArrayWidth = cellWidth * totalElements + MIN_HORIZONTAL_MARGIN_DP * 2
+        val arrayElCount = max(1, arrayElementCount)
+        val cellWidth = max(MIN_ARRAY_CELL_WIDTH_DP, (availableWidthDp - MIN_HORIZONTAL_MARGIN_DP * 2) / arrayElCount)
+        val requiredArrayWidth = cellWidth * arrayElCount + MIN_HORIZONTAL_MARGIN_DP * 2
         val requiredArrayHeight = ARRAY_CELL_HEIGHT_DP + ARRAY_INDEX_LABEL_HEIGHT_DP + BOTTOM_MARGIN_DP
 
         val requiredSceneWidth = max(requiredTreeWidth, requiredArrayWidth)
-        val requiredSceneHeight = requiredTreeHeight + GAP_BETWEEN_REGIONS_DP + requiredArrayHeight
+        val requiredSceneHeight = (if (treeElementCount > 0) requiredTreeHeight + GAP_BETWEEN_REGIONS_DP else 0f) + requiredArrayHeight
 
         val treeRegionBounds = Rect2D(0f, 0f, requiredSceneWidth, requiredTreeHeight)
-        val arrayRegionBounds = Rect2D(0f, requiredTreeHeight + GAP_BETWEEN_REGIONS_DP, requiredSceneWidth, requiredArrayHeight)
+        val arrayRegionBounds = Rect2D(0f, if (treeElementCount > 0) requiredTreeHeight + GAP_BETWEEN_REGIONS_DP else 0f, requiredSceneWidth, requiredArrayHeight)
 
         // 1. Calculate Tree Node Bounds
         val nodeBounds = mutableMapOf<String, Rect2D>()
-        for (i in 0 until totalElements) {
+        for (i in 0 until treeElementCount) {
             val slotKey = "tree_slot:$i"
             val level = log2((i + 1).toDouble()).toInt()
             val levelStartIdx = (2.0.pow(level) - 1).toInt()
@@ -111,14 +113,14 @@ internal object HeapSceneLayout {
 
         // 2. Calculate Tree Connection Lines (Parent Boundary -> Child Boundary)
         val connectionLines = mutableMapOf<String, LineSegment2D>()
-        for (i in 0 until totalElements) {
+        for (i in 0 until treeElementCount) {
             val parentSlotKey = "tree_slot:$i"
             val parentRect = nodeBounds[parentSlotKey] ?: continue
             val parentCenter = parentRect.center
             val radius = parentRect.width / 2f
 
             val leftChildIdx = 2 * i + 1
-            if (leftChildIdx < totalElements) {
+            if (leftChildIdx < treeElementCount) {
                 val leftSlotKey = "tree_slot:$leftChildIdx"
                 val leftRect = nodeBounds[leftSlotKey]
                 if (leftRect != null) {
@@ -144,7 +146,7 @@ internal object HeapSceneLayout {
             }
 
             val rightChildIdx = 2 * i + 2
-            if (rightChildIdx < totalElements) {
+            if (rightChildIdx < treeElementCount) {
                 val rightSlotKey = "tree_slot:$rightChildIdx"
                 val rightRect = nodeBounds[rightSlotKey]
                 if (rightRect != null) {
@@ -174,7 +176,7 @@ internal object HeapSceneLayout {
         val arrayBounds = mutableMapOf<String, Rect2D>()
         val arrayIndexLabelBounds = mutableMapOf<String, Rect2D>()
 
-        for (i in 0 until totalElements) {
+        for (i in 0 until arrayElementCount) {
             val slotKey = "array_slot:$i"
             val cellX = MIN_HORIZONTAL_MARGIN_DP + i * cellWidth
             val cellY = arrayRegionBounds.top + 4f
@@ -204,6 +206,19 @@ internal object HeapSceneLayout {
             arrayIndexLabelBounds = arrayIndexLabelBounds,
             requiredSceneWidth = requiredSceneWidth,
             requiredSceneHeight = requiredSceneHeight
+        )
+    }
+
+    fun calculateLayout(
+        totalElements: Int,
+        availableWidthDp: Float,
+        availableHeightDp: Float
+    ): HeapSceneLayoutResult {
+        return calculateLayout(
+            treeElementCount = totalElements,
+            arrayElementCount = totalElements,
+            availableWidthDp = availableWidthDp,
+            availableHeightDp = availableHeightDp
         )
     }
 }

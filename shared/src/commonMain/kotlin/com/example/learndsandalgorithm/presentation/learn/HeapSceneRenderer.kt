@@ -41,10 +41,12 @@ internal fun HeapSceneRenderer(
         val treeSubScene = scene.subScenes.firstOrNull { it.subPaneId == "heap_tree" }
         val arraySubScene = scene.subScenes.firstOrNull { it.subPaneId == "heap_array" }
 
-        val totalElements = treeSubScene?.entities?.size ?: arraySubScene?.entities?.size ?: 0
+        val treeElementCount = treeSubScene?.entities?.size ?: 0
+        val arrayElementCount = arraySubScene?.entities?.size ?: 0
 
         val layout = HeapSceneLayout.calculateLayout(
-            totalElements = totalElements,
+            treeElementCount = treeElementCount,
+            arrayElementCount = arrayElementCount,
             availableWidthDp = widthDp,
             availableHeightDp = heightDp
         )
