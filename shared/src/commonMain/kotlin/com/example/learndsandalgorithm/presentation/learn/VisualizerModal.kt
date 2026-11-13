@@ -119,6 +119,7 @@ internal fun VisualizerModal(
     onNext: () -> Unit,
     onClose: () -> Unit,
     layoutMode: VisualizerLayoutMode = VisualizerLayoutMode.SPLIT_VIEW,
+    fullWidthVisualWeight: Float? = null,
     fitUnboundedWidth: Boolean = false,
     fitMaxScale: Float = 1.25f,
     fitFillFraction: Float = 1.0f,
@@ -219,6 +220,7 @@ internal fun VisualizerModal(
                                 }
                             }
                             VisualizerLayoutMode.FULL_WIDTH -> {
+                                val visualWeight = fullWidthVisualWeight ?: if (isWideWindow) 2.2f else 1.6f
                                 Row(
                                     modifier = Modifier.weight(1f).fillMaxWidth(),
                                     horizontalArrangement = Arrangement.spacedBy(12.dp),
@@ -226,7 +228,7 @@ internal fun VisualizerModal(
                                 ) {
                                     // REGION B: Visual Content - full useful height
                                     Box(
-                                        modifier = Modifier.weight(if (isWideWindow) 2.2f else 1.6f).fillMaxHeight(),
+                                        modifier = Modifier.weight(visualWeight).fillMaxHeight(),
                                         contentAlignment = Alignment.Center
                                     ) {
                                         visualContent()

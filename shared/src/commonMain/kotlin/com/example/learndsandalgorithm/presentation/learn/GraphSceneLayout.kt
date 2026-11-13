@@ -36,7 +36,8 @@ internal object GraphSceneLayout {
         vertices: List<GraphVertexData>,
         edges: List<GraphEdgeData>,
         availableWidthDp: Float = 400f,
-        availableHeightDp: Float = 400f
+        availableHeightDp: Float = 400f,
+        minClearanceDp: Float = MIN_CLEARANCE_DP
     ): GraphLayoutResult {
         val seenEdges = mutableSetOf<String>()
         edges.forEach { e ->
@@ -107,9 +108,9 @@ internal object GraphSceneLayout {
                 val centerX = currentOriginX + MIN_NODE_SIZE_DP / 2f
                 val centerY = MIN_VERTICAL_MARGIN_DP + MIN_NODE_SIZE_DP / 2f
                 vertexCenters[key] = Point2D(centerX, centerY)
-                currentOriginX += MIN_NODE_SIZE_DP + MIN_CLEARANCE_DP
+                currentOriginX += MIN_NODE_SIZE_DP + minClearanceDp
             } else {
-                val minCenterDistance = MIN_NODE_SIZE_DP + MIN_CLEARANCE_DP // 64dp
+                val minCenterDistance = MIN_NODE_SIZE_DP + minClearanceDp
                 val sinHalfAngle = sin(PI.toFloat() / k)
                 val requiredRadius = if (sinHalfAngle > 0f) minCenterDistance / (2f * sinHalfAngle) else 32f
                 val radius = max(32f, requiredRadius)
@@ -125,7 +126,7 @@ internal object GraphSceneLayout {
                     vertexCenters[key] = Point2D(x, y)
                 }
 
-                currentOriginX += 2f * radius + MIN_NODE_SIZE_DP + MIN_CLEARANCE_DP
+                currentOriginX += 2f * radius + MIN_NODE_SIZE_DP + minClearanceDp
             }
         }
 

@@ -214,6 +214,14 @@ class GraphSceneBuilderTest {
         // Shortest Path -> false
         val spScenes = GraphSceneBuilder.buildShortestPathScenes(GraphUnweightedShortestPathTrace.stepsForShortestPath())
         assertFalse(spScenes.first().subScenes.first().connections.first().directed)
+
+        // Dijkstra -> true
+        val dijkstraScenes = GraphSceneBuilder.buildDijkstraScenes(DijkstraTrace.stepsForDijkstra())
+        assertTrue(dijkstraScenes.first().subScenes.first().connections.first().directed)
+
+        // Topological Sort -> true
+        val topoScenes = GraphSceneBuilder.buildTopologicalSortScenes(TopologicalSortTrace.stepsForTopoSort())
+        assertTrue(topoScenes.first().subScenes.first().connections.first().directed)
     }
 
     @Test
@@ -223,6 +231,83 @@ class GraphSceneBuilderTest {
         assertTrue(GraphSceneBuilder.buildComponentsCycleScenes(emptyList()).isEmpty())
         assertTrue(GraphSceneBuilder.buildFundamentalsScenes(emptyList()).isEmpty())
         assertTrue(GraphSceneBuilder.buildShortestPathScenes(emptyList()).isEmpty())
+        assertTrue(GraphSceneBuilder.buildDijkstraScenes(emptyList()).isEmpty())
+        assertTrue(GraphSceneBuilder.buildTopologicalSortScenes(emptyList()).isEmpty())
+    }
+
+    @Test
+    fun testBuildDijkstraScenes() {
+        val steps = DijkstraTrace.stepsForDijkstra("A", "D")
+        val scenes = GraphSceneBuilder.buildDijkstraScenes(steps)
+
+        assertEquals(steps.size, scenes.size)
+        assertTrue(scenes.isNotEmpty())
+
+        val sub0 = scenes.first().subScenes.first()
+        // Exactly 4 vertices
+        assertEquals(4, sub0.entities.size)
+        // Exactly 5 connections
+        assertEquals(5, sub0.connections.size)
+        // All connections directed
+        assertTrue(sub0.connections.all { it.directed })
+
+        // Check edge weights and keys
+        val edgeAB = sub0.connections.first { it.connectionKey == "edge:A->B" }
+        assertEquals("w=4", edgeAB.label)
+
+        // Current vertex ACTIVE
+        val nodeA0 = sub0.entities.first { it.elementId == "vertex:A" }
+        assertEquals(EntityVisualState.ACTIVE, nodeA0.visualState)
+
+        // Relaxed edge in step 1 (A -> C)
+        val sub1 = scenes[1].subScenes.first()
+        val relaxedAC = sub1.connections.first { it.connectionKey == "edge:A->C" }
+        assertEquals(ConnectionVisualState.RELAXING, relaxedAC.visualState)
+
+        // Terminal step: reconstructed path A -> C -> B -> D
+        val subTerm = scenes.last().subScenes.first()
+        val pathAC = subTerm.connections.first { it.connectionKey == "edge:A->C" }
+        val pathCB = subTerm.connections.first { it.connectionKey == "edge:C->B" }
+        val pathBD = subTerm.connections.first { it.connectionKey == "edge:B->D" }
+        assertEquals(ConnectionVisualState.PATH, pathAC.visualState)
+        assertEquals(ConnectionVisualState.PATH, pathCB.visualState)
+        assertEquals(ConnectionVisualState.PATH, pathBD.visualState)
+
+        // Path vertices should be TARGET when not active
+        val nodeBTerm = subTerm.entities.first { it.elementId == "vertex:B" }
+        assertEquals(EntityVisualState.TARGET, nodeBTerm.visualState)
+    }
+
+    @Test
+    fun testBuildTopologicalSortScenes() {
+        val steps = TopologicalSortTrace.stepsForTopoSort()
+        val scenes = GraphSceneBuilder.buildTopologicalSortScenes(steps)
+
+        assertEquals(steps.size, scenes.size)
+        assertTrue(scenes.isNotEmpty())
+
+        val sub0 = scenes.first().subScenes.first()
+        // 5 vertices, 5 connections
+        assertEquals(5, sub0.entities.size)
+        assertEquals(5, sub0.connections.size)
+        assertTrue(sub0.connections.all { it.directed })
+
+        // Check DAG topology keys
+        val expectedKeys = setOf("edge:A->C", "edge:B->C", "edge:B->D", "edge:C->E", "edge:D->E")
+        val actualKeys = sub0.connections.map { it.connectionKey }.toSet()
+        assertEquals(expectedKeys, actualKeys)
+
+        // Step 1: Dequeue A -> A is currentVertex (ACTIVE), inDegrees and queue represented
+        val sub1 = scenes[1].subScenes.first()
+        val nodeA1 = sub1.entities.first { it.elementId == "vertex:A" }
+        assertEquals(EntityVisualState.ACTIVE, nodeA1.visualState)
+
+        // Terminal step: all processed vertices VISITED or ACTIVE
+        val subTerm = scenes.last().subScenes.first()
+        val nodeETerm = subTerm.entities.first { it.elementId == "vertex:E" }
+        assertEquals(EntityVisualState.ACTIVE, nodeETerm.visualState)
+        val nodeATerm = subTerm.entities.first { it.elementId == "vertex:A" }
+        assertEquals(EntityVisualState.VISITED, nodeATerm.visualState)
     }
 
     @Test

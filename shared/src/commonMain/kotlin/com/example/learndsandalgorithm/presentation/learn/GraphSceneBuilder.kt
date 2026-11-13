@@ -432,6 +432,190 @@ internal object GraphSceneBuilder {
         }
     }
 
+    fun buildDijkstraScenes(
+        steps: List<DijkstraTraceStep>,
+        graph: Map<String, List<DijkstraEdge>> = DijkstraTrace.weightedGraph
+    ): List<VisualizationScene> {
+        if (steps.isEmpty()) return emptyList()
+
+        val allVertices = (graph.keys + graph.values.flatMap { edges -> edges.map { it.to } }).distinct().sorted()
+        val allEdges = graph.values.flatten()
+
+        return steps.mapIndexed { stepIndex, step ->
+            val pathDirectedEdges = mutableSetOf<Pair<String, String>>()
+            if (step.reconstructedPath != null && step.reconstructedPath.size >= 2) {
+                for (i in 0 until step.reconstructedPath.size - 1) {
+                    pathDirectedEdges.add(step.reconstructedPath[i] to step.reconstructedPath[i + 1])
+                }
+            }
+
+            val entities = allVertices.map { v ->
+                val isCurrent = v == step.currentVertex
+                val isInPath = step.reconstructedPath != null && v in step.reconstructedPath
+                val dist = step.distances[v]
+                val pred = step.predecessors[v]
+                val pqIndex = step.priorityQueue.indexOfFirst { it.second == v }
+                val isQueued = pqIndex >= 0
+
+                // Precedence: ACTIVE > TARGET > VISITED > DEFAULT
+                val visualState = when {
+                    isCurrent -> EntityVisualState.ACTIVE
+                    isInPath -> EntityVisualState.TARGET
+                    dist != null -> EntityVisualState.VISITED
+                    else -> EntityVisualState.DEFAULT
+                }
+
+                val distText = when {
+                    dist != null -> if (isCurrent) {
+                        if (pred != null) "Active: d=$dist (p=$pred)" else "Active: d=$dist"
+                    } else {
+                        if (pred != null) "d=$dist (p=$pred)" else "d=$dist"
+                    }
+                    isCurrent -> "Active"
+                    else -> null
+                }
+
+                val badge = when {
+                    distText != null -> if (isQueued) "$distText \u00B7 Q[${pqIndex + 1}]" else distText
+                    isQueued -> "Q[${pqIndex + 1}]"
+                    else -> null
+                }
+
+                VisualEntity(
+                    visualKey = "graph:vertex:$v",
+                    elementId = "vertex:$v",
+                    dataValue = v,
+                    slotKey = "graph_slot:$v",
+                    badgeLabel = badge,
+                    visualState = visualState
+                )
+            }
+
+            val connections = allEdges.map { edge ->
+                val u = edge.from
+                val v = edge.to
+                val isPathEdge = (u to v) in pathDirectedEdges
+                val isRelaxedEdge = step.relaxedEdge?.from == u && step.relaxedEdge.to == v
+
+                val connState = when {
+                    isPathEdge -> ConnectionVisualState.PATH
+                    isRelaxedEdge -> ConnectionVisualState.RELAXING
+                    else -> ConnectionVisualState.DEFAULT
+                }
+
+                VisualConnection(
+                    connectionKey = "edge:$u->$v",
+                    fromVisualKey = "graph:vertex:$u",
+                    toVisualKey = "graph:vertex:$v",
+                    label = "w=${edge.weight}",
+                    type = ConnectionType.GRAPH_EDGE,
+                    visualState = connState,
+                    directed = true
+                )
+            }
+
+            val subScene = StructureSubScene(
+                subPaneId = "graph_main_pane",
+                type = StructureType.GRAPH,
+                didacticPriority = 1,
+                minRequiredWidthDp = 220f,
+                minRequiredHeightDp = 200f,
+                entities = entities,
+                connections = connections
+            )
+
+            VisualizationScene(
+                stepIndex = stepIndex,
+                sceneId = "dijkstra_step_$stepIndex",
+                subScenes = listOf(subScene),
+                globalMessage = step.explanation
+            )
+        }
+    }
+
+    fun buildTopologicalSortScenes(
+        steps: List<TopologicalSortTraceStep>
+    ): List<VisualizationScene> {
+        if (steps.isEmpty()) return emptyList()
+
+        val firstStepGraph = steps.first().graph
+        val allVertices = (firstStepGraph.keys + firstStepGraph.values.flatten()).distinct().sorted()
+
+        val allEdges = firstStepGraph.flatMap { (u, neighbors) ->
+            neighbors.map { v -> u to v }
+        }
+
+        return steps.mapIndexed { stepIndex, step ->
+            val entities = allVertices.map { v ->
+                val isCurrent = v == step.currentVertex
+                val isInTopo = v in step.topoOrder
+                val inDeg = step.inDegrees[v]
+                val qIdx = step.queue.indexOf(v)
+                val isQueued = qIdx >= 0
+                val topoIdx = step.topoOrder.indexOf(v)
+
+                // Precedence: ACTIVE > VISITED > DEFAULT
+                val visualState = when {
+                    isCurrent -> EntityVisualState.ACTIVE
+                    isInTopo -> EntityVisualState.VISITED
+                    else -> EntityVisualState.DEFAULT
+                }
+
+                val statusText = when {
+                    isCurrent -> if (inDeg != null) "Active: in=$inDeg" else "Active"
+                    isInTopo -> "Order #${topoIdx + 1}"
+                    inDeg != null -> "in=$inDeg"
+                    else -> null
+                }
+
+                val badge = when {
+                    statusText != null -> if (isQueued) "$statusText \u00B7 Q[${qIdx + 1}]" else statusText
+                    isQueued -> "Q[${qIdx + 1}]"
+                    else -> null
+                }
+
+                VisualEntity(
+                    visualKey = "graph:vertex:$v",
+                    elementId = "vertex:$v",
+                    dataValue = v,
+                    slotKey = "graph_slot:$v",
+                    badgeLabel = badge,
+                    visualState = visualState
+                )
+            }
+
+            val connections = allEdges.map { (u, v) ->
+                val isHighlighted = u in step.topoOrder || (u == step.currentVertex)
+
+                VisualConnection(
+                    connectionKey = "edge:$u->$v",
+                    fromVisualKey = "graph:vertex:$u",
+                    toVisualKey = "graph:vertex:$v",
+                    type = ConnectionType.GRAPH_EDGE,
+                    visualState = if (isHighlighted) ConnectionVisualState.HIGHLIGHTED else ConnectionVisualState.DEFAULT,
+                    directed = true
+                )
+            }
+
+            val subScene = StructureSubScene(
+                subPaneId = "graph_main_pane",
+                type = StructureType.GRAPH,
+                didacticPriority = 1,
+                minRequiredWidthDp = 220f,
+                minRequiredHeightDp = 200f,
+                entities = entities,
+                connections = connections
+            )
+
+            VisualizationScene(
+                stepIndex = stepIndex,
+                sceneId = "topological_sort_step_$stepIndex",
+                subScenes = listOf(subScene),
+                globalMessage = step.explanation
+            )
+        }
+    }
+
     private fun normalizeUndirectedEdges(graph: Map<String, List<String>>): List<Pair<String, String>> {
         val edgeSet = mutableSetOf<Pair<String, String>>()
         graph.forEach { (u, neighbors) ->
