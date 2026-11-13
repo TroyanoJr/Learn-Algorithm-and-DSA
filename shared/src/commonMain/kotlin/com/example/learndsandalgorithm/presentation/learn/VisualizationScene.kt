@@ -9,7 +9,8 @@ internal enum class StructureType {
     ARRAY,
     TABLE,
     STACK,
-    QUEUE
+    QUEUE,
+    LINKED_LIST
 }
 
 /**

@@ -37,7 +37,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import kotlinx.coroutines.delay
 
 private val DarkCardBgColor = Color(0xFF181820)
 private val CardBorderColor = Color(0xFF262634)
@@ -235,6 +234,7 @@ private fun LinkedListIntroductionDetails(stepIndex: Int, totalSteps: Int, isCom
 @Composable
 internal fun LinkedListIntroductionVisualizationCard() {
     val nodeValues = listOf("12", "7", "19")
+    val scenes = remember(nodeValues) { LinkedListSceneBuilder.buildIntroductionScenes(nodeValues) }
     val autoExpand = LocalAutoExpandVisualizer.current
     var isExpanded by rememberSaveable { mutableStateOf(autoExpand) }
 
@@ -243,6 +243,7 @@ internal fun LinkedListIntroductionVisualizationCard() {
     val stepIndex = playback.safeStepIndex
     val isPlaying = playback.isPlaying
     val isCompleted = playback.isCompleted
+    val currentScene = scenes.getOrNull(stepIndex)
 
     if (!autoExpand) {
         ArrayWindowButton(text = "Open linked list visualizer") { isExpanded = true }
@@ -270,7 +271,11 @@ internal fun LinkedListIntroductionVisualizationCard() {
                 isExpanded = false
             },
             visualContent = {
-                LinkedListIntroductionVisual(stepIndex = stepIndex, nodeValues = nodeValues)
+                if (currentScene != null) {
+                    LinkedListSceneRenderer(scene = currentScene, modifier = Modifier.fillMaxSize())
+                } else {
+                    LinkedListIntroductionVisual(stepIndex = stepIndex, nodeValues = nodeValues)
+                }
             },
             detailsContent = {
                 LinkedListIntroductionDetails(stepIndex = stepIndex, totalSteps = totalSteps, isCompleted = isCompleted)
@@ -316,7 +321,6 @@ private fun LinkedListTraversalVisual(
 
         nodeValues.forEachIndexed { index, value ->
             val isCurrent = currentNode == index
-            val isFocused = focusedNode == index
             val isVisited = visitedNodes.contains(index)
 
             val nodeBg = when {
@@ -420,6 +424,7 @@ internal fun LinkedListTraversalSearchAccessVisualizationCard() {
 
     val nodeValues = LinkedListTrace.initialTraversalNodeValues
     val steps = remember(scenario) { LinkedListTrace.traversalSteps(scenario) }
+    val scenes = remember(steps, nodeValues) { LinkedListSceneBuilder.buildTraversalScenes(steps, nodeValues) }
 
     val totalSteps = steps.size
     val playback = rememberVisualizerPlaybackState(stepCount = totalSteps, initialStep = 0, key = scenario)
@@ -427,6 +432,7 @@ internal fun LinkedListTraversalSearchAccessVisualizationCard() {
     val isPlaying = playback.isPlaying
     val isCompleted = playback.isCompleted
     val currentStep = steps[stepIndex.coerceIn(0, steps.lastIndex)]
+    val currentScene = scenes.getOrNull(stepIndex)
 
     if (!autoExpand) {
         ArrayWindowButton(text = "Open search & access visualizer") { isExpanded = true }
@@ -459,12 +465,16 @@ internal fun LinkedListTraversalSearchAccessVisualizationCard() {
                 )
             },
             visualContent = {
-                LinkedListTraversalVisual(
-                    nodeValues = nodeValues,
-                    currentNode = currentStep.currentNode,
-                    focusedNode = currentStep.currentNode,
-                    visitedNodes = currentStep.visitedNodes
-                )
+                if (currentScene != null) {
+                    LinkedListSceneRenderer(scene = currentScene, modifier = Modifier.fillMaxSize())
+                } else {
+                    LinkedListTraversalVisual(
+                        nodeValues = nodeValues,
+                        currentNode = currentStep.currentNode,
+                        focusedNode = currentStep.currentNode,
+                        visitedNodes = currentStep.visitedNodes
+                    )
+                }
             },
             detailsContent = {
                 LinkedListTraversalDetails(
@@ -487,6 +497,7 @@ internal fun LinkedListInsertionVisualizationCard() {
     var isExpanded by rememberSaveable { mutableStateOf(autoExpand) }
 
     val steps = remember(scenario) { LinkedListTrace.insertionSteps(scenario) }
+    val scenes = remember(steps) { LinkedListSceneBuilder.buildInsertionScenes(steps) }
 
     val totalSteps = steps.size
     val playback = rememberVisualizerPlaybackState(stepCount = totalSteps, initialStep = 0, key = scenario)
@@ -494,6 +505,7 @@ internal fun LinkedListInsertionVisualizationCard() {
     val isPlaying = playback.isPlaying
     val isCompleted = playback.isCompleted
     val currentStep = steps[stepIndex.coerceIn(0, steps.lastIndex)]
+    val currentScene = scenes.getOrNull(stepIndex)
 
     if (!autoExpand) {
         ArrayWindowButton(text = "Open insertion visualizer") { isExpanded = true }
@@ -526,18 +538,22 @@ internal fun LinkedListInsertionVisualizationCard() {
                 )
             },
             visualContent = {
-                FitToPane(modifier = Modifier.fillMaxSize(), fitFillFraction = 0.95f, fitMaxScale = 1.1f) {
-                    LinkedListOperationDiagram(
-                        nodeOrder = currentStep.order,
-                        links = currentStep.links,
-                        headValue = currentStep.head,
-                        highlightedNodes = currentStep.highlighted,
-                        activeNode = currentStep.activeNode,
-                        detachedNodes = currentStep.detachedNodes,
-                        nodeBadges = currentStep.badges,
-                        stepKey = scenario to stepIndex,
-                        fitMode = true
-                    )
+                if (currentScene != null) {
+                    LinkedListSceneRenderer(scene = currentScene, modifier = Modifier.fillMaxSize())
+                } else {
+                    FitToPane(modifier = Modifier.fillMaxSize(), fitFillFraction = 0.95f, fitMaxScale = 1.1f) {
+                        LinkedListOperationDiagram(
+                            nodeOrder = currentStep.order,
+                            links = currentStep.links,
+                            headValue = currentStep.head,
+                            highlightedNodes = currentStep.highlighted,
+                            activeNode = currentStep.activeNode,
+                            detachedNodes = currentStep.detachedNodes,
+                            nodeBadges = currentStep.badges,
+                            stepKey = scenario to stepIndex,
+                            fitMode = true
+                        )
+                    }
                 }
             },
             detailsContent = {
@@ -560,6 +576,7 @@ internal fun LinkedListRemovalVisualizationCard() {
     var isExpanded by rememberSaveable { mutableStateOf(autoExpand) }
 
     val steps = remember(scenario) { LinkedListTrace.removalSteps(scenario) }
+    val scenes = remember(steps) { LinkedListSceneBuilder.buildRemovalScenes(steps) }
 
     val totalSteps = steps.size
     val playback = rememberVisualizerPlaybackState(stepCount = totalSteps, initialStep = 0, key = scenario)
@@ -567,6 +584,7 @@ internal fun LinkedListRemovalVisualizationCard() {
     val isPlaying = playback.isPlaying
     val isCompleted = playback.isCompleted
     val currentStep = steps[stepIndex.coerceIn(0, steps.lastIndex)]
+    val currentScene = scenes.getOrNull(stepIndex)
 
     if (!autoExpand) {
         ArrayWindowButton(text = "Open removal visualizer") { isExpanded = true }
@@ -599,18 +617,22 @@ internal fun LinkedListRemovalVisualizationCard() {
                 )
             },
             visualContent = {
-                FitToPane(modifier = Modifier.fillMaxSize(), fitFillFraction = 0.95f, fitMaxScale = 1.1f) {
-                    LinkedListOperationDiagram(
-                        nodeOrder = currentStep.order,
-                        links = currentStep.links,
-                        headValue = currentStep.head,
-                        highlightedNodes = currentStep.highlighted,
-                        activeNode = currentStep.activeNode,
-                        detachedNodes = currentStep.detachedNodes,
-                        nodeBadges = currentStep.badges,
-                        stepKey = scenario to stepIndex,
-                        fitMode = true
-                    )
+                if (currentScene != null) {
+                    LinkedListSceneRenderer(scene = currentScene, modifier = Modifier.fillMaxSize())
+                } else {
+                    FitToPane(modifier = Modifier.fillMaxSize(), fitFillFraction = 0.95f, fitMaxScale = 1.1f) {
+                        LinkedListOperationDiagram(
+                            nodeOrder = currentStep.order,
+                            links = currentStep.links,
+                            headValue = currentStep.head,
+                            highlightedNodes = currentStep.highlighted,
+                            activeNode = currentStep.activeNode,
+                            detachedNodes = currentStep.detachedNodes,
+                            nodeBadges = currentStep.badges,
+                            stepKey = scenario to stepIndex,
+                            fitMode = true
+                        )
+                    }
                 }
             },
             detailsContent = {

@@ -1145,7 +1145,8 @@ private fun hasVisualizerForLesson(lessonId: String): Boolean {
         "lesson_introduction_algo_1",
         "lesson_introduction_algo_2",
         "searching_1",
-        "sorting_1" -> false
+        "sorting_1",
+        "lesson_linked_list_5" -> false
         else -> true
     }
 }
@@ -1170,7 +1171,6 @@ private fun RenderVisualizerCardForLesson(lessonId: String, title: String) {
         "lesson_linked_list_2" -> LinkedListTraversalSearchAccessVisualizationCard()
         "lesson_linked_list_3" -> LinkedListInsertionVisualizationCard()
         "lesson_linked_list_4" -> LinkedListRemovalVisualizationCard()
-        "lesson_linked_list_5" -> LinkedListPerformanceComparisonVisualizationCard()
         "searching_2" -> LinearSearchVisualizationCard()
         "searching_3" -> BinarySearchVisualizationCard()
         "searching_4" -> SearchComparisonCard()
