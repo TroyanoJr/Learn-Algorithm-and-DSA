@@ -26,6 +26,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -290,6 +291,7 @@ fun BottomNavItem(
         verticalArrangement = Arrangement.Center,
         modifier = Modifier
             .heightIn(min = AppTouchTarget.minimum)
+            .clip(RoundedCornerShape(12.dp))
             .clickable(onClick = onClick)
             .padding(horizontal = AppSpacing.medium, vertical = AppSpacing.extraSmall)
     ) {
@@ -299,7 +301,7 @@ fun BottomNavItem(
             tint = if (isSelected) OrangeAccent else TextSecondary,
             modifier = Modifier.size(AppIconSize.medium)
         )
-        Spacer(modifier = Modifier.size(2.dp))
+        Spacer(modifier = Modifier.height(2.dp))
         Text(
             text = text,
             color = if (isSelected) OrangeAccent else TextSecondary,

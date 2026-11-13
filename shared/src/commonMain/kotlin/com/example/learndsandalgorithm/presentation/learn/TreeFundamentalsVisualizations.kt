@@ -13,6 +13,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -45,6 +46,15 @@ internal fun TreeFundamentalsVisualizationCard(
     val isPlaying = playback.isPlaying
     val isCompleted = playback.isCompleted
     val step = steps[stepIndex]
+
+    val fundamentalsScenes = remember {
+        val s = TreeFundamentalsTrace.stepsForFundamentals()
+        if (s.isNotEmpty()) {
+            TreeFundamentalsSceneBuilder.buildFundamentalsScenes(s)
+        } else {
+            emptyList()
+        }
+    }
 
     if (!autoExpand) {
         ArrayWindowButton(text = "Open tree terminology visualizer") {
@@ -86,8 +96,16 @@ internal fun TreeFundamentalsVisualizationCard(
                 isExpanded = false
             },
             visualContent = {
-                FitToPane(modifier = Modifier.fillMaxSize()) {
-                    TreeFundamentalsVisualizationContent(step = step, scale = 1f)
+                val currentScene = if (stepIndex in fundamentalsScenes.indices) fundamentalsScenes[stepIndex] else null
+                if (currentScene != null) {
+                    TreeSceneRenderer(
+                        scene = currentScene,
+                        modifier = Modifier.fillMaxSize()
+                    )
+                } else {
+                    FitToPane(modifier = Modifier.fillMaxSize()) {
+                        TreeFundamentalsVisualizationContent(step = step, scale = 1f)
+                    }
                 }
             },
             detailsContent = {
@@ -150,82 +168,6 @@ private fun TreeFundamentalsVisualizationContent(step: TreeFundamentalsTraceStep
                 }
             }
         }
-
-        // Tree Diagram Layout
-        Surface(
-            color = Color(0xFF13131C),
-            shape = RoundedCornerShape(10.dp),
-            border = BorderStroke(1.dp, CardBorderColor),
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Column(
-                modifier = Modifier.padding(12.dp * scale).fillMaxWidth(),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(4.dp * scale)
-            ) {
-                // Level 0: Root "A"
-                TreeNodeCircle(
-                    value = "A",
-                    isHighlighted = "A" in step.highlightedNodeIds,
-                    badgeLabel = "Root (d=0, h=2)"
-                )
-
-                TreeBranchConnector(label = "↙     ↓     ↘")
-
-                // Level 1: "B", "C", "D"
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceEvenly
-                ) {
-                    TreeNodeCircle(
-                        value = "B",
-                        isHighlighted = "B" in step.highlightedNodeIds,
-                        badgeLabel = "B (d=1, h=1)"
-                    )
-                    TreeNodeCircle(
-                        value = "C",
-                        isHighlighted = "C" in step.highlightedNodeIds,
-                        badgeLabel = "C (d=1, h=1)"
-                    )
-                    TreeNodeCircle(
-                        value = "D",
-                        isHighlighted = "D" in step.highlightedNodeIds,
-                        badgeLabel = "D (Leaf)"
-                    )
-                }
-
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceEvenly
-                ) {
-                    TreeBranchConnector(label = "↙   ↘")
-                    TreeBranchConnector(label = "↓")
-                    Text(" ", fontSize = 10.sp)
-                }
-
-                // Level 2: "E", "F", "G"
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceEvenly
-                ) {
-                    TreeNodeCircle(
-                        value = "E",
-                        isHighlighted = "E" in step.highlightedNodeIds,
-                        badgeLabel = "E (Leaf)"
-                    )
-                    TreeNodeCircle(
-                        value = "F",
-                        isHighlighted = "F" in step.highlightedNodeIds,
-                        badgeLabel = "F (Leaf)"
-                    )
-                    TreeNodeCircle(
-                        value = "G",
-                        isHighlighted = "G" in step.highlightedNodeIds,
-                        badgeLabel = "G (Leaf, d=2)"
-                    )
-                }
-            }
-        }
     }
 }
 
@@ -237,28 +179,51 @@ private fun TreeFundamentalsDetailsAndStepsContent(
     scale: Float
 ) {
     Column(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier.fillMaxWidth().padding(horizontal = 2.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp * scale)
     ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
+        Surface(
+            color = Color(0xFF161622),
+            shape = RoundedCornerShape(12.dp),
+            modifier = Modifier.fillMaxWidth()
         ) {
-            Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                Text("CURRENT CONCEPT", color = TextSecondary, fontSize = 9.sp, fontWeight = FontWeight.Bold)
+            Column(
+                modifier = Modifier.padding(12.dp),
+                verticalArrangement = Arrangement.spacedBy(6.dp)
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text("CURRENT CONCEPT", color = TextSecondary, fontSize = 9.sp, fontWeight = FontWeight.Bold)
+                    Surface(
+                        color = Color(0xFF22222E),
+                        shape = RoundedCornerShape(6.dp),
+                        border = BorderStroke(1.dp, CardBorderColor)
+                    ) {
+                        Text(
+                            text = "Tree Measurements: Depth & Height",
+                            color = GreenAccent,
+                            fontSize = 9.sp,
+                            fontWeight = FontWeight.Bold,
+                            modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                        )
+                    }
+                }
+
                 Text(
-                    step.badgeText,
+                    text = step.badgeText,
                     color = when (step.concept) {
                         TreeConcept.ROOT, TreeConcept.SUBTREE -> OrangeAccent
                         TreeConcept.LEAVES, TreeConcept.DEPTH_AND_HEIGHT -> GreenAccent
                         else -> BlueAccent
                     },
-                    fontSize = 15.sp,
-                    fontWeight = FontWeight.Bold
+                    fontSize = 13.sp,
+                    fontWeight = FontWeight.Bold,
+                    lineHeight = 18.sp
                 )
             }
-            Text("Tree Measurements: Depth & Height", color = GreenAccent, fontSize = 10.sp, fontWeight = FontWeight.Bold)
         }
 
         StepsCard(

@@ -13,6 +13,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -31,9 +32,11 @@ private val TextSecondary = Color(0xFF9CA3AF)
 
 @Composable
 internal fun HeapInsertSiftUpVisualizationCard(
-    title: String = "Heap Insertion and Sift Up"
+    title: String = "Heap Insertion and Sift Up",
+    useSceneArchitecture: Boolean = true
 ) {
-    val steps = HeapInsertSiftUpTrace.stepsForInsert()
+    val steps = remember { HeapInsertSiftUpTrace.stepsForInsert() }
+    val scenes = remember(steps) { HeapSceneBuilder.buildInsertScenes(steps) }
     val autoExpand = LocalAutoExpandVisualizer.current
     var isExpanded by rememberSaveable { mutableStateOf(autoExpand) }
 
@@ -45,6 +48,7 @@ internal fun HeapInsertSiftUpVisualizationCard(
     val isPlaying = playback.isPlaying
     val isCompleted = playback.isCompleted
     val step = steps[stepIndex]
+    val currentScene = if (scenes.isNotEmpty() && stepIndex in scenes.indices) scenes[stepIndex] else null
 
     if (!autoExpand) {
         ArrayWindowButton(text = "Open heap insertion visualizer") {
@@ -85,8 +89,15 @@ internal fun HeapInsertSiftUpVisualizationCard(
                 isExpanded = false
             },
             visualContent = {
-                FitToPane(modifier = Modifier.fillMaxSize()) {
-                    HeapInsertSiftUpVisualizationContent(step = step, scale = 1f)
+                if (useSceneArchitecture && currentScene != null) {
+                    HeapSceneRenderer(
+                        scene = currentScene,
+                        modifier = Modifier.fillMaxSize()
+                    )
+                } else {
+                    FitToPane(modifier = Modifier.fillMaxSize()) {
+                        HeapInsertSiftUpVisualizationContent(step = step, scale = 1f)
+                    }
                 }
             },
             detailsContent = {

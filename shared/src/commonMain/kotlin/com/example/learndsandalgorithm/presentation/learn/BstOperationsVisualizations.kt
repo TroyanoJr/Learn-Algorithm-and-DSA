@@ -16,6 +16,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -51,6 +52,15 @@ internal fun BstOperationsVisualizationCard(
     val isPlaying = playback.isPlaying
     val isCompleted = playback.isCompleted
     val step = steps[stepIndex]
+
+    val bstOpScenes = remember(selectedOp) {
+        val s = BstOperationsTrace.stepsForOperation(selectedOp)
+        if (s.isNotEmpty()) {
+            BstSceneBuilder.buildBstOperationsScenes(s)
+        } else {
+            emptyList()
+        }
+    }
 
     if (!autoExpand) {
         ArrayWindowButton(text = "Open BST operations visualizer") {
@@ -102,8 +112,16 @@ internal fun BstOperationsVisualizationCard(
                 )
             },
             visualContent = {
-                FitToPane(modifier = Modifier.fillMaxSize()) {
-                    BstOperationsVisualizationContent(step = step, scale = 1f)
+                val currentScene = if (stepIndex in bstOpScenes.indices) bstOpScenes[stepIndex] else null
+                if (currentScene != null) {
+                    TreeSceneRenderer(
+                        scene = currentScene,
+                        modifier = Modifier.fillMaxSize()
+                    )
+                } else {
+                    FitToPane(modifier = Modifier.fillMaxSize()) {
+                        BstOperationsVisualizationContent(step = step, scale = 1f)
+                    }
                 }
             },
             detailsContent = {
@@ -208,37 +226,6 @@ private fun BstOperationsVisualizationContent(step: BstOperationsTraceStep, scal
                 }
             }
         }
-
-        // Tree Render Box
-        Surface(
-            color = Color(0xFF13131C),
-            shape = RoundedCornerShape(10.dp),
-            border = BorderStroke(1.dp, CardBorderColor),
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Column(
-                modifier = Modifier.padding(10.dp * scale).fillMaxWidth(),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(4.dp * scale)
-            ) {
-                step.nodes.chunked(3).forEach { rowNodes ->
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceEvenly
-                    ) {
-                        rowNodes.forEach { node ->
-                            val isInspected = node.id == step.inspectedNodeId
-                            TreeNodeCircle(
-                                value = "${node.value}",
-                                isHighlighted = isInspected || node.isHighlighted,
-                                isVisited = node.isSuccessor,
-                                badgeLabel = if (node.isSuccessor) "Successor" else null
-                            )
-                        }
-                    }
-                }
-            }
-        }
     }
 }
 
@@ -250,28 +237,51 @@ private fun BstOperationsDetailsAndStepsContent(
     scale: Float
 ) {
     Column(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier.fillMaxWidth().padding(horizontal = 2.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp * scale)
     ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
+        Surface(
+            color = Color(0xFF161622),
+            shape = RoundedCornerShape(12.dp),
+            modifier = Modifier.fillMaxWidth()
         ) {
-            Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                Text("CURRENT OPERATION STEP", color = TextSecondary, fontSize = 9.sp, fontWeight = FontWeight.Bold)
+            Column(
+                modifier = Modifier.padding(12.dp),
+                verticalArrangement = Arrangement.spacedBy(6.dp)
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text("CURRENT OPERATION STEP", color = TextSecondary, fontSize = 9.sp, fontWeight = FontWeight.Bold)
+                    Surface(
+                        color = Color(0xFF22222E),
+                        shape = RoundedCornerShape(6.dp),
+                        border = BorderStroke(1.dp, CardBorderColor)
+                    ) {
+                        Text(
+                            text = "Balanced: O(log N) | Skewed: O(N)",
+                            color = GreenAccent,
+                            fontSize = 9.sp,
+                            fontWeight = FontWeight.Bold,
+                            modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                        )
+                    }
+                }
+
                 Text(
-                    step.badgeText,
+                    text = step.badgeText,
                     color = when (step.opType) {
                         BstOpType.SEARCH -> BlueAccent
                         BstOpType.INSERT -> OrangeAccent
                         else -> RedAccent
                     },
-                    fontSize = 15.sp,
-                    fontWeight = FontWeight.Bold
+                    fontSize = 13.sp,
+                    fontWeight = FontWeight.Bold,
+                    lineHeight = 18.sp
                 )
             }
-            Text("Balanced: O(log N) | Skewed: O(N)", color = GreenAccent, fontSize = 10.sp, fontWeight = FontWeight.Bold)
         }
 
         StepsCard(

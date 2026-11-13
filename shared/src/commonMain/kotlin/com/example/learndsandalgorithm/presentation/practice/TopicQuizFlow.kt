@@ -1014,7 +1014,7 @@ private fun QuizResultScreen(
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
-                        text = "Review Answers 🔍",
+                        text = "Review Answers",
                         color = Color(0xFF111115),
                         style = AppTypography.cardTitle
                     )

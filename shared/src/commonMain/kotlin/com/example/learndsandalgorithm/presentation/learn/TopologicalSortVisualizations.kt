@@ -2,8 +2,9 @@ package com.example.learndsandalgorithm.presentation.learn
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -14,6 +15,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -34,7 +36,8 @@ private val TextSecondary = Color(0xFF9CA3AF)
 internal fun TopologicalSortVisualizationCard(
     title: String = "Topological Sorting"
 ) {
-    val steps = TopologicalSortTrace.stepsForTopoSort()
+    val steps = remember { TopologicalSortTrace.stepsForTopoSort() }
+    val scenes = remember(steps) { GraphSceneBuilder.buildTopologicalSortScenes(steps) }
     val autoExpand = LocalAutoExpandVisualizer.current
     var isExpanded by rememberSaveable { mutableStateOf(autoExpand) }
 
@@ -46,6 +49,7 @@ internal fun TopologicalSortVisualizationCard(
     val isPlaying = playback.isPlaying
     val isCompleted = playback.isCompleted
     val step = steps[stepIndex]
+    val scene = scenes[stepIndex]
 
     if (!autoExpand) {
         ArrayWindowButton(text = "Open topological sort visualizer") {
@@ -74,6 +78,7 @@ internal fun TopologicalSortVisualizationCard(
             stepCount = steps.size,
             isPlaying = isPlaying,
             layoutMode = VisualizerLayoutMode.FULL_WIDTH,
+            fullWidthVisualWeight = 1.22f,
             statusColor = statusColor,
             onReset = { playback.reset() },
             onPrevious = { playback.previous() },
@@ -84,9 +89,11 @@ internal fun TopologicalSortVisualizationCard(
                 isExpanded = false
             },
             visualContent = {
-                FitToPane(modifier = Modifier.fillMaxSize()) {
-                    TopologicalSortVisualizationContent(step = step, scale = 1f)
-                }
+                GraphSceneRenderer(
+                    scene = scene,
+                    nodeClearanceDp = 36f,
+                    modifier = Modifier.fillMaxSize()
+                )
             },
             detailsContent = {
                 TopologicalSortDetailsAndStepsContent(
@@ -100,13 +107,72 @@ internal fun TopologicalSortVisualizationCard(
     }
 }
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
-private fun TopologicalSortVisualizationContent(step: TopologicalSortTraceStep, scale: Float) {
+private fun TopologicalSortDetailsAndStepsContent(
+    step: TopologicalSortTraceStep,
+    stepIndex: Int,
+    totalSteps: Int,
+    scale: Float
+) {
     Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(8.dp * scale),
-        modifier = Modifier.padding(horizontal = 8.dp)
+        modifier = Modifier.fillMaxWidth(),
+        verticalArrangement = Arrangement.spacedBy(5.dp * scale)
     ) {
+        // Current Step Header + Explanation Card
+        Surface(
+            color = Color(0xFF161622),
+            shape = RoundedCornerShape(8.dp),
+            border = BorderStroke(1.dp, CardBorderColor),
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Column(
+                modifier = Modifier.padding(horizontal = 8.dp * scale, vertical = 6.dp * scale),
+                verticalArrangement = Arrangement.spacedBy(3.dp * scale)
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text("CURRENT STEP", color = TextSecondary, fontSize = 8.sp, fontWeight = FontWeight.Bold)
+                    Text(
+                        "STEP ${stepIndex + 1} / $totalSteps",
+                        color = if (stepIndex == totalSteps - 1) GreenAccent else OrangeAccent,
+                        fontSize = 9.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+                Column(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalArrangement = Arrangement.spacedBy(2.dp * scale)
+                ) {
+                    Text(
+                        text = step.badgeText,
+                        color = when (step.event) {
+                            TopoSortEvent.TOPO_COMPLETE -> GreenAccent
+                            TopoSortEvent.DEQUEUE_ZERO_INDEGREE -> OrangeAccent
+                            else -> BlueAccent
+                        },
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Text(
+                        text = "Kahn's Cost: O(V + E) Time",
+                        color = GreenAccent,
+                        fontSize = 8.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+                Text(
+                    text = step.explanation,
+                    color = Color(0xFFFFFFFF),
+                    fontSize = 9.5.sp,
+                    lineHeight = 12.sp
+                )
+            }
+        }
+
         // Zero In-Degree Queue Row Component
         GraphQueueRow(
             title = "ZERO IN-DEGREE READY QUEUE:",
@@ -117,15 +183,15 @@ private fun TopologicalSortVisualizationContent(step: TopologicalSortTraceStep, 
         // In-Degrees Table
         Surface(
             color = Color(0xFF13131C),
-            shape = RoundedCornerShape(10.dp),
+            shape = RoundedCornerShape(8.dp),
             border = BorderStroke(1.dp, CardBorderColor),
             modifier = Modifier.fillMaxWidth()
         ) {
             Column(
-                modifier = Modifier.padding(8.dp * scale),
-                verticalArrangement = Arrangement.spacedBy(4.dp * scale)
+                modifier = Modifier.padding(5.dp * scale),
+                verticalArrangement = Arrangement.spacedBy(3.dp * scale)
             ) {
-                Text("CURRENT IN-DEGREES:", color = OrangeAccent, fontSize = 10.sp, fontWeight = FontWeight.Bold)
+                Text("CURRENT IN-DEGREES:", color = OrangeAccent, fontSize = 8.sp, fontWeight = FontWeight.Bold)
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceEvenly
@@ -134,16 +200,16 @@ private fun TopologicalSortVisualizationContent(step: TopologicalSortTraceStep, 
                         val isZero = degVal == 0
                         Surface(
                             color = if (isZero) Color(0xFF123820) else Color(0xFF181824),
-                            shape = RoundedCornerShape(6.dp),
+                            shape = RoundedCornerShape(4.dp),
                             border = BorderStroke(1.dp, if (isZero) GreenAccent else CardBorderColor),
-                            modifier = Modifier.weight(1f).padding(horizontal = 2.dp * scale)
+                            modifier = Modifier.weight(1f).padding(horizontal = 1.dp * scale)
                         ) {
                             Column(
-                                modifier = Modifier.padding(4.dp * scale),
+                                modifier = Modifier.padding(2.5.dp * scale),
                                 horizontalAlignment = Alignment.CenterHorizontally
                             ) {
-                                Text(v, color = TextPrimary, fontSize = 11.sp, fontWeight = FontWeight.Bold)
-                                Text("in: $degVal", color = if (isZero) GreenAccent else TextSecondary, fontSize = 9.sp, fontWeight = FontWeight.Bold)
+                                Text(v, color = TextPrimary, fontSize = 10.sp, fontWeight = FontWeight.Bold)
+                                Text("in: $degVal", color = if (isZero) GreenAccent else TextSecondary, fontSize = 8.sp, fontWeight = FontWeight.Bold)
                             }
                         }
                     }
@@ -151,82 +217,44 @@ private fun TopologicalSortVisualizationContent(step: TopologicalSortTraceStep, 
             }
         }
 
-        // Topo Order Output Card
+        // Topo Order Output Card (with FlowRow and descriptive label & empty-state text)
         Surface(
             color = Color(0xFF13131C),
-            shape = RoundedCornerShape(10.dp),
+            shape = RoundedCornerShape(8.dp),
             border = BorderStroke(1.dp, CardBorderColor),
             modifier = Modifier.fillMaxWidth()
         ) {
             Column(
-                modifier = Modifier.padding(8.dp * scale),
-                verticalArrangement = Arrangement.spacedBy(4.dp * scale)
+                modifier = Modifier.padding(horizontal = 8.dp * scale, vertical = 5.dp * scale),
+                verticalArrangement = Arrangement.spacedBy(3.dp * scale)
             ) {
-                Text("TOPOLOGICAL SCHEDULE ORDER (DAG):", color = GreenAccent, fontSize = 10.sp, fontWeight = FontWeight.Bold)
+                Text("TOPOLOGICAL SCHEDULE ORDER (DAG):", color = GreenAccent, fontSize = 8.sp, fontWeight = FontWeight.Bold)
                 if (step.topoOrder.isEmpty()) {
-                    Text("No vertices scheduled yet", color = TextSecondary, fontSize = 10.sp)
+                    Text("No vertices scheduled yet", color = TextSecondary, fontSize = 8.sp)
                 } else {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.Start
+                    FlowRow(
+                        horizontalArrangement = Arrangement.spacedBy(3.dp * scale),
+                        verticalArrangement = Arrangement.spacedBy(3.dp * scale),
+                        modifier = Modifier.fillMaxWidth()
                     ) {
                         step.topoOrder.forEach { v ->
                             Surface(
                                 color = Color(0xFF123820),
-                                shape = RoundedCornerShape(6.dp),
-                                border = BorderStroke(1.dp, GreenAccent),
-                                modifier = Modifier.padding(end = 4.dp * scale)
+                                shape = RoundedCornerShape(4.dp),
+                                border = BorderStroke(1.dp, GreenAccent)
                             ) {
-                                Box(contentAlignment = Alignment.Center, modifier = Modifier.padding(horizontal = 10.dp * scale, vertical = 4.dp * scale)) {
-                                    Text(v, color = GreenAccent, fontSize = 11.sp, fontWeight = FontWeight.Bold)
-                                }
+                                Text(
+                                    v,
+                                    color = GreenAccent,
+                                    fontSize = 9.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    modifier = Modifier.padding(horizontal = 5.dp * scale, vertical = 2.dp * scale)
+                                )
                             }
                         }
                     }
                 }
             }
         }
-    }
-}
-
-@Composable
-private fun TopologicalSortDetailsAndStepsContent(
-    step: TopologicalSortTraceStep,
-    stepIndex: Int,
-    totalSteps: Int,
-    scale: Float
-) {
-    Column(
-        modifier = Modifier.fillMaxWidth(),
-        verticalArrangement = Arrangement.spacedBy(8.dp * scale)
-    ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                Text("CURRENT STEP", color = TextSecondary, fontSize = 9.sp, fontWeight = FontWeight.Bold)
-                Text(
-                    step.badgeText,
-                    color = when (step.event) {
-                        TopoSortEvent.TOPO_COMPLETE -> GreenAccent
-                        TopoSortEvent.DEQUEUE_ZERO_INDEGREE -> OrangeAccent
-                        else -> BlueAccent
-                    },
-                    fontSize = 15.sp,
-                    fontWeight = FontWeight.Bold
-                )
-            }
-            Text("Kahn's Cost: O(V + E) Time", color = GreenAccent, fontSize = 10.sp, fontWeight = FontWeight.Bold)
-        }
-
-        StepsCard(
-            label = "Steps",
-            explanation = step.explanation,
-            stepIndex = stepIndex,
-            totalSteps = totalSteps,
-            isCompleted = stepIndex == totalSteps - 1
-        )
     }
 }

@@ -16,6 +16,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -51,6 +52,15 @@ internal fun BinaryTreeBstVisualizationCard(
     val isPlaying = playback.isPlaying
     val isCompleted = playback.isCompleted
     val step = steps[stepIndex]
+
+    val bstScenes = remember(selectedScenario) {
+        val s = BinaryTreeBstTrace.stepsForScenario(selectedScenario)
+        if (s.isNotEmpty()) {
+            BstSceneBuilder.buildBstComparisonScenes(s)
+        } else {
+            emptyList()
+        }
+    }
 
     if (!autoExpand) {
         ArrayWindowButton(text = "Open binary tree vs BST visualizer") {
@@ -100,8 +110,16 @@ internal fun BinaryTreeBstVisualizationCard(
                 )
             },
             visualContent = {
-                FitToPane(modifier = Modifier.fillMaxSize()) {
-                    BinaryTreeBstVisualizationContent(step = step, scale = 1f)
+                val currentScene = if (stepIndex in bstScenes.indices) bstScenes[stepIndex] else null
+                if (currentScene != null) {
+                    TreeSceneRenderer(
+                        scene = currentScene,
+                        modifier = Modifier.fillMaxSize()
+                    )
+                } else {
+                    FitToPane(modifier = Modifier.fillMaxSize()) {
+                        BinaryTreeBstVisualizationContent(step = step, scale = 1f)
+                    }
                 }
             },
             detailsContent = {
@@ -209,82 +227,6 @@ private fun BinaryTreeBstVisualizationContent(step: BinaryTreeBstTraceStep, scal
                 }
             }
         }
-
-        // Tree Visual Layout
-        Surface(
-            color = Color(0xFF13131C),
-            shape = RoundedCornerShape(10.dp),
-            border = BorderStroke(1.dp, CardBorderColor),
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Column(
-                modifier = Modifier.padding(10.dp * scale).fillMaxWidth(),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(4.dp * scale)
-            ) {
-                if (step.scenario == BstComparisonScenario.BALANCED_VS_SKEWED) {
-                    // Skewed Tree Display (1 -> 2 -> 3 -> 4 -> 5)
-                    Text("SKEWED BINARY TREE (SORTED INPUT 1,2,3,4,5):", color = OrangeAccent, fontSize = 10.sp, fontWeight = FontWeight.Bold)
-                    step.nodes.forEach { node ->
-                        TreeNodeCircle(
-                            value = "${node.value}",
-                            isHighlighted = node.id == step.inspectedNodeId,
-                            badgeLabel = if (node.rightId != null) "↘ right" else "leaf"
-                        )
-                    }
-                } else {
-                    // Tree Layout for Valid / Invalid BST
-                    val root = step.nodes.firstOrNull { it.id == "N5" }
-                    if (root != null) {
-                        TreeNodeCircle(
-                            value = "${root.value}",
-                            isHighlighted = root.id == step.inspectedNodeId,
-                            badgeLabel = "Root 5"
-                        )
-                        TreeBranchConnector(label = "↙     ↘")
-
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceEvenly
-                        ) {
-                            val n3 = step.nodes.firstOrNull { it.id == "N3" }
-                            val n7 = step.nodes.firstOrNull { it.id == "N7" }
-                            if (n3 != null) {
-                                TreeNodeCircle(
-                                    value = "${n3.value}",
-                                    isHighlighted = n3.id == step.inspectedNodeId,
-                                    badgeLabel = "< 5"
-                                )
-                            }
-                            if (n7 != null) {
-                                TreeNodeCircle(
-                                    value = "${n7.value}",
-                                    isHighlighted = n7.id == step.inspectedNodeId,
-                                    badgeLabel = "> 5"
-                                )
-                            }
-                        }
-
-                        TreeBranchConnector(label = "↙   ↘     ↙   ↘")
-
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceEvenly
-                        ) {
-                            val n2 = step.nodes.firstOrNull { it.id == "N2" }
-                            val n4 = step.nodes.firstOrNull { it.id == "N4" || it.id == "N4_bad" }
-                            val n6 = step.nodes.firstOrNull { it.id == "N6" }
-                            val n8 = step.nodes.firstOrNull { it.id == "N8" }
-
-                            if (n2 != null) TreeNodeCircle("${n2.value}", isHighlighted = n2.id == step.inspectedNodeId)
-                            if (n4 != null) TreeNodeCircle("${n4.value}", isHighlighted = n4.id == step.inspectedNodeId, isViolation = n4.isViolation)
-                            if (n6 != null) TreeNodeCircle("${n6.value}", isHighlighted = n6.id == step.inspectedNodeId)
-                            if (n8 != null) TreeNodeCircle("${n8.value}", isHighlighted = n8.id == step.inspectedNodeId)
-                        }
-                    }
-                }
-            }
-        }
     }
 }
 
@@ -296,24 +238,47 @@ private fun BinaryTreeBstDetailsAndStepsContent(
     scale: Float
 ) {
     Column(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier.fillMaxWidth().padding(horizontal = 2.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp * scale)
     ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
+        Surface(
+            color = Color(0xFF161622),
+            shape = RoundedCornerShape(12.dp),
+            modifier = Modifier.fillMaxWidth()
         ) {
-            Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                Text("CURRENT CHECK", color = TextSecondary, fontSize = 9.sp, fontWeight = FontWeight.Bold)
+            Column(
+                modifier = Modifier.padding(12.dp),
+                verticalArrangement = Arrangement.spacedBy(6.dp)
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text("CURRENT CHECK", color = TextSecondary, fontSize = 9.sp, fontWeight = FontWeight.Bold)
+                    Surface(
+                        color = Color(0xFF22222E),
+                        shape = RoundedCornerShape(6.dp),
+                        border = BorderStroke(1.dp, CardBorderColor)
+                    ) {
+                        Text(
+                            text = "BST Invariant Rule",
+                            color = GreenAccent,
+                            fontSize = 9.sp,
+                            fontWeight = FontWeight.Bold,
+                            modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                        )
+                    }
+                }
+
                 Text(
-                    step.badgeText,
+                    text = step.badgeText,
                     color = if (!step.isValidBst) RedAccent else GreenAccent,
-                    fontSize = 15.sp,
-                    fontWeight = FontWeight.Bold
+                    fontSize = 13.sp,
+                    fontWeight = FontWeight.Bold,
+                    lineHeight = 18.sp
                 )
             }
-            Text("BST Invariant Rule", color = GreenAccent, fontSize = 10.sp, fontWeight = FontWeight.Bold)
         }
 
         StepsCard(

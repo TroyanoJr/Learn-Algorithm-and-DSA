@@ -13,6 +13,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -31,9 +32,11 @@ private val TextSecondary = Color(0xFF9CA3AF)
 
 @Composable
 internal fun HeapBuildVisualizationCard(
-    title: String = "Building a Heap"
+    title: String = "Building a Heap",
+    useSceneArchitecture: Boolean = true
 ) {
     val steps = HeapBuildTrace.stepsForBuild()
+    val scenes = remember(steps) { HeapSceneBuilder.buildScenes(steps) }
     val autoExpand = LocalAutoExpandVisualizer.current
     var isExpanded by rememberSaveable { mutableStateOf(autoExpand) }
 
@@ -45,6 +48,7 @@ internal fun HeapBuildVisualizationCard(
     val isPlaying = playback.isPlaying
     val isCompleted = playback.isCompleted
     val step = steps[stepIndex]
+    val currentScene = if (scenes.isNotEmpty() && stepIndex in scenes.indices) scenes[stepIndex] else null
 
     if (!autoExpand) {
         ArrayWindowButton(text = "Open build heap visualizer") {
@@ -86,8 +90,15 @@ internal fun HeapBuildVisualizationCard(
                 isExpanded = false
             },
             visualContent = {
-                FitToPane(modifier = Modifier.fillMaxSize()) {
-                    HeapBuildVisualizationContent(step = step, scale = 1f)
+                if (useSceneArchitecture && currentScene != null) {
+                    HeapSceneRenderer(
+                        scene = currentScene,
+                        modifier = Modifier.fillMaxSize()
+                    )
+                } else {
+                    FitToPane(modifier = Modifier.fillMaxSize()) {
+                        HeapBuildVisualizationContent(step = step, scale = 1f)
+                    }
                 }
             },
             detailsContent = {
@@ -236,28 +247,51 @@ private fun HeapBuildDetailsAndStepsContent(
     scale: Float
 ) {
     Column(
-        modifier = Modifier.fillMaxWidth(),
-        verticalArrangement = Arrangement.spacedBy(8.dp * scale)
+        modifier = Modifier.fillMaxWidth().padding(horizontal = 2.dp),
+        verticalArrangement = Arrangement.spacedBy(10.dp * scale)
     ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
+        Surface(
+            color = Color(0xFF161622),
+            shape = RoundedCornerShape(12.dp),
+            modifier = Modifier.fillMaxWidth()
         ) {
-            Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                Text("CURRENT STEP", color = TextSecondary, fontSize = 9.sp, fontWeight = FontWeight.Bold)
+            Column(
+                modifier = Modifier.padding(12.dp),
+                verticalArrangement = Arrangement.spacedBy(6.dp)
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text("CURRENT OPERATION", color = TextSecondary, fontSize = 9.sp, fontWeight = FontWeight.Bold)
+                    Surface(
+                        color = Color(0xFF22222E),
+                        shape = RoundedCornerShape(6.dp),
+                        border = BorderStroke(1.dp, CardBorderColor)
+                    ) {
+                        Text(
+                            text = "Complexity: O(N) Linear Time",
+                            color = GreenAccent,
+                            fontSize = 9.sp,
+                            fontWeight = FontWeight.Bold,
+                            modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                        )
+                    }
+                }
+
                 Text(
-                    step.badgeText,
+                    text = step.badgeText,
                     color = when (step.event) {
                         BuildHeapEvent.BUILD_COMPLETE -> GreenAccent
                         BuildHeapEvent.SWAP_DOWN, BuildHeapEvent.START_INDEX_SIFT -> OrangeAccent
                         else -> BlueAccent
                     },
-                    fontSize = 15.sp,
-                    fontWeight = FontWeight.Bold
+                    fontSize = 13.sp,
+                    fontWeight = FontWeight.Bold,
+                    lineHeight = 18.sp
                 )
             }
-            Text("Build Cost: O(N) Linear Time", color = GreenAccent, fontSize = 10.sp, fontWeight = FontWeight.Bold)
         }
 
         StepsCard(

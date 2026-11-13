@@ -24,6 +24,7 @@ import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -42,11 +43,18 @@ internal enum class VisualizerLayoutMode {
     SPLIT_VIEW,
 
     /**
-     * Disposición a ancho completo (Landscape): La visualización ocupa el 100% del ancho horizontal disponible,
-     * situando el panel de pasos/explicación inmediatamente debajo.
-     * Utilizado para arreglos horizontales extensos como Searching, Sorting y Arrays.
+     * Presupuesto de pantalla "visual con toda la altura" (Landscape): la visualización ocupa la columna
+     * izquierda (~62 % del ancho) con TODA la altura útil entre la cabecera y la barra de reproducción;
+     * el panel de pasos/explicación va en la columna derecha. El nombre FULL_WIDTH es histórico:
+     * lo escaso en un móvil horizontal es la altura, no el ancho.
      */
-    FULL_WIDTH
+    FULL_WIDTH,
+
+    /**
+     * Disposición apilada (Landscape): visualización arriba (peso 1.8) y detalles abajo (peso 1).
+     * Es el comportamiento ANTERIOR de FULL_WIDTH. Solo para visualizadores muy anchos y bajos.
+     */
+    STACKED
 }
 
 /**
@@ -111,6 +119,7 @@ internal fun VisualizerModal(
     onNext: () -> Unit,
     onClose: () -> Unit,
     layoutMode: VisualizerLayoutMode = VisualizerLayoutMode.SPLIT_VIEW,
+    fullWidthVisualWeight: Float? = null,
     fitUnboundedWidth: Boolean = false,
     fitMaxScale: Float = 1.25f,
     fitFillFraction: Float = 1.0f,
@@ -129,18 +138,26 @@ internal fun VisualizerModal(
         LandscapeOrientationEffect(enabled = true)
         BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
             val isLandscape = maxWidth > maxHeight
+            val isShortLandscape = isLandscape && maxHeight < 360.dp
+            val isWideWindow = maxWidth > 900.dp
+
+            val verticalPadding = if (isShortLandscape) 4.dp else 8.dp
+            val horizontalPadding = if (isShortLandscape) 12.dp else 14.dp
+            val headerSpacing = if (isShortLandscape) 2.dp else 4.dp
+            val spacerHeight = if (isShortLandscape) 2.dp else 4.dp
+
             Surface(
                 color = VisualizerDarkCardBgColor,
                 modifier = Modifier.fillMaxSize()
             ) {
                 Column(
-                    modifier = Modifier.fillMaxSize().padding(horizontal = 14.dp, vertical = 8.dp),
+                    modifier = Modifier.fillMaxSize().padding(horizontal = horizontalPadding, vertical = verticalPadding),
                     verticalArrangement = Arrangement.SpaceBetween
                 ) {
                     // REGION A: Top Bar & Scenarios Header Row
                     Column(
                         modifier = Modifier.fillMaxWidth(),
-                        verticalArrangement = Arrangement.spacedBy(4.dp)
+                        verticalArrangement = Arrangement.spacedBy(headerSpacing)
                     ) {
                         Row(
                             modifier = Modifier.fillMaxWidth(),
@@ -155,13 +172,17 @@ internal fun VisualizerModal(
                                     text = title.uppercase(),
                                     color = VisualizerOrangeAccent,
                                     fontSize = 12.sp,
-                                    fontWeight = FontWeight.Bold
+                                    fontWeight = FontWeight.Bold,
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis
                                 )
                                 Text(
                                     text = statusText,
                                     color = statusColor,
                                     fontSize = 12.sp,
-                                    fontWeight = FontWeight.Bold
+                                    fontWeight = FontWeight.Bold,
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis
                                 )
                             }
                             ArrayWindowButton(text = "Close", icon = "✕", onClick = combinedClose)
@@ -171,7 +192,7 @@ internal fun VisualizerModal(
                         topContent?.invoke()
                     }
 
-                    Spacer(modifier = Modifier.height(4.dp))
+                    Spacer(modifier = Modifier.height(spacerHeight))
 
                     // REGION B & C: Central Area
                     if (isLandscape) {
@@ -184,7 +205,7 @@ internal fun VisualizerModal(
                                 ) {
                                     // REGION B: Visual Content
                                     Box(
-                                        modifier = Modifier.weight(1.3f).fillMaxHeight(),
+                                        modifier = Modifier.weight(if (isWideWindow) 2.0f else 1.3f).fillMaxHeight(),
                                         contentAlignment = Alignment.Center
                                     ) {
                                         visualContent()
@@ -192,16 +213,39 @@ internal fun VisualizerModal(
                                     // REGION C: Explanation / Details
                                     Column(
                                         modifier = Modifier.weight(1f).fillMaxHeight().verticalScroll(rememberScrollState()),
-                                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                                        verticalArrangement = Arrangement.spacedBy(if (isShortLandscape) 4.dp else 8.dp)
                                     ) {
                                         detailsContent()
                                     }
                                 }
                             }
                             VisualizerLayoutMode.FULL_WIDTH -> {
+                                val visualWeight = fullWidthVisualWeight ?: if (isWideWindow) 2.2f else 1.6f
+                                Row(
+                                    modifier = Modifier.weight(1f).fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                                    verticalAlignment = Alignment.Top
+                                ) {
+                                    // REGION B: Visual Content - full useful height
+                                    Box(
+                                        modifier = Modifier.weight(visualWeight).fillMaxHeight(),
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        visualContent()
+                                    }
+                                    // REGION C: Explanation / Details - full useful height
+                                    Column(
+                                        modifier = Modifier.weight(1f).fillMaxHeight().verticalScroll(rememberScrollState()),
+                                        verticalArrangement = Arrangement.spacedBy(if (isShortLandscape) 4.dp else 6.dp)
+                                    ) {
+                                        detailsContent()
+                                    }
+                                }
+                            }
+                            VisualizerLayoutMode.STACKED -> {
                                 Column(
                                     modifier = Modifier.weight(1f).fillMaxWidth(),
-                                    verticalArrangement = Arrangement.spacedBy(6.dp),
+                                    verticalArrangement = Arrangement.spacedBy(if (isShortLandscape) 4.dp else 6.dp),
                                     horizontalAlignment = Alignment.CenterHorizontally
                                 ) {
                                     // REGION B: Visual Content
@@ -214,7 +258,7 @@ internal fun VisualizerModal(
                                     // REGION C: Explanation / Details
                                     Column(
                                         modifier = Modifier.weight(1f).fillMaxWidth().verticalScroll(rememberScrollState()),
-                                        verticalArrangement = Arrangement.spacedBy(6.dp)
+                                        verticalArrangement = Arrangement.spacedBy(if (isShortLandscape) 4.dp else 6.dp)
                                     ) {
                                         detailsContent()
                                     }
@@ -243,7 +287,7 @@ internal fun VisualizerModal(
                         }
                     }
 
-                    Spacer(modifier = Modifier.height(4.dp))
+                    Spacer(modifier = Modifier.height(spacerHeight))
 
                     // REGION C: Bottom Playback Controls Row
                     VisualizerPlaybackBar(

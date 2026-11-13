@@ -14,6 +14,7 @@ internal data class GraphFundamentalsTraceStep(
     val highlightedEdges: Set<Pair<String, String>> = emptySet(),
     val degreeVal: Int? = null,
     val pathSequence: List<String>? = null,
+    val isDirected: Boolean = false,
     val explanation: String,
     val badgeText: String,
     val isTerminal: Boolean = false
@@ -62,6 +63,7 @@ internal object GraphFundamentalsTrace {
         fun snapshot(
             v: Set<String> = emptySet(),
             e: Set<Pair<String, String>> = emptySet(),
+            isDir: Boolean = false,
             isTerminal: Boolean = false,
             explanation: String,
             badgeText: String
@@ -69,13 +71,14 @@ internal object GraphFundamentalsTrace {
             topic = GraphConceptTopic.DIRECTED_VS_UNDIRECTED,
             highlightedVertices = v,
             highlightedEdges = e,
+            isDirected = isDir,
             isTerminal = isTerminal,
             explanation = explanation,
             badgeText = badgeText
         )
 
-        steps.add(snapshot(setOf("A", "B"), setOf("A" to "B"), false, "UNDIRECTED GRAPH: Edge AB is bidirectional (connection goes both ways A ↔ B).", "UNDIRECTED EDGE AB"))
-        steps.add(snapshot(setOf("A", "B"), setOf("A" to "B"), true, "DIRECTED GRAPH: Edge A → B has direction (one-way relationship from A to B).", "DIRECTED EDGE A → B"))
+        steps.add(snapshot(setOf("A", "B"), setOf("A" to "B"), isDir = false, isTerminal = false, explanation = "UNDIRECTED GRAPH: Edge AB is bidirectional (connection goes both ways A ↔ B).", badgeText = "UNDIRECTED EDGE AB"))
+        steps.add(snapshot(setOf("A", "B"), setOf("A" to "B"), isDir = true, isTerminal = true, explanation = "DIRECTED GRAPH: Edge A → B has direction (one-way relationship from A to B).", badgeText = "DIRECTED EDGE A → B"))
 
         return steps
     }

@@ -13,6 +13,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -31,9 +32,11 @@ private val TextSecondary = Color(0xFF9CA3AF)
 
 @Composable
 internal fun HeapSortVisualizationCard(
-    title: String = "Priority Queues and Heap Sort"
+    title: String = "Priority Queues and Heap Sort",
+    useSceneArchitecture: Boolean = true
 ) {
-    val steps = HeapSortTrace.stepsForHeapSort()
+    val steps = remember { HeapSortTrace.stepsForHeapSort() }
+    val scenes = remember(steps) { HeapSceneBuilder.buildSortScenes(steps) }
     val autoExpand = LocalAutoExpandVisualizer.current
     var isExpanded by rememberSaveable { mutableStateOf(autoExpand) }
 
@@ -45,6 +48,7 @@ internal fun HeapSortVisualizationCard(
     val isPlaying = playback.isPlaying
     val isCompleted = playback.isCompleted
     val step = steps[stepIndex]
+    val currentScene = if (scenes.isNotEmpty() && stepIndex in scenes.indices) scenes[stepIndex] else null
 
     if (!autoExpand) {
         ArrayWindowButton(text = "Open heap sort visualizer") {
@@ -85,8 +89,15 @@ internal fun HeapSortVisualizationCard(
                 isExpanded = false
             },
             visualContent = {
-                FitToPane(modifier = Modifier.fillMaxSize()) {
-                    HeapSortVisualizationContent(step = step, scale = 1f)
+                if (useSceneArchitecture && currentScene != null) {
+                    HeapSceneRenderer(
+                        scene = currentScene,
+                        modifier = Modifier.fillMaxSize()
+                    )
+                } else {
+                    FitToPane(modifier = Modifier.fillMaxSize()) {
+                        HeapSortVisualizationContent(step = step, scale = 1f)
+                    }
                 }
             },
             detailsContent = {

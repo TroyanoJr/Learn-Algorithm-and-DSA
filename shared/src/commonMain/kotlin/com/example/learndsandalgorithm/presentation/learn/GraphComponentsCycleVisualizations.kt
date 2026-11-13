@@ -16,6 +16,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -30,7 +31,6 @@ private val OrangeAccent = Color(0xFFFA6E13)
 private val BlueAccent = Color(0xFF38BDF8)
 private val GreenAccent = Color(0xFF10B981)
 private val RedAccent = Color(0xFFEF4444)
-private val TextPrimary = Color(0xFFFFFFFF)
 private val TextSecondary = Color(0xFF9CA3AF)
 
 @Composable
@@ -38,7 +38,8 @@ internal fun GraphComponentsCycleVisualizationCard(
     title: String = "Connected Components and Cycle Detection"
 ) {
     var selectedTopic by rememberSaveable { mutableStateOf(ComponentCycleTopic.CONNECTED_COMPONENTS) }
-    val steps = GraphComponentsCycleTrace.stepsForTopic(selectedTopic)
+    val steps = remember(selectedTopic) { GraphComponentsCycleTrace.stepsForTopic(selectedTopic) }
+    val scenes = remember(steps) { GraphSceneBuilder.buildComponentsCycleScenes(steps) }
     val autoExpand = LocalAutoExpandVisualizer.current
     var isExpanded by rememberSaveable { mutableStateOf(autoExpand) }
 
@@ -51,6 +52,7 @@ internal fun GraphComponentsCycleVisualizationCard(
     val isPlaying = playback.isPlaying
     val isCompleted = playback.isCompleted
     val step = steps[stepIndex]
+    val scene = scenes[stepIndex]
 
     if (!autoExpand) {
         ArrayWindowButton(text = "Open components & cycle visualizer") {
@@ -100,9 +102,7 @@ internal fun GraphComponentsCycleVisualizationCard(
                 )
             },
             visualContent = {
-                FitToPane(modifier = Modifier.fillMaxSize()) {
-                    GraphComponentsCycleVisualizationContent(step = step, scale = 1f)
-                }
+                GraphSceneRenderer(scene = scene, modifier = Modifier.fillMaxSize())
             },
             detailsContent = {
                 GraphComponentsCycleDetailsAndStepsContent(
@@ -150,112 +150,6 @@ private fun ComponentTopicSelector(
                         fontSize = 10.sp,
                         fontWeight = FontWeight.Bold
                     )
-                }
-            }
-        }
-    }
-}
-
-@Composable
-private fun GraphComponentsCycleVisualizationContent(step: ComponentCycleTraceStep, scale: Float) {
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(8.dp * scale),
-        modifier = Modifier.padding(horizontal = 8.dp)
-    ) {
-        // Status Header Card
-        Surface(
-            color = Color(0xFF13131C),
-            shape = RoundedCornerShape(10.dp),
-            border = BorderStroke(1.dp, if (step.cycleDetected) RedAccent else CardBorderColor),
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Row(
-                modifier = Modifier.padding(10.dp * scale).fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Column(verticalArrangement = Arrangement.spacedBy(2.dp * scale)) {
-                    Text(
-                        text = step.topic.name,
-                        color = OrangeAccent,
-                        fontSize = 11.sp,
-                        fontWeight = FontWeight.Bold
-                    )
-                    Text(
-                        text = if (step.topic == ComponentCycleTopic.CONNECTED_COMPONENTS) "Components Found: ${step.components.size}" else if (step.cycleDetected) "CYCLE DETECTED AT EDGE ${step.cycleEdges?.first}-${step.cycleEdges?.second}" else "Checking cycle invariant...",
-                        color = if (step.cycleDetected) RedAccent else TextSecondary,
-                        fontSize = 10.sp
-                    )
-                }
-
-                if (step.cycleDetected) {
-                    Surface(
-                        color = Color(0xFF381212),
-                        shape = RoundedCornerShape(6.dp),
-                        border = BorderStroke(1.dp, RedAccent)
-                    ) {
-                        Text(
-                            "CYCLE DETECTED",
-                            color = RedAccent,
-                            fontSize = 10.sp,
-                            fontWeight = FontWeight.Bold,
-                            modifier = Modifier.padding(horizontal = 8.dp * scale, vertical = 4.dp * scale)
-                        )
-                    }
-                }
-            }
-        }
-
-        // Graph Visual Render
-        Surface(
-            color = Color(0xFF13131C),
-            shape = RoundedCornerShape(10.dp),
-            border = BorderStroke(1.dp, CardBorderColor),
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Column(
-                modifier = Modifier.padding(10.dp * scale).fillMaxWidth(),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(6.dp * scale)
-            ) {
-                if (step.topic == ComponentCycleTopic.CONNECTED_COMPONENTS) {
-                    Text("UNDIRECTED COMPONENTS ({AB, BC}, {DE}, {F}):", color = BlueAccent, fontSize = 10.sp, fontWeight = FontWeight.Bold)
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceEvenly
-                    ) {
-                        GraphVertexCircle("A", isVisited = "A" in step.visited, badgeText = "Comp 1")
-                        Text("—", color = BlueAccent, fontSize = 12.sp, fontWeight = FontWeight.Bold)
-                        GraphVertexCircle("B", isVisited = "B" in step.visited, badgeText = "Comp 1")
-                        Text("—", color = BlueAccent, fontSize = 12.sp, fontWeight = FontWeight.Bold)
-                        GraphVertexCircle("C", isVisited = "C" in step.visited, badgeText = "Comp 1")
-                    }
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceEvenly
-                    ) {
-                        GraphVertexCircle("D", isVisited = "D" in step.visited, badgeText = "Comp 2")
-                        Text("—", color = BlueAccent, fontSize = 12.sp, fontWeight = FontWeight.Bold)
-                        GraphVertexCircle("E", isVisited = "E" in step.visited, badgeText = "Comp 2")
-                        GraphVertexCircle("F", isVisited = "F" in step.visited, badgeText = "Comp 3 (Isolated)")
-                    }
-                } else {
-                    Text("TRIANGLE GRAPH {A, B, C}:", color = BlueAccent, fontSize = 10.sp, fontWeight = FontWeight.Bold)
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceEvenly
-                    ) {
-                        val isA = step.currentVertex == "A"
-                        val isB = step.currentVertex == "B"
-                        val isC = step.currentVertex == "C"
-
-                        GraphVertexCircle("A", isActive = isA, isVisited = "A" in step.visited, isCycle = step.cycleDetected && isA)
-                        Text(if (step.topic == ComponentCycleTopic.DIRECTED_CYCLE) "→" else "—", color = BlueAccent, fontSize = 12.sp, fontWeight = FontWeight.Bold)
-                        GraphVertexCircle("B", isActive = isB, isVisited = "B" in step.visited, isCycle = step.cycleDetected && isB)
-                        Text(if (step.topic == ComponentCycleTopic.DIRECTED_CYCLE) "→" else "—", color = BlueAccent, fontSize = 12.sp, fontWeight = FontWeight.Bold)
-                        GraphVertexCircle("C", isActive = isC, isVisited = "C" in step.visited, isCycle = step.cycleDetected && isC)
-                    }
                 }
             }
         }
