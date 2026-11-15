@@ -268,6 +268,10 @@ fun LessonDetailScreen(
                         // Theory & Key Concepts Markdown Content
                         MarkdownContent(content = state.markdownContent)
 
+                        if (state.lesson.id == "lesson_arrays_5") {
+                            ArrayComplexityComparisonCard()
+                        }
+
                         // 1. Independent Interactive Visualizer Section (When lesson has visualizer)
                         if (hasVisualizerForLesson(state.lesson.id)) {
                             Surface(
@@ -1146,6 +1150,8 @@ private fun hasVisualizerForLesson(lessonId: String): Boolean {
         "lesson_introduction_algo_2",
         "searching_1",
         "sorting_1",
+        "lesson_arrays_1",
+        "lesson_arrays_5",
         "lesson_linked_list_5" -> false
         else -> true
     }
@@ -1162,11 +1168,9 @@ private fun RenderVisualizerCardForLesson(lessonId: String, title: String) {
         "lesson_queues_2" -> QueueVisualizationCard(QueueDemonstration.OPERATIONS, title = title)
         "lesson_queues_3" -> QueueVisualizationCard(QueueDemonstration.IMPLEMENTATIONS, title = title)
         "lesson_queues_4" -> QueueVisualizationCard(QueueDemonstration.CIRCULAR_BUFFER, title = title)
-        "lesson_arrays_1" -> ArrayVisualizationCard()
         "lesson_arrays_2" -> ArrayResizeVisualizationCard()
         "lesson_arrays_3" -> ArrayTraversalVisualizationCard()
         "lesson_arrays_4" -> ArrayInsertDeleteVisualizationCard()
-        "lesson_arrays_5" -> ArrayComplexityComparisonCard()
         "lesson_linked_list_1" -> LinkedListIntroductionVisualizationCard()
         "lesson_linked_list_2" -> LinkedListTraversalSearchAccessVisualizationCard()
         "lesson_linked_list_3" -> LinkedListInsertionVisualizationCard()
