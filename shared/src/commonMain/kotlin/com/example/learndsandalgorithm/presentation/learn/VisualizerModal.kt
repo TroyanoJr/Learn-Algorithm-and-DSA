@@ -123,6 +123,7 @@ internal fun VisualizerModal(
     fitUnboundedWidth: Boolean = false,
     fitMaxScale: Float = 1.25f,
     fitFillFraction: Float = 1.0f,
+    detailsScrollable: Boolean = true,
     statusColor: Color = if (isCompleted) VisualizerGreenAccent else VisualizerBlueAccent,
     topContent: (@Composable () -> Unit)? = null,
     visualContent: @Composable () -> Unit,
@@ -212,7 +213,9 @@ internal fun VisualizerModal(
                                     }
                                     // REGION C: Explanation / Details
                                     Column(
-                                        modifier = Modifier.weight(1f).fillMaxHeight().verticalScroll(rememberScrollState()),
+                                        modifier = Modifier.weight(1f).fillMaxHeight().let { base ->
+                                            if (detailsScrollable) base.verticalScroll(rememberScrollState()) else base
+                                        },
                                         verticalArrangement = Arrangement.spacedBy(if (isShortLandscape) 4.dp else 8.dp)
                                     ) {
                                         detailsContent()
@@ -235,7 +238,9 @@ internal fun VisualizerModal(
                                     }
                                     // REGION C: Explanation / Details - full useful height
                                     Column(
-                                        modifier = Modifier.weight(1f).fillMaxHeight().verticalScroll(rememberScrollState()),
+                                        modifier = Modifier.weight(1f).fillMaxHeight().let { base ->
+                                            if (detailsScrollable) base.verticalScroll(rememberScrollState()) else base
+                                        },
                                         verticalArrangement = Arrangement.spacedBy(if (isShortLandscape) 4.dp else 6.dp)
                                     ) {
                                         detailsContent()
@@ -257,7 +262,9 @@ internal fun VisualizerModal(
                                     }
                                     // REGION C: Explanation / Details
                                     Column(
-                                        modifier = Modifier.weight(1f).fillMaxWidth().verticalScroll(rememberScrollState()),
+                                        modifier = Modifier.weight(1f).fillMaxWidth().let { base ->
+                                            if (detailsScrollable) base.verticalScroll(rememberScrollState()) else base
+                                        },
                                         verticalArrangement = Arrangement.spacedBy(if (isShortLandscape) 4.dp else 6.dp)
                                     ) {
                                         detailsContent()
@@ -279,7 +286,9 @@ internal fun VisualizerModal(
                                 visualContent()
                             }
                             Column(
-                                modifier = Modifier.weight(1f).fillMaxWidth().verticalScroll(rememberScrollState()),
+                                modifier = Modifier.weight(1f).fillMaxWidth().let { base ->
+                                    if (detailsScrollable) base.verticalScroll(rememberScrollState()) else base
+                                },
                                 verticalArrangement = Arrangement.spacedBy(8.dp)
                             ) {
                                 detailsContent()

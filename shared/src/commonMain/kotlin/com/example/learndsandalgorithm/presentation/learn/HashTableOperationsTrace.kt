@@ -133,6 +133,7 @@ internal object HashTableOperationsTrace {
         val oldBucketsCopy = currentBuckets.toList()
         currentCapacity *= 2
         val newBuckets = MutableList<HashOpEntry?>(currentCapacity) { null }
+        currentBuckets = newBuckets
 
         steps.add(
             snapshot(

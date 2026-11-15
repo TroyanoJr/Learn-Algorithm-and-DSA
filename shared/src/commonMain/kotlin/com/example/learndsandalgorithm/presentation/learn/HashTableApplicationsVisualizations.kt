@@ -16,7 +16,9 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -40,7 +42,8 @@ internal fun HashTableApplicationsVisualizationCard(
     title: String = "Applications, Trade-offs, and Practical Design"
 ) {
     var selectedScenario by rememberSaveable { mutableStateOf(ApplicationScenario.FREQUENCY_COUNTER) }
-    val steps = HashTableApplicationsTrace.stepsForScenario(selectedScenario)
+    val steps = remember(selectedScenario) { HashTableApplicationsTrace.stepsForScenario(selectedScenario) }
+    val scenes = remember(steps) { HashTableApplicationsSceneBuilder.buildScenes(steps) }
     val autoExpand = LocalAutoExpandVisualizer.current
     var isExpanded by rememberSaveable { mutableStateOf(autoExpand) }
 
@@ -81,6 +84,8 @@ internal fun HashTableApplicationsVisualizationCard(
             stepCount = steps.size,
             isPlaying = isPlaying,
             layoutMode = VisualizerLayoutMode.FULL_WIDTH,
+            fullWidthVisualWeight = HashTableLessonDetailsLayout.APPLICATIONS_VISUAL_WEIGHT,
+            detailsScrollable = false,
             statusColor = statusColor,
             onReset = { playback.reset() },
             onPrevious = { playback.previous() },
@@ -102,8 +107,12 @@ internal fun HashTableApplicationsVisualizationCard(
                 )
             },
             visualContent = {
-                FitToPane(modifier = Modifier.fillMaxSize()) {
-                    HashTableApplicationsVisualizationContent(step = step, scale = 1f)
+                key(selectedScenario) {
+                    HashTableApplicationsSceneRenderer(
+                        scene = scenes[stepIndex],
+                        step = step,
+                        modifier = Modifier.fillMaxSize()
+                    )
                 }
             },
             detailsContent = {
@@ -469,16 +478,10 @@ private fun HashTableApplicationsDetailsAndStepsContent(
     totalSteps: Int,
     scale: Float
 ) {
-    Column(
-        modifier = Modifier.fillMaxWidth(),
-        verticalArrangement = Arrangement.spacedBy(8.dp * scale)
-    ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+    HashTableMeasuredDetailsLayout(
+        modifier = Modifier.fillMaxSize(),
+        header = {
+            Column(modifier = Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(1.dp)) {
                 Text("SCENARIO RESULT", color = TextSecondary, fontSize = 9.sp, fontWeight = FontWeight.Bold)
                 Text(
                     step.badgeText,
@@ -490,8 +493,6 @@ private fun HashTableApplicationsDetailsAndStepsContent(
                     fontSize = 15.sp,
                     fontWeight = FontWeight.Bold
                 )
-            }
-            Column(horizontalAlignment = Alignment.End, verticalArrangement = Arrangement.spacedBy(2.dp)) {
                 val recommendation = when (step.scenario) {
                     ApplicationScenario.FREQUENCY_COUNTER -> "Best for: Fast O(1) frequency counting"
                     ApplicationScenario.RANGE_QUERY_COMPARISON -> "Rule: Use BST for range queries & order"
@@ -499,14 +500,10 @@ private fun HashTableApplicationsDetailsAndStepsContent(
                 }
                 Text(recommendation, color = GreenAccent, fontSize = 10.sp, fontWeight = FontWeight.Bold)
             }
-        }
-
-        StepsCard(
-            label = "Steps",
-            explanation = step.explanation,
-            stepIndex = stepIndex,
-            totalSteps = totalSteps,
-            isCompleted = stepIndex == totalSteps - 1
-        )
-    }
+        },
+        explanation = step.explanation,
+        stepIndex = stepIndex,
+        totalSteps = totalSteps,
+        isCompleted = stepIndex == totalSteps - 1
+    )
 }

@@ -1,11 +1,17 @@
 package com.example.learndsandalgorithm.presentation.learn
 
+import androidx.compose.foundation.layout.width
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
+import com.example.learndsandalgorithm.core.platform.LandscapeOrientationEffect
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -16,7 +22,9 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -37,10 +45,13 @@ private val TextSecondary = Color(0xFF9CA3AF)
 
 @Composable
 internal fun HashTableCollisionVisualizationCard(
-    title: String = "Collisions and Collision Resolution"
+    title: String = "Collisions and Collision Resolution",
+    useSceneArchitecture: Boolean = true
 ) {
     var selectedStrategy by rememberSaveable { mutableStateOf(CollisionStrategy.SEPARATE_CHAINING) }
-    val steps = HashTableCollisionTrace.stepsForStrategy(selectedStrategy)
+    val steps = remember(selectedStrategy) { HashTableCollisionTrace.stepsForStrategy(selectedStrategy) }
+    val scenes = remember(steps) { HashTableSceneBuilder.buildCollisionScenes(steps) }
+    val sequenceEntities = remember(scenes) { scenes.flatMap { it.subScenes }.flatMap { it.entities } }
     val autoExpand = LocalAutoExpandVisualizer.current
     var isExpanded by rememberSaveable { mutableStateOf(autoExpand) }
 
@@ -53,6 +64,7 @@ internal fun HashTableCollisionVisualizationCard(
     val isPlaying = playback.isPlaying
     val isCompleted = playback.isCompleted
     val step = steps[stepIndex]
+    val currentScene = scenes.getOrNull(stepIndex)
 
     if (!autoExpand) {
         ArrayWindowButton(text = "Open collision visualizer") {
@@ -61,23 +73,115 @@ internal fun HashTableCollisionVisualizationCard(
     }
 
     if (isExpanded) {
-        val statusText = when (step.event) {
-            CollisionTraceEvent.START -> "READY · ${if (selectedStrategy == CollisionStrategy.SEPARATE_CHAINING) "CHAINING" else "PROBING"}"
-            CollisionTraceEvent.SELECT_KEY -> "KEY: ${step.activeKey}"
-            CollisionTraceEvent.COMPUTE_HASH -> "HASH INDEX = ${step.initialHashIndex}"
-            CollisionTraceEvent.COLLISION_DETECTED -> "COLLISION AT [${step.highlightedBucketIndex}]!"
-            CollisionTraceEvent.CHAIN_NODE -> "CHAINED AT [${step.highlightedBucketIndex}]"
-            CollisionTraceEvent.PROBE_NEXT_SLOT -> "PROBING SLOT [${step.currentProbeIndex}]"
-            CollisionTraceEvent.INSERT_ENTRY -> "STORED AT [${step.highlightedBucketIndex}]"
-            CollisionTraceEvent.COMPLETE -> "COMPLETE"
+        val isTableFull = step.event == CollisionTraceEvent.COMPLETE && step.badgeText == "TABLE FULL"
+
+        val statusText = when {
+            isTableFull -> "TABLE FULL"
+            step.event == CollisionTraceEvent.START -> "READY · ${if (selectedStrategy == CollisionStrategy.SEPARATE_CHAINING) "CHAINING" else "PROBING"}"
+            step.event == CollisionTraceEvent.SELECT_KEY -> "KEY: ${step.activeKey}"
+            step.event == CollisionTraceEvent.COMPUTE_HASH -> "HASH INDEX = ${step.initialHashIndex}"
+            step.event == CollisionTraceEvent.COLLISION_DETECTED -> "COLLISION AT [${step.highlightedBucketIndex}]!"
+            step.event == CollisionTraceEvent.CHAIN_NODE -> "CHAINED AT [${step.highlightedBucketIndex}]"
+            step.event == CollisionTraceEvent.PROBE_NEXT_SLOT -> "PROBING SLOT [${step.currentProbeIndex}]"
+            step.event == CollisionTraceEvent.INSERT_ENTRY -> "STORED AT [${step.highlightedBucketIndex}]"
+            step.event == CollisionTraceEvent.COMPLETE -> "COMPLETE"
+            else -> "READY"
         }
 
-        val statusColor = when (step.event) {
-            CollisionTraceEvent.COLLISION_DETECTED -> RedAccent
-            CollisionTraceEvent.COMPLETE -> GreenAccent
-            CollisionTraceEvent.CHAIN_NODE, CollisionTraceEvent.INSERT_ENTRY -> OrangeAccent
-            CollisionTraceEvent.PROBE_NEXT_SLOT -> BlueAccent
+        val statusColor = when {
+            isTableFull -> RedAccent
+            step.event == CollisionTraceEvent.COLLISION_DETECTED -> RedAccent
+            step.event == CollisionTraceEvent.COMPLETE -> GreenAccent
+            step.event == CollisionTraceEvent.CHAIN_NODE || step.event == CollisionTraceEvent.INSERT_ENTRY -> OrangeAccent
+            step.event == CollisionTraceEvent.PROBE_NEXT_SLOT -> BlueAccent
             else -> TextSecondary
+        }
+
+        if (useSceneArchitecture && currentScene != null) {
+            val closeLesson = LocalVisualizerClose.current
+            val close = { playback.reset(); isExpanded = false; closeLesson() }
+            Dialog(onDismissRequest = close, properties = DialogProperties(usePlatformDefaultWidth = false)) {
+                LandscapeOrientationEffect(enabled = true)
+                BoxWithConstraints(Modifier.fillMaxSize()) {
+                    val shortLandscape = maxHeight < 360.dp
+                    val detailsWidth = when {
+                        maxWidth < 700.dp -> 216.dp
+                        maxWidth < 800.dp -> 236.dp
+                        else -> 260.dp
+                    }
+                    val visualHeaderWidth = maxWidth - detailsWidth - 24.dp
+                    val playbackSize = if (shortLandscape) 40.dp else 44.dp
+
+                    Surface(color = VisualizerDarkCardBgColor, modifier = Modifier.fillMaxSize()) {
+                        Column(
+                            Modifier.fillMaxSize().padding(horizontal = 8.dp, vertical = 4.dp),
+                            verticalArrangement = Arrangement.spacedBy(4.dp)
+                        ) {
+                            Box(Modifier.fillMaxWidth()) {
+                                Column(
+                                    modifier = Modifier.width(visualHeaderWidth)
+                                ) {
+                                    Text(
+                                        title,
+                                        color = OrangeAccent,
+                                        fontSize = 12.sp,
+                                        maxLines = 1
+                                    )
+                                    CollisionStrategySelector(selectedStrategy, compact = true) {
+                                        if (it != selectedStrategy) {
+                                            playback.reset()
+                                            selectedStrategy = it
+                                        }
+                                    }
+                                }
+                                Box(Modifier.align(Alignment.TopEnd)) {
+                                    ArrayWindowButton("Close", "✕", close)
+                                }
+                            }
+
+                            Row(
+                                Modifier.fillMaxWidth().weight(1f),
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                Box(Modifier.weight(1f).fillMaxHeight()) {
+                                    key(selectedStrategy) {
+                                        HashTableSceneRenderer(
+                                            currentScene,
+                                            Modifier.fillMaxSize(),
+                                            HashTableSceneMode.COLLISION_STRUCTURE,
+                                            sequenceEntities,
+                                            scenes
+                                        )
+                                    }
+                                }
+                                Surface(
+                                    color = Color(0xFF13131C),
+                                    shape = RoundedCornerShape(8.dp),
+                                    border = BorderStroke(1.dp, CardBorderColor),
+                                    modifier = Modifier.width(detailsWidth).fillMaxHeight()
+                                ) {
+                                    HashTableCollisionDetailsAndStepsContent(
+                                        step = step,
+                                        stepIndex = stepIndex,
+                                        totalSteps = steps.size,
+                                        scale = 1f,
+                                        compact = true,
+                                        modifier = Modifier.fillMaxSize().padding(6.dp)
+                                    )
+                                }
+                            }
+
+                            VisualizerPlaybackBar(
+                                playback,
+                                controlSize = playbackSize,
+                                spacing = if (shortLandscape) 4.dp else 8.dp,
+                                modifier = Modifier.fillMaxWidth()
+                            )
+                        }
+                    }
+                }
+            }
+            return
         }
 
         VisualizerModal(
@@ -88,6 +192,7 @@ internal fun HashTableCollisionVisualizationCard(
             stepCount = steps.size,
             isPlaying = isPlaying,
             layoutMode = VisualizerLayoutMode.FULL_WIDTH,
+            fullWidthVisualWeight = 1.8f,
             statusColor = statusColor,
             onReset = { playback.reset() },
             onPrevious = { playback.previous() },
@@ -128,12 +233,13 @@ internal fun HashTableCollisionVisualizationCard(
 @Composable
 private fun CollisionStrategySelector(
     selectedStrategy: CollisionStrategy,
+    compact: Boolean = false,
     onStrategySelected: (CollisionStrategy) -> Unit
 ) {
     Row(
         horizontalArrangement = Arrangement.spacedBy(8.dp),
         verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier.padding(bottom = 6.dp)
+        modifier = Modifier.padding(bottom = if (compact) 0.dp else 6.dp)
     ) {
         listOf(
             CollisionStrategy.SEPARATE_CHAINING to "1. Separate Chaining",
@@ -149,7 +255,10 @@ private fun CollisionStrategySelector(
                     .clickable { onStrategySelected(strategy) }
             ) {
                 Box(
-                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
+                    modifier = Modifier.padding(
+                        horizontal = if (compact) 8.dp else 12.dp,
+                        vertical = if (compact) 6.dp else 8.dp
+                    ),
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
@@ -400,43 +509,28 @@ private fun HashTableCollisionDetailsAndStepsContent(
     step: CollisionTraceStep,
     stepIndex: Int,
     totalSteps: Int,
-    scale: Float
+    scale: Float,
+    compact: Boolean = false,
+    modifier: Modifier = Modifier
 ) {
     Column(
-        modifier = Modifier.fillMaxWidth(),
-        verticalArrangement = Arrangement.spacedBy(8.dp * scale)
+        modifier = modifier.fillMaxWidth(),
+        verticalArrangement = Arrangement.spacedBy((if (compact) 4.dp else 6.dp) * scale)
     ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                Text("CURRENT OPERATION", color = TextSecondary, fontSize = 9.sp, fontWeight = FontWeight.Bold)
-                Text(
-                    step.badgeText,
-                    color = when (step.event) {
-                        CollisionTraceEvent.COLLISION_DETECTED -> RedAccent
-                        CollisionTraceEvent.COMPLETE -> GreenAccent
-                        else -> OrangeAccent
-                    },
-                    fontSize = 15.sp,
-                    fontWeight = FontWeight.Bold
-                )
-            }
-            Column(horizontalAlignment = Alignment.End, verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                val occupied = if (step.strategy == CollisionStrategy.SEPARATE_CHAINING) {
-                    step.chainingBuckets.count { it.isNotEmpty() }
-                } else {
-                    step.linearSlots.count { it != null }
-                }
-                Text("Occupied buckets: $occupied / ${step.capacity}", color = TextPrimary, fontSize = 11.sp)
-                Text(
-                    text = if (step.strategy == CollisionStrategy.SEPARATE_CHAINING) "Tradeoff: Extra memory for linked nodes" else "Tradeoff: Primary clustering risk",
-                    color = TextSecondary,
-                    fontSize = 10.sp
-                )
-            }
+        // Operation & Status Header Block
+        Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+            Text("CURRENT OPERATION", color = TextSecondary, fontSize = 9.sp, fontWeight = FontWeight.Bold)
+            Text(
+                step.badgeText,
+                color = when {
+                    step.badgeText == "TABLE FULL" -> RedAccent
+                    step.event == CollisionTraceEvent.COLLISION_DETECTED -> RedAccent
+                    step.event == CollisionTraceEvent.COMPLETE -> GreenAccent
+                    else -> OrangeAccent
+                },
+                fontSize = 14.sp,
+                fontWeight = FontWeight.Bold
+            )
         }
 
         StepsCard(
@@ -446,5 +540,101 @@ private fun HashTableCollisionDetailsAndStepsContent(
             totalSteps = totalSteps,
             isCompleted = stepIndex == totalSteps - 1
         )
+
+        // Secondary statistics stay after the current explanation.
+        val occupied = if (step.strategy == CollisionStrategy.SEPARATE_CHAINING) {
+            step.chainingBuckets.count { it.isNotEmpty() }
+        } else {
+            step.linearSlots.count { it != null }
+        }
+        val tradeoffStr = if (step.strategy == CollisionStrategy.SEPARATE_CHAINING) {
+            "Tradeoff: Extra memory for linked nodes"
+        } else {
+            "Tradeoff: Primary clustering risk"
+        }
+
+        Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+            Text("Occupied buckets: $occupied / ${step.capacity}", color = TextPrimary, fontSize = 10.sp, fontWeight = FontWeight.Bold)
+            Text(tradeoffStr, color = TextSecondary, fontSize = 9.sp)
+        }
+
     }
+}
+
+
+@Composable
+internal fun HashTableCollisionCalculation(meta: HashTableStepMeta) {
+    Surface(color = Color(0xFF13131C), shape = RoundedCornerShape(8.dp),
+        border = BorderStroke(1.dp, CardBorderColor)) {
+        Column(Modifier.padding(5.dp), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+            Row(
+                Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    if (meta.strategy == CollisionStrategy.SEPARATE_CHAINING) "SEPARATE CHAINING" else "LINEAR PROBING",
+                    color = OrangeAccent,
+                    fontSize = 10.sp,
+                    fontWeight = FontWeight.Bold
+                )
+                Text("h(key) = sum(ASCII) % ${meta.capacity}", color = TextSecondary, fontSize = 10.sp)
+            }
+            Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                meta.activeKey?.let {
+                    val index = meta.initialHashIndex?.let { value -> " · Hash Index [$value]" }.orEmpty()
+                    CalculationBadge("Key: \"$it\" → Value: \"${meta.activeValue.orEmpty()}\"$index", OrangeAccent)
+                }
+                if (meta.collisionEvent == CollisionTraceEvent.COLLISION_DETECTED || meta.badgeText == "TABLE FULL")
+                    CalculationBadge(if (meta.badgeText == "TABLE FULL") "TABLE FULL" else "COLLISION DETECTED", RedAccent)
+            }
+            meta.charBreakdown?.let { parts ->
+                Surface(
+                    color = Color(0xFF1A1A26),
+                    border = BorderStroke(1.dp, CardBorderColor),
+                    shape = RoundedCornerShape(4.dp)
+                ) {
+                    Text(
+                        parts.joinToString(" + ") { "${it.first}(${it.second})" },
+                        Modifier.padding(horizontal = 4.dp, vertical = 1.dp),
+                        color = TextPrimary,
+                        fontSize = 11.sp,
+                        lineHeight = 15.sp
+                    )
+                }
+            }
+            if (meta.hashSum != null || meta.calculatedIndex != null) {
+                Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                    meta.hashSum?.let { sum -> CalculationBadge("SUM = $sum", GreenAccent) }
+                    meta.calculatedIndex?.let { index ->
+                        val target = if (meta.strategy == CollisionStrategy.SEPARATE_CHAINING) "bucket" else "slot"
+                        CalculationBadge("${meta.hashSum} % ${meta.capacity} = Index [$index] → $target [$index]", OrangeAccent)
+                    }
+                }
+            }
+            if (meta.activeKey == null)
+                Text("Select a key to view hash calculation step-by-step.", color = TextSecondary, fontSize = 12.sp, lineHeight = 15.sp)
+        }
+    }
+}
+
+@Composable
+private fun CalculationBadge(text: String, color: Color) {
+    Surface(color = color.copy(alpha = 0.12f), border = BorderStroke(1.dp, color), shape = RoundedCornerShape(4.dp)) {
+        Text(text, Modifier.padding(horizontal = 4.dp, vertical = 1.dp), color = color,
+            fontSize = 12.sp, lineHeight = 15.sp, fontWeight = FontWeight.Bold)
+    }
+}
+
+// Collision traces expose the calculated index from COMPUTE_HASH onward.
+// Derive the arithmetic from that snapshot's key without advancing the trace.
+internal fun collisionCalculationMetadata(meta: HashTableStepMeta): HashTableStepMeta {
+    val key = meta.activeKey ?: return meta
+    val index = meta.initialHashIndex ?: return meta
+    val parts = key.map { it to it.code }
+    return meta.copy(
+        charBreakdown = parts,
+        hashSum = parts.sumOf { it.second },
+        calculatedIndex = index
+    )
 }

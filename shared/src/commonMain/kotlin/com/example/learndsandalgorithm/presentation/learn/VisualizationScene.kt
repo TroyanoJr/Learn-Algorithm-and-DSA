@@ -10,7 +10,8 @@ internal enum class StructureType {
     TABLE,
     STACK,
     QUEUE,
-    LINKED_LIST
+    LINKED_LIST,
+    HASH_TABLE
 }
 
 /**
@@ -63,6 +64,8 @@ internal enum class ConnectionType {
  * @param occurrenceId Optional key for ephemeral/temporary entries (e.g. Priority Queue insertion instances).
  * @param visualState Visual state descriptor (DEFAULT, ACTIVE, VISITED, VIOLATION, TARGET).
  * @param presenceState Presence state descriptor (APPEARING, PRESENT, DISAPPEARING).
+ * @param entryKey Structured key for Hash Table entries.
+ * @param entryValue Structured value for Hash Table entries.
  */
 internal data class VisualEntity(
     val visualKey: String,
@@ -72,7 +75,9 @@ internal data class VisualEntity(
     val badgeLabel: String? = null,
     val occurrenceId: String? = null,
     val visualState: EntityVisualState = EntityVisualState.DEFAULT,
-    val presenceState: EntityPresenceState = EntityPresenceState.PRESENT
+    val presenceState: EntityPresenceState = EntityPresenceState.PRESENT,
+    val entryKey: String? = null,
+    val entryValue: String? = null
 )
 
 /**
@@ -118,6 +123,28 @@ internal data class StructureSubScene(
 )
 
 /**
+ * Immutable metadata representing hash table step details for Geometry-First scenes.
+ */
+internal data class HashTableStepMeta(
+    val activeKey: String? = null,
+    val activeValue: String? = null,
+    val charBreakdown: List<Pair<Char, Int>>? = null,
+    val hashSum: Int? = null,
+    val calculatedIndex: Int? = null,
+    val capacity: Int,
+    val event: HashTableEvent? = null,
+    val badgeText: String,
+    val isTerminal: Boolean,
+    val explanation: String,
+    val strategy: CollisionStrategy? = null,
+    val initialHashIndex: Int? = null,
+    val currentProbeIndex: Int? = null,
+    val probedIndices: Set<Int> = emptySet(),
+    val collisionEvent: CollisionTraceEvent? = null,
+    val maxChainDepth: Int = 0
+)
+
+/**
  * Immutable abstract visual scene representing step N of an algorithm execution.
  * Contains no Compose, Canvas, coordinate, or layout dependencies.
  *
@@ -125,10 +152,12 @@ internal data class StructureSubScene(
  * @param sceneId Unique scene identifier.
  * @param subScenes Sub-scenes for each active data structure pane.
  * @param globalMessage Optional top-level explanation message.
+ * @param hashTableMeta Optional hash table step metadata.
  */
 internal data class VisualizationScene(
     val stepIndex: Int,
     val sceneId: String,
     val subScenes: List<StructureSubScene> = emptyList(),
-    val globalMessage: String? = null
+    val globalMessage: String? = null,
+    val hashTableMeta: HashTableStepMeta? = null
 )
