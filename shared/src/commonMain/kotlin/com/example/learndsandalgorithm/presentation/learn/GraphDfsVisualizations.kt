@@ -5,6 +5,9 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -71,6 +74,8 @@ internal fun GraphDfsVisualizationCard(
             stepCount = steps.size,
             isPlaying = isPlaying,
             layoutMode = VisualizerLayoutMode.FULL_WIDTH,
+            fullWidthVisualWeight = 0.65f,
+            detailsScrollable = false,
             statusColor = statusColor,
             onReset = { playback.reset() },
             onPrevious = { playback.previous() },
@@ -88,6 +93,7 @@ internal fun GraphDfsVisualizationCard(
                     step = step,
                     stepIndex = stepIndex,
                     totalSteps = steps.size,
+                    allExplanations = steps.map { it.explanation },
                     scale = 1f
                 )
             }
@@ -100,39 +106,47 @@ private fun GraphDfsDetailsAndStepsContent(
     step: GraphDfsTraceStep,
     stepIndex: Int,
     totalSteps: Int,
+    allExplanations: List<String>,
     scale: Float
 ) {
     Column(
-        modifier = Modifier.fillMaxWidth(),
-        verticalArrangement = Arrangement.spacedBy(8.dp * scale)
+        modifier = Modifier.fillMaxSize(),
+        verticalArrangement = Arrangement.spacedBy(3.dp * scale)
     ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+        Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                 Text("CURRENT DFS STEP", color = TextSecondary, fontSize = 9.sp, fontWeight = FontWeight.Bold)
-                Text(
-                    step.badgeText,
-                    color = when (step.event) {
-                        DfsStepEvent.DFS_COMPLETE -> GreenAccent
-                        DfsStepEvent.BACKTRACK -> OrangeAccent
-                        else -> BlueAccent
-                    },
-                    fontSize = 15.sp,
-                    fontWeight = FontWeight.Bold
-                )
+                Text("Stack Depth: ${step.callStack.size} · O(V+E)", color = GreenAccent, fontSize = 10.sp, fontWeight = FontWeight.Bold)
             }
-            Text("Stack Depth: ${step.callStack.size} | O(V+E)", color = GreenAccent, fontSize = 10.sp, fontWeight = FontWeight.Bold)
+            Text(step.badgeText, color = when (step.event) {
+                DfsStepEvent.DFS_COMPLETE -> GreenAccent
+                DfsStepEvent.BACKTRACK -> OrangeAccent
+                else -> BlueAccent
+            }, fontSize = 15.sp, fontWeight = FontWeight.Bold)
         }
 
-        StepsCard(
+        GraphStepsCard(
             label = "Steps",
             explanation = step.explanation,
+            allExplanations = allExplanations,
             stepIndex = stepIndex,
             totalSteps = totalSteps,
             isCompleted = stepIndex == totalSteps - 1
         )
+
+        Row(horizontalArrangement = Arrangement.spacedBy(4.dp), modifier = Modifier.fillMaxWidth()) {
+            GraphDfsInfoPanel("CALL STACK (BOTTOM → TOP)", step.callStack.takeIf { it.isNotEmpty() }?.joinToString(" → ") ?: "Empty", Modifier.weight(1f))
+            GraphDfsInfoPanel("VISITED SEQUENCE", step.visited.takeIf { it.isNotEmpty() }?.joinToString(" → ") ?: "Empty", Modifier.weight(1f))
+        }
+    }
+}
+
+@Composable
+private fun GraphDfsInfoPanel(title: String, value: String, modifier: Modifier = Modifier) {
+    Surface(color = Color(0xFF13131C), shape = RoundedCornerShape(8.dp), modifier = modifier.fillMaxWidth()) {
+        Column(Modifier.fillMaxWidth().padding(4.dp), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+            Text(title, color = BlueAccent, fontSize = 9.sp, fontWeight = FontWeight.Bold)
+            Text(value, color = Color.White, fontSize = 11.sp)
+        }
     }
 }

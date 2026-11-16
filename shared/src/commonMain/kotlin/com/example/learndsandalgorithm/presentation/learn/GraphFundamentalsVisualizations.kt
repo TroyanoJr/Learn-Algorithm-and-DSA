@@ -3,12 +3,16 @@ package com.example.learndsandalgorithm.presentation.learn
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Surface
@@ -82,6 +86,8 @@ internal fun GraphFundamentalsVisualizationCard(
             stepCount = steps.size,
             isPlaying = isPlaying,
             layoutMode = VisualizerLayoutMode.FULL_WIDTH,
+            fullWidthVisualWeight = 0.65f,
+            detailsScrollable = false,
             statusColor = statusColor,
             onReset = { playback.reset() },
             onPrevious = { playback.previous() },
@@ -110,6 +116,7 @@ internal fun GraphFundamentalsVisualizationCard(
                     step = step,
                     stepIndex = stepIndex,
                     totalSteps = steps.size,
+                    allExplanations = steps.map { it.explanation },
                     scale = 1f
                 )
             }
@@ -164,19 +171,17 @@ private fun GraphFundamentalsDetailsAndStepsContent(
     step: GraphFundamentalsTraceStep,
     stepIndex: Int,
     totalSteps: Int,
+    allExplanations: List<String>,
     scale: Float
 ) {
-    Column(
-        modifier = Modifier.fillMaxWidth(),
-        verticalArrangement = Arrangement.spacedBy(8.dp * scale)
-    ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
+    BoxWithConstraints(Modifier.fillMaxSize()) {
+        val compactDashboard = maxHeight < 280.dp
+        Column(modifier = Modifier.fillMaxSize(), verticalArrangement = Arrangement.spacedBy(3.dp * scale)) {
             Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                Text("CURRENT CONCEPT", color = TextSecondary, fontSize = 9.sp, fontWeight = FontWeight.Bold)
+                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Text("CURRENT CONCEPT", color = TextSecondary, fontSize = 9.sp, fontWeight = FontWeight.Bold)
+                    Text("Graph Topology G=(V,E)", color = GreenAccent, fontSize = 10.sp, fontWeight = FontWeight.Bold)
+                }
                 Text(
                     step.badgeText,
                     color = when (step.topic) {
@@ -188,15 +193,40 @@ private fun GraphFundamentalsDetailsAndStepsContent(
                     fontWeight = FontWeight.Bold
                 )
             }
-            Text("Graph Topology G=(V,E)", color = GreenAccent, fontSize = 10.sp, fontWeight = FontWeight.Bold)
-        }
 
-        StepsCard(
-            label = "Steps",
-            explanation = step.explanation,
-            stepIndex = stepIndex,
-            totalSteps = totalSteps,
-            isCompleted = stepIndex == totalSteps - 1
-        )
+            GraphStepsCard(
+                label = "Steps",
+                explanation = step.explanation,
+                allExplanations = allExplanations,
+                stepIndex = stepIndex,
+                totalSteps = totalSteps,
+                isCompleted = stepIndex == totalSteps - 1
+            )
+
+            if (compactDashboard) {
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(4.dp),
+                    verticalAlignment = Alignment.Top,
+                    modifier = Modifier.fillMaxWidth().height(IntrinsicSize.Min)
+                ) {
+                    GraphFundamentalsInfo("GRAPH TOPOLOGY: {A, B, C, D, E}", Modifier.weight(1f).fillMaxHeight())
+                    GraphFundamentalsInfo("Edges: {AB, AC, BD, CD, DE}", Modifier.weight(1f).fillMaxHeight())
+                    GraphFundamentalsInfo("Vertices = 5, Edges = 5", Modifier.weight(1f).fillMaxHeight())
+                }
+            } else {
+                Row(horizontalArrangement = Arrangement.spacedBy(4.dp), modifier = Modifier.fillMaxWidth()) {
+                    GraphFundamentalsInfo("GRAPH TOPOLOGY: {A, B, C, D, E}", Modifier.weight(1f))
+                    GraphFundamentalsInfo("Edges: {AB, AC, BD, CD, DE}", Modifier.weight(1f))
+                }
+                GraphFundamentalsInfo("Vertices = 5, Edges = 5")
+            }
+        }
+    }
+}
+
+@Composable
+private fun GraphFundamentalsInfo(text: String, modifier: Modifier = Modifier) {
+    Surface(color = Color(0xFF13131C), shape = RoundedCornerShape(8.dp), modifier = modifier.fillMaxWidth()) {
+        Text(text, color = GreenAccent, fontSize = 11.sp, fontWeight = FontWeight.Bold, modifier = Modifier.fillMaxWidth().padding(4.dp))
     }
 }

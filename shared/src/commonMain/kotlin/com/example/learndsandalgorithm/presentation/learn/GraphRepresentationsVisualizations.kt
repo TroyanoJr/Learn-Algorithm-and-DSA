@@ -304,7 +304,13 @@ private fun GraphRepresentationsDetailsAndStepsContent(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                Text("CURRENT REPRESENTATION", color = TextSecondary, fontSize = 9.sp, fontWeight = FontWeight.Bold)
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Text("CURRENT REPRESENTATION", color = TextSecondary, fontSize = 9.sp, fontWeight = FontWeight.Bold)
+                    Text("Graph G = (V, E)", color = GreenAccent, fontSize = 10.sp, fontWeight = FontWeight.Bold)
+                }
                 Text(
                     step.badgeText,
                     color = when (step.view) {
@@ -316,7 +322,6 @@ private fun GraphRepresentationsDetailsAndStepsContent(
                     fontWeight = FontWeight.Bold
                 )
             }
-            Text("Graph G = (V, E)", color = GreenAccent, fontSize = 10.sp, fontWeight = FontWeight.Bold)
         }
 
         StepsCard(

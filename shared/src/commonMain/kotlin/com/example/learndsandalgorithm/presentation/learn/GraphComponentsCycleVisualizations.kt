@@ -31,6 +31,13 @@ private val OrangeAccent = Color(0xFFFA6E13)
 private val BlueAccent = Color(0xFF38BDF8)
 private val GreenAccent = Color(0xFF10B981)
 private val RedAccent = Color(0xFFEF4444)
+
+private val ComponentCycleTopic.displayName: String
+    get() = when (this) {
+        ComponentCycleTopic.CONNECTED_COMPONENTS -> "Connected Components"
+        ComponentCycleTopic.UNDIRECTED_CYCLE -> "Undirected Cycle"
+        ComponentCycleTopic.DIRECTED_CYCLE -> "Directed Cycle"
+    }
 private val TextSecondary = Color(0xFF9CA3AF)
 
 @Composable
@@ -81,6 +88,8 @@ internal fun GraphComponentsCycleVisualizationCard(
             stepCount = steps.size,
             isPlaying = isPlaying,
             layoutMode = VisualizerLayoutMode.FULL_WIDTH,
+            fullWidthVisualWeight = 0.65f,
+            detailsScrollable = false,
             statusColor = statusColor,
             onReset = { playback.reset() },
             onPrevious = { playback.previous() },
@@ -109,6 +118,7 @@ internal fun GraphComponentsCycleVisualizationCard(
                     step = step,
                     stepIndex = stepIndex,
                     totalSteps = steps.size,
+                    allExplanations = steps.map { it.explanation },
                     scale = 1f
                 )
             }
@@ -161,35 +171,60 @@ private fun GraphComponentsCycleDetailsAndStepsContent(
     step: ComponentCycleTraceStep,
     stepIndex: Int,
     totalSteps: Int,
+    allExplanations: List<String>,
     scale: Float
 ) {
     Column(
-        modifier = Modifier.fillMaxWidth(),
-        verticalArrangement = Arrangement.spacedBy(8.dp * scale)
-    ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                Text("CURRENT CHECK", color = TextSecondary, fontSize = 9.sp, fontWeight = FontWeight.Bold)
-                Text(
-                    step.badgeText,
-                    color = if (step.cycleDetected) RedAccent else GreenAccent,
-                    fontSize = 15.sp,
-                    fontWeight = FontWeight.Bold
-                )
-            }
-            Text("Outer Loop: O(V + E)", color = GreenAccent, fontSize = 10.sp, fontWeight = FontWeight.Bold)
-        }
-
-        StepsCard(
-            label = "Steps",
-            explanation = step.explanation,
-            stepIndex = stepIndex,
-            totalSteps = totalSteps,
-            isCompleted = stepIndex == totalSteps - 1
+        modifier = Modifier.fillMaxSize(),
+        verticalArrangement = Arrangement.spacedBy(
+            if (step.topic == ComponentCycleTopic.CONNECTED_COMPONENTS) 0.dp else 3.dp * scale
         )
+    ) {
+                Column(verticalArrangement = Arrangement.spacedBy(
+                    if (step.topic == ComponentCycleTopic.CONNECTED_COMPONENTS) 0.dp else 2.dp
+                )) {
+                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        Text("CURRENT CHECK", color = TextSecondary, fontSize = 9.sp, fontWeight = FontWeight.Bold)
+                        Text(step.topic.displayName, color = GreenAccent, fontSize = 10.sp, fontWeight = FontWeight.Bold)
+                    }
+                    Text(step.badgeText, color = if (step.cycleDetected) RedAccent else GreenAccent, fontSize = 13.sp, fontWeight = FontWeight.Bold)
+                    Text("Outer Loop: O(V + E)", color = GreenAccent, fontSize = 10.sp, fontWeight = FontWeight.Bold)
+                }
+
+                GraphStepsCard(
+                    label = "Steps",
+                    explanation = step.explanation,
+                    allExplanations = allExplanations,
+                    stepIndex = stepIndex,
+                    totalSteps = totalSteps,
+                    isCompleted = stepIndex == totalSteps - 1
+                )
+
+                if (step.topic == ComponentCycleTopic.CONNECTED_COMPONENTS) {
+                    Row(horizontalArrangement = Arrangement.spacedBy(4.dp), modifier = Modifier.fillMaxWidth()) {
+                        Text("Components Found: ${step.components.size}", color = GreenAccent, fontSize = 11.sp, fontWeight = FontWeight.Bold, modifier = Modifier.weight(1f))
+                        Text("Vertex F is isolated.", color = TextSecondary, fontSize = 10.sp, modifier = Modifier.weight(1f))
+                    }
+                    Text("UNDIRECTED COMPONENTS ({AB, BC}, {DE}, {F})", color = TextSecondary, fontSize = 10.sp)
+                } else if (step.cycleDetected) {
+                    Surface(
+                        color = Color(0xFF211519),
+                        shape = RoundedCornerShape(8.dp),
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Column(Modifier.fillMaxWidth().padding(6.dp), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                            Text("CYCLE DETECTED", color = RedAccent, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                            step.cycleEdges?.let { edge ->
+                                Text("CYCLE DETECTED AT EDGE ${edge.first}-${edge.second}", color = RedAccent, fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                            }
+                            Text("TRIANGLE GRAPH {A, B, C}", color = TextSecondary, fontSize = 10.sp)
+                        }
+                    }
+                } else {
+                    Row(horizontalArrangement = Arrangement.spacedBy(4.dp), modifier = Modifier.fillMaxWidth()) {
+                        Text("Checking cycle invariant...", color = BlueAccent, fontSize = 11.sp, fontWeight = FontWeight.Bold, modifier = Modifier.weight(1f))
+                        Text("TRIANGLE GRAPH {A, B, C}", color = TextSecondary, fontSize = 10.sp, modifier = Modifier.weight(1f))
+                    }
+                }
     }
 }

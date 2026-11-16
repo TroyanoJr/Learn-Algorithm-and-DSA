@@ -1,10 +1,15 @@
 package com.example.learndsandalgorithm.presentation.learn
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -71,6 +76,8 @@ internal fun GraphBfsVisualizationCard(
             stepCount = steps.size,
             isPlaying = isPlaying,
             layoutMode = VisualizerLayoutMode.FULL_WIDTH,
+            fullWidthVisualWeight = 0.65f,
+            detailsScrollable = false,
             statusColor = statusColor,
             onReset = { playback.reset() },
             onPrevious = { playback.previous() },
@@ -88,6 +95,7 @@ internal fun GraphBfsVisualizationCard(
                     step = step,
                     stepIndex = stepIndex,
                     totalSteps = steps.size,
+                    allExplanations = steps.map { it.explanation },
                     scale = 1f
                 )
             }
@@ -100,39 +108,59 @@ private fun GraphBfsDetailsAndStepsContent(
     step: GraphBfsTraceStep,
     stepIndex: Int,
     totalSteps: Int,
+    allExplanations: List<String>,
     scale: Float
 ) {
-    Column(
-        modifier = Modifier.fillMaxWidth(),
-        verticalArrangement = Arrangement.spacedBy(8.dp * scale)
-    ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
+    BoxWithConstraints(Modifier.fillMaxSize()) {
+        val compactDashboard = maxHeight < 280.dp
+        Column(
+            modifier = Modifier.fillMaxSize(),
+            verticalArrangement = Arrangement.spacedBy(3.dp * scale)
         ) {
             Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                Text("CURRENT BFS STEP", color = TextSecondary, fontSize = 9.sp, fontWeight = FontWeight.Bold)
-                Text(
-                    step.badgeText,
-                    color = when (step.event) {
-                        BfsStepEvent.BFS_COMPLETE -> GreenAccent
-                        BfsStepEvent.DEQUEUE_VERTEX -> OrangeAccent
-                        else -> BlueAccent
-                    },
-                    fontSize = 15.sp,
-                    fontWeight = FontWeight.Bold
-                )
+                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                    Text("CURRENT BFS STEP", color = TextSecondary, fontSize = 9.sp, fontWeight = FontWeight.Bold)
+                    Text("Complexity: O(V + E) · O(V) space", color = GreenAccent, fontSize = 10.sp, fontWeight = FontWeight.Bold)
+                }
+                Text(step.badgeText, color = when (step.event) {
+                    BfsStepEvent.BFS_COMPLETE -> GreenAccent
+                    BfsStepEvent.DEQUEUE_VERTEX -> OrangeAccent
+                    else -> BlueAccent
+                }, fontSize = 15.sp, fontWeight = FontWeight.Bold)
             }
-            Text("Complexity: O(V + E) Time, O(V) Space", color = GreenAccent, fontSize = 10.sp, fontWeight = FontWeight.Bold)
-        }
 
-        StepsCard(
-            label = "Steps",
-            explanation = step.explanation,
-            stepIndex = stepIndex,
-            totalSteps = totalSteps,
-            isCompleted = stepIndex == totalSteps - 1
-        )
+            GraphStepsCard(
+                label = "Steps",
+                explanation = step.explanation,
+                allExplanations = allExplanations,
+                stepIndex = stepIndex,
+                totalSteps = totalSteps,
+                isCompleted = stepIndex == totalSteps - 1
+            )
+
+            if (compactDashboard) {
+                Row(horizontalArrangement = Arrangement.spacedBy(4.dp), modifier = Modifier.fillMaxWidth()) {
+                    Box(Modifier.weight(1f)) { GraphQueueRow(items = step.queue, title = "QUEUE (FRONT → REAR):") }
+                    GraphBfsInfoPanel("VISITED SET", step.visited.takeIf { it.isNotEmpty() }?.joinToString(", ") ?: "Empty", Modifier.weight(1f))
+                    GraphBfsInfoPanel("DISCOVERY / VISITED ORDER", step.visited.takeIf { it.isNotEmpty() }?.joinToString(" → ") ?: "Empty", Modifier.weight(1f))
+                }
+            } else {
+                Row(horizontalArrangement = Arrangement.spacedBy(4.dp), modifier = Modifier.fillMaxWidth()) {
+                    Box(Modifier.weight(1f)) { GraphQueueRow(items = step.queue, title = "QUEUE (FRONT → REAR):") }
+                    GraphBfsInfoPanel("VISITED SET", step.visited.takeIf { it.isNotEmpty() }?.joinToString(", ") ?: "Empty", Modifier.weight(1f))
+                }
+                GraphBfsInfoPanel("DISCOVERY / VISITED ORDER", step.visited.takeIf { it.isNotEmpty() }?.joinToString(" → ") ?: "Empty")
+            }
+        }
+    }
+}
+
+@Composable
+private fun GraphBfsInfoPanel(title: String, value: String, modifier: Modifier = Modifier) {
+    Surface(color = Color(0xFF13131C), shape = RoundedCornerShape(8.dp), modifier = modifier.fillMaxWidth()) {
+        Column(Modifier.fillMaxWidth().padding(4.dp), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+            Text(title, color = BlueAccent, fontSize = 9.sp, fontWeight = FontWeight.Bold)
+            Text(value, color = Color.White, fontSize = 11.sp)
+        }
     }
 }
