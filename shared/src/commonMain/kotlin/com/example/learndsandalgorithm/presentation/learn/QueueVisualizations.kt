@@ -18,6 +18,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -43,6 +44,7 @@ internal fun QueueVisualizationCard(
     title: String = "Queue Visualizer"
 ) {
     val steps = QueueTrace.stepsFor(demonstration)
+    val scenes = remember(steps) { QueueSceneBuilder.buildScenes(steps) }
     val autoExpand = LocalAutoExpandVisualizer.current
     var isExpanded by rememberSaveable(demonstration) { mutableStateOf(autoExpand) }
 
@@ -93,9 +95,12 @@ internal fun QueueVisualizationCard(
                 isExpanded = false
             },
             visualContent = {
-                FitToPane(modifier = Modifier.fillMaxSize()) {
-                    QueueVisualizationContent(step = step, scale = 1f)
-                }
+                QueueSceneRenderer(
+                    scene = scenes[stepIndex],
+                    step = step,
+                    sequence = steps,
+                    modifier = Modifier.fillMaxSize()
+                )
             },
             detailsContent = {
                 QueueDetailsAndStepsContent(step = step, stepIndex = stepIndex, totalSteps = steps.size, scale = 1f)
@@ -195,25 +200,21 @@ private fun QueueDetailsAndStepsContent(step: QueueTraceStep, stepIndex: Int, to
         modifier = Modifier.fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(8.dp * scale)
     ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                Text("OPERATION RESULT", color = TextSecondary, fontSize = 9.sp, fontWeight = FontWeight.Bold)
-                Text(
-                    step.returnedValue ?: "—",
-                    color = if (step.returnedValue != null) GreenAccent else TextPrimary,
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.Bold
-                )
-            }
-            Column(horizontalAlignment = Alignment.End, verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                Text("Logical front → rear: ${step.values.joinToString(prefix = "[", postfix = "]")}", color = TextPrimary, fontSize = 11.sp)
-                Text("size ${step.size} / ${step.capacity}", color = TextSecondary, fontSize = 10.sp)
-            }
+        Column(verticalArrangement = Arrangement.spacedBy(2.dp * scale)) {
+            Text("OPERATION RESULT", color = TextSecondary, fontSize = 9.sp, fontWeight = FontWeight.Bold)
+            Text(
+                step.returnedValue ?: "—",
+                color = if (step.returnedValue != null) GreenAccent else TextPrimary,
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Bold
+            )
         }
+        Text(
+            "Logical front → rear: ${step.values.joinToString(prefix = "[", postfix = "]")}",
+            color = TextPrimary,
+            fontSize = 11.sp
+        )
+        Text("size ${step.size} / ${step.capacity}", color = TextSecondary, fontSize = 10.sp)
 
         StepsCard(
             label = "Steps",

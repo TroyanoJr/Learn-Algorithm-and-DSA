@@ -10,6 +10,44 @@ import kotlin.test.assertTrue
 class VisualizerCanvasViewportTest {
 
     @Test
+    fun centerPlacementRemainsCenteredAndTopUsesInsetAtScaleOneAndFitScale() {
+        val center = VisualizerCanvasState()
+        center.viewportSize = IntSize(400, 300)
+        center.contentSize = IntSize(200, 150)
+        assertEquals(75f, center.initialY)
+
+        val top = VisualizerCanvasState(verticalAlignment = VisualizerCanvasVerticalAlignment.TOP, topInsetPx = 12f)
+        top.viewportSize = IntSize(400, 300)
+        top.contentSize = IntSize(200, 150)
+        assertEquals(12f, top.initialY)
+
+        val fit = VisualizerCanvasState(verticalAlignment = VisualizerCanvasVerticalAlignment.TOP, topInsetPx = 12f)
+        fit.viewportSize = IntSize(400, 400)
+        fit.contentSize = IntSize(600, 500)
+        val visualTop = fit.initialY - (fit.contentSize.height * fit.scale - fit.contentSize.height) / 2f
+        assertEquals(12f, visualTop, 0.001f)
+        assertTrue(fit.contentSize.height * fit.scale + visualTop <= fit.viewportSize.height)
+    }
+
+    @Test
+    fun topResetAndZoomKeepGestureCentroidAndClampPan() {
+        val state = VisualizerCanvasState(verticalAlignment = VisualizerCanvasVerticalAlignment.TOP, topInsetPx = 12f)
+        state.viewportSize = IntSize(400, 400)
+        state.contentSize = IntSize(600, 500)
+        val centroid = Offset(200f, 120f)
+        val beforeOrigin = state.initialY - (state.contentSize.height * state.scale - state.contentSize.height) / 2f + state.translationY
+        val contentPoint = (centroid.y - beforeOrigin) / state.scale
+        state.onTransform(2f, Offset.Zero, centroid)
+        val afterOrigin = state.initialY - (state.contentSize.height * state.scale - state.contentSize.height) / 2f + state.translationY
+        assertEquals(contentPoint, (centroid.y - afterOrigin) / state.scale, 0.01f)
+        state.onTransform(1f, Offset(0f, -5000f), centroid)
+        assertTrue(state.translationY >= -1000f)
+        state.reset()
+        val resetTop = state.initialY - (state.contentSize.height * state.scale - state.contentSize.height) / 2f
+        assertEquals(12f, resetTop, 0.001f)
+    }
+
+    @Test
     fun testInitialState() {
         val state = VisualizerCanvasState(initialScale = 1.0f, minScale = 0.5f, maxScale = 3.5f)
         assertEquals(1.0f, state.scale)

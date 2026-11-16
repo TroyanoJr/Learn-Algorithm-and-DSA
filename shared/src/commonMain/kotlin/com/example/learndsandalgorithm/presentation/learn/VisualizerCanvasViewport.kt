@@ -15,6 +15,8 @@ import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.IntSize
+import androidx.compose.ui.unit.dp
+import kotlin.math.roundToInt
 
 /**
  * Modes of presentation and interaction for [VisualizerCanvasViewport].
@@ -51,6 +53,8 @@ internal enum class VisualizerCanvasMode {
     HYBRID
 }
 
+internal enum class VisualizerCanvasVerticalAlignment { CENTER, TOP }
+
 /**
  * State object holding scale, translation offsets, and viewport/content dimensions.
  *
@@ -69,7 +73,9 @@ internal enum class VisualizerCanvasMode {
 internal class VisualizerCanvasState(
     val initialScale: Float = 1.0f,
     val minScale: Float = 0.5f,
-    val maxScale: Float = 3.5f
+    val maxScale: Float = 3.5f,
+    val verticalAlignment: VisualizerCanvasVerticalAlignment = VisualizerCanvasVerticalAlignment.CENTER,
+    private val topInsetPx: Float = 0f
 ) {
     var scale by mutableStateOf(initialScale)
         private set
@@ -166,12 +172,17 @@ internal class VisualizerCanvasState(
             return if (scaledW <= vW) (vW - cW) / 2f else 0f
         }
 
-    private val initialY: Float
+    internal val initialY: Float
         get() {
             val cH = contentSize.height.toFloat()
             val vH = viewportSize.height.toFloat()
             val scaledH = cH * scale
-            return if (scaledH <= vH) (vH - cH) / 2f else 0f
+            if (scaledH > vH) return 0f
+            val visualTop = when (verticalAlignment) {
+                VisualizerCanvasVerticalAlignment.CENTER -> (vH - scaledH) / 2f
+                VisualizerCanvasVerticalAlignment.TOP -> minOf(topInsetPx, vH - scaledH)
+            }
+            return visualTop + (scaledH - cH) / 2f
         }
 
     /**
@@ -212,10 +223,10 @@ internal class VisualizerCanvasState(
         val shiftWNew = (cW * newScale - cW) / 2f
         val shiftHNew = (cH * newScale - cH) / 2f
 
+        scale = newScale
         val targetTx = targetOriginX - initialX + shiftWNew
         val targetTy = targetOriginY - initialY + shiftHNew
 
-        scale = newScale
         applyClampedTranslation(targetTx, targetTy)
     }
 
@@ -269,13 +280,18 @@ internal fun rememberVisualizerCanvasState(
     initialScale: Float = 1.0f,
     minScale: Float = 0.5f,
     maxScale: Float = 3.5f,
-    key: Any? = Unit
+    key: Any? = Unit,
+    verticalAlignment: VisualizerCanvasVerticalAlignment = VisualizerCanvasVerticalAlignment.CENTER
 ): VisualizerCanvasState {
-    return remember(key) {
+    val density = androidx.compose.ui.platform.LocalDensity.current
+    val insetPx = with(density) { 12.dp.toPx() }
+    return remember(key, verticalAlignment, insetPx) {
         VisualizerCanvasState(
             initialScale = initialScale,
             minScale = minScale,
-            maxScale = maxScale
+            maxScale = maxScale,
+            verticalAlignment = verticalAlignment,
+            topInsetPx = insetPx
         )
     }
 }
@@ -349,11 +365,11 @@ internal fun VisualizerCanvasViewport(
         layout(vW, vH) {
             if (placeable != null && cW > 0 && cH > 0) {
                 val initialX = if (cW * state.scale <= vW) (vW - cW) / 2 else 0
-                val initialY = if (cH * state.scale <= vH) (vH - cH) / 2 else 0
+                val initialY = state.initialY
 
                 placeable.placeWithLayer(
                     x = initialX,
-                    y = initialY
+                    y = initialY.roundToInt()
                 ) {
                     scaleX = state.scale
                     scaleY = state.scale

@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -46,6 +47,13 @@ internal fun ArrayVisualizationCard() {
     val arrayItems = listOf(
         "10", "20", "30", "40", "50", "60", "70", "80", "90", "100"
     )
+    val scene = remember {
+        ArraySceneBuilder.buildStaticArray(
+            values = arrayItems,
+            highlightedIndices = setOf(2),
+            explanation = "Each index labels the value in its cell. Index 2 contains 30, so numbers[2] returns 30 directly in O(1) time."
+        )
+    }
 
     Surface(
         color = DarkCardBgColor,
@@ -70,11 +78,12 @@ internal fun ArrayVisualizationCard() {
                 fontSize = 13.sp,
                 lineHeight = 18.sp
             )
-            ArrayElementRow(
-                values = arrayItems,
-                highlightedIndices = setOf(2),
-                cellHeight = 44.dp,
-                spacing = 6.dp
+            ArraySceneRenderer(
+                frame = scene,
+                sequence = listOf(scene),
+                modifier = Modifier.fillMaxWidth(),
+                naturalHeight = true,
+                viewportKey = "arrays_fundamentals"
             )
         }
     }
@@ -199,18 +208,13 @@ internal fun ArrayResizeVisualizationCard() {
     var isExpanded by remember { mutableStateOf(autoExpand) }
 
     val steps = remember { ArrayTrace.resizeSteps() }
-    val totalSteps = 4
+    val frames = remember(steps) { ArraySceneBuilder.buildResizeFrames(steps) }
     val playback = rememberVisualizerPlaybackState(stepCount = steps.size, initialStep = 0)
+    val viewportState = rememberVisualizerCanvasState(key = "array_resize", verticalAlignment = VisualizerCanvasVerticalAlignment.TOP)
     val stepIndex = playback.safeStepIndex
     val isPlaying = playback.isPlaying
     val isCompleted = playback.isCompleted
-
-    val currentStep = steps[stepIndex.coerceIn(0, steps.lastIndex)]
-    val stageLabel = currentStep.stageLabel
-    val storageSlots = currentStep.storageSlots
-    val preservedStorageSlots = currentStep.preservedStorageSlots
-    val highlightedIndices = currentStep.highlightedIndices
-    val explanationText = currentStep.explanationText
+    val frame = frames[stepIndex.coerceIn(0, frames.lastIndex)]
 
     if (!autoExpand) {
         ArrayWindowButton(text = "Open resize visualizer") { isExpanded = true }
@@ -218,16 +222,12 @@ internal fun ArrayResizeVisualizationCard() {
 
     if (isExpanded) {
         ArrayResizeExpandedDialog(
-            stepIndex = stepIndex,
-            totalSteps = totalSteps,
+            frame = frame,
+            sequence = frames,
             isPlaying = isPlaying,
             isCompleted = isCompleted,
-            stageLabel = stageLabel,
-            storageSlots = storageSlots,
-            preservedStorageSlots = preservedStorageSlots,
-            highlightedIndices = highlightedIndices,
-            explanationText = explanationText,
-            onReset = { playback.reset() },
+            viewportState = viewportState,
+            onReset = { playback.reset(); viewportState.reset() },
             onPrevious = { playback.previous() },
             onPlayPause = { playback.togglePlayback() },
             onNext = { playback.next() },
@@ -241,33 +241,23 @@ internal fun ArrayResizeVisualizationCard() {
 
 @Composable
 internal fun ArrayResizeExpandedDialog(
-    stepIndex: Int,
-    totalSteps: Int,
+    frame: ArraySceneFrame,
+    sequence: List<ArraySceneFrame>,
     isPlaying: Boolean,
     isCompleted: Boolean,
-    stageLabel: String,
-    storageSlots: List<String?>,
-    preservedStorageSlots: List<String?>?,
-    highlightedIndices: Set<Int>,
-    explanationText: String,
+    viewportState: VisualizerCanvasState,
     onReset: () -> Unit,
     onPrevious: () -> Unit,
     onPlayPause: () -> Unit,
     onNext: () -> Unit,
     onClose: () -> Unit
 ) {
-    val statusText = when {
-        stepIndex == 0 -> "READY"
-        isCompleted -> "COMPLETED"
-        else -> "STEP $stepIndex OF $totalSteps"
-     }
-
     VisualizerModal(
         title = "DYNAMIC ARRAY RESIZE",
-        statusText = statusText,
+        statusText = frame.statusText,
         isCompleted = isCompleted,
-        stepIndex = stepIndex,
-        stepCount = totalSteps,
+        stepIndex = frame.snapshotIndex,
+        stepCount = frame.snapshotCount,
         isPlaying = isPlaying,
         layoutMode = VisualizerLayoutMode.FULL_WIDTH,
         fitMaxScale = 1.0f,
@@ -278,40 +268,16 @@ internal fun ArrayResizeExpandedDialog(
         onNext = onNext,
         onClose = onClose,
         visualContent = {
-            Column(
-                verticalArrangement = Arrangement.spacedBy(8.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                if (preservedStorageSlots != null) {
-                    ArrayStorageRow(
-                        label = "OLD ARRAY (PRESERVED)",
-                        slots = preservedStorageSlots,
-                        cellHeight = 36.dp
-                    )
-                    ArrayStorageRow(
-                        label = stageLabel,
-                        slots = storageSlots,
-                        highlightedIndices = highlightedIndices,
-                        cellHeight = 36.dp
-                    )
-                } else {
-                    ArrayStorageRow(
-                        label = stageLabel,
-                        slots = storageSlots,
-                        highlightedIndices = highlightedIndices,
-                        cellHeight = 36.dp
-                    )
-                }
-            }
+            ArraySceneRenderer(frame, sequence, modifier = Modifier.fillMaxSize(), viewportKey = "array_resize", viewportState = viewportState)
         },
         detailsContent = {
             StepsCard(
-                label = "Size vs Capacity",
-                explanation = explanationText,
-                stepIndex = stepIndex,
-                totalSteps = totalSteps,
+                label = frame.detailsLabel,
+                explanation = frame.explanation,
+                stepIndex = frame.snapshotIndex,
+                totalSteps = frame.snapshotCount,
                 isCompleted = isCompleted,
-                footer = "SIZE = values stored | CAPACITY = allocated slots"
+                footer = frame.footer
             )
         }
     )
@@ -323,23 +289,12 @@ internal fun ArrayTraversalVisualizationCard() {
     var isExpanded by remember { mutableStateOf(autoExpand) }
 
     val steps = remember { ArrayTrace.traversalSteps() }
-    val totalElements = ArrayTrace.defaultTraversalData.size
-    val playback = rememberVisualizerPlaybackState(stepCount = steps.size, initialStep = -1)
-    val currentIndex = playback.safeStepIndex
+    val frames = remember(steps) { ArraySceneBuilder.buildTraversalFrames(steps) }
+    val playback = rememberVisualizerPlaybackState(stepCount = steps.size, initialStep = 0)
+    val viewportState = rememberVisualizerCanvasState(key = "array_traversal", verticalAlignment = VisualizerCanvasVerticalAlignment.TOP)
+    val stepIndex = playback.safeStepIndex
     val isPlaying = playback.isPlaying
-    val isCompleted = playback.isCompleted
-
-    val stepIdx = (currentIndex + 1).coerceIn(0, steps.lastIndex)
-    val currentStep = steps[stepIdx]
-    val arrayData = currentStep.arrayData
-    val visitedCount = currentStep.visitedCount
-    val badgeText = currentStep.badgeText
-    val badgeColor = when {
-        currentIndex < 0 -> TextSecondary
-        isCompleted -> GreenAccent
-        else -> BlueAccent
-    }
-    val explanationText = currentStep.explanationText
+    val frame = frames[stepIndex.coerceIn(0, frames.lastIndex)]
 
     if (!autoExpand) {
         ArrayWindowButton(text = "Open traversal visualizer") { isExpanded = true }
@@ -347,21 +302,17 @@ internal fun ArrayTraversalVisualizationCard() {
 
     if (isExpanded) {
         ArrayTraversalExpandedDialog(
-            arrayData = arrayData,
-            currentIndex = currentIndex,
+            frame = frame,
+            sequence = frames,
             isPlaying = isPlaying,
-            isCompleted = isCompleted,
-            totalElements = totalElements,
-            visitedCount = visitedCount,
-            badgeText = badgeText,
-            badgeColor = badgeColor,
-            explanationText = explanationText,
-            onReset = { playback.reset() },
+            viewportState = viewportState,
+            onReset = { playback.reset(); viewportState.reset() },
             onPrevious = { playback.previous() },
             onPlayPause = { playback.togglePlayback() },
             onNext = { playback.next() },
             onClose = {
                 playback.reset()
+                viewportState.reset()
                 isExpanded = false
             }
         )
@@ -370,15 +321,10 @@ internal fun ArrayTraversalVisualizationCard() {
 
 @Composable
 internal fun ArrayTraversalExpandedDialog(
-    arrayData: List<String>,
-    currentIndex: Int,
+    frame: ArraySceneFrame,
+    sequence: List<ArraySceneFrame>,
     isPlaying: Boolean,
-    isCompleted: Boolean,
-    totalElements: Int,
-    visitedCount: Int,
-    badgeText: String,
-    badgeColor: Color,
-    explanationText: String,
+    viewportState: VisualizerCanvasState,
     onReset: () -> Unit,
     onPrevious: () -> Unit,
     onPlayPause: () -> Unit,
@@ -387,11 +333,15 @@ internal fun ArrayTraversalExpandedDialog(
 ) {
     VisualizerModal(
         title = "ARRAY TRAVERSAL",
-        statusText = badgeText,
-        statusColor = badgeColor,
-        isCompleted = isCompleted,
-        stepIndex = if (currentIndex < 0) 0 else currentIndex + 1,
-        stepCount = totalElements + 1,
+        statusText = frame.statusText,
+        statusColor = when {
+            frame.statusText == "READY" -> TextSecondary
+            frame.isCompleted -> GreenAccent
+            else -> BlueAccent
+        },
+        isCompleted = frame.isCompleted,
+        stepIndex = frame.snapshotIndex,
+        stepCount = frame.snapshotCount,
         isPlaying = isPlaying,
         layoutMode = VisualizerLayoutMode.FULL_WIDTH,
         fitMaxScale = 1.0f,
@@ -402,21 +352,16 @@ internal fun ArrayTraversalExpandedDialog(
         onNext = onNext,
         onClose = onClose,
         visualContent = {
-            ArrayElementRow(
-                values = arrayData,
-                highlightedIndices = if (currentIndex in arrayData.indices) setOf(currentIndex) else emptySet(),
-                cellHeight = 36.dp,
-                spacing = 14.dp
-            )
+            ArraySceneRenderer(frame, sequence, modifier = Modifier.fillMaxSize(), viewportKey = "array_traversal", viewportState = viewportState)
         },
         detailsContent = {
             StepsCard(
-                label = "Traversal Status",
-                explanation = explanationText,
-                stepIndex = if (currentIndex < 0) -1 else currentIndex,
-                totalSteps = totalElements,
-                isCompleted = isCompleted,
-                footer = "$visitedCount / $totalElements VISITED"
+                label = frame.detailsLabel,
+                explanation = frame.explanation,
+                stepIndex = frame.snapshotIndex,
+                totalSteps = frame.snapshotCount,
+                isCompleted = frame.isCompleted,
+                footer = frame.footer
             )
         }
     )
@@ -429,23 +374,14 @@ internal fun ArrayInsertDeleteVisualizationCard() {
     var isExpanded by remember { mutableStateOf(autoExpand) }
 
     val steps = remember(operationMode) { ArrayTrace.insertDeleteSteps(operationMode) }
-    val totalSteps = steps.lastIndex
+    val frames = remember(operationMode, steps) { ArraySceneBuilder.buildInsertDeleteFrames(steps, operationMode) }
 
     val playback = rememberVisualizerPlaybackState(stepCount = steps.size, initialStep = 0, key = operationMode)
+    val viewportState = rememberVisualizerCanvasState(key = operationMode, verticalAlignment = VisualizerCanvasVerticalAlignment.TOP)
     val stepIndex = playback.safeStepIndex
     val isPlaying = playback.isPlaying
     val isCompleted = playback.isCompleted
-
-    val currentStep = steps[stepIndex.coerceIn(0, steps.lastIndex)]
-    val displayItems = currentStep.displayItems
-    val highlightedIndices = currentStep.highlightedIndices
-    val explanationText = currentStep.explanationText
-    val badgeText = currentStep.badgeText
-    val badgeColor = when (stepIndex) {
-        0 -> TextSecondary
-        totalSteps -> GreenAccent
-        else -> BlueAccent
-    }
+    val frame = frames[stepIndex.coerceIn(0, frames.lastIndex)]
 
     if (!autoExpand) {
         ArrayWindowButton(text = "Open insert / delete visualizer") { isExpanded = true }
@@ -454,25 +390,22 @@ internal fun ArrayInsertDeleteVisualizationCard() {
     if (isExpanded) {
         ArrayInsertDeleteExpandedDialog(
             operationMode = operationMode,
-            stepIndex = stepIndex,
-            totalSteps = totalSteps,
+            frame = frame,
+            sequence = frames,
             isPlaying = isPlaying,
             isCompleted = isCompleted,
-            displayItems = displayItems,
-            highlightedIndices = highlightedIndices,
-            explanationText = explanationText,
-            badgeText = badgeText,
-            badgeColor = badgeColor,
+            viewportState = viewportState,
             onOperationModeChange = { newMode ->
                 operationMode = newMode
                 playback.reset()
             },
-            onReset = { playback.reset() },
+            onReset = { playback.reset(); viewportState.reset() },
             onPrevious = { playback.previous() },
             onPlayPause = { playback.togglePlayback() },
             onNext = { playback.next() },
             onClose = {
                 playback.reset()
+                viewportState.reset()
                 isExpanded = false
             }
         )
@@ -482,15 +415,11 @@ internal fun ArrayInsertDeleteVisualizationCard() {
 @Composable
 internal fun ArrayInsertDeleteExpandedDialog(
     operationMode: String,
-    stepIndex: Int,
-    totalSteps: Int,
+    frame: ArraySceneFrame,
+    sequence: List<ArraySceneFrame>,
     isPlaying: Boolean,
     isCompleted: Boolean,
-    displayItems: List<String>,
-    highlightedIndices: Set<Int>,
-    explanationText: String,
-    badgeText: String,
-    badgeColor: Color,
+    viewportState: VisualizerCanvasState,
     onOperationModeChange: (String) -> Unit,
     onReset: () -> Unit,
     onPrevious: () -> Unit,
@@ -500,11 +429,15 @@ internal fun ArrayInsertDeleteExpandedDialog(
 ) {
     VisualizerModal(
         title = "INSERT & DELETE",
-        statusText = badgeText,
-        statusColor = badgeColor,
+        statusText = frame.statusText,
+        statusColor = when {
+            frame.statusText == "READY" -> TextSecondary
+            frame.isCompleted -> GreenAccent
+            else -> BlueAccent
+        },
         isCompleted = isCompleted,
-        stepIndex = stepIndex,
-        stepCount = totalSteps,
+        stepIndex = frame.snapshotIndex,
+        stepCount = frame.snapshotCount,
         isPlaying = isPlaying,
         layoutMode = VisualizerLayoutMode.FULL_WIDTH,
         fitMaxScale = 1.0f,
@@ -538,20 +471,15 @@ internal fun ArrayInsertDeleteExpandedDialog(
             }
         },
         visualContent = {
-            ArrayElementRow(
-                values = displayItems,
-                highlightedIndices = highlightedIndices,
-                cellHeight = 36.dp,
-                spacing = 14.dp
-            )
+            ArraySceneRenderer(frame, sequence, modifier = Modifier.fillMaxSize(), viewportKey = operationMode, viewportState = viewportState)
         },
         detailsContent = {
             StepsCard(
-                label = if (operationMode == "INSERT") "Insertion Step" else "Deletion Step",
-                explanation = explanationText,
-                stepIndex = stepIndex,
-                totalSteps = totalSteps,
-                isCompleted = isCompleted
+                label = frame.detailsLabel,
+                explanation = frame.explanation,
+                stepIndex = frame.snapshotIndex,
+                totalSteps = frame.snapshotCount,
+                isCompleted = frame.isCompleted
             )
         }
     )

@@ -17,32 +17,39 @@ class ArrayTraceTest {
 
         // Step 0: CURRENT STORAGE
         assertEquals("CURRENT STORAGE", steps[0].stageLabel)
-        assertEquals(11, steps[0].storageSlots.size)
+        assertEquals(5, steps[0].storageSlots.size)
         assertNull(steps[0].preservedStorageSlots)
-        assertEquals(setOf(10), steps[0].highlightedIndices)
+        assertEquals(setOf(4), steps[0].highlightedIndices)
 
         // Step 1: CAPACITY FULL
         assertEquals("CAPACITY FULL", steps[1].stageLabel)
-        assertEquals(11, steps[1].storageSlots.size)
+        assertEquals(5, steps[1].storageSlots.size)
         assertNull(steps[1].preservedStorageSlots)
 
-        // Step 2: NEW STORAGE (22 slots)
+        // Step 2: NEW STORAGE (10 slots)
         assertEquals("NEW STORAGE", steps[2].stageLabel)
-        assertEquals(22, steps[2].storageSlots.size)
+        assertEquals(10, steps[2].storageSlots.size)
         assertTrue(steps[2].storageSlots.all { it == null })
         assertNotNull(steps[2].preservedStorageSlots)
-        assertEquals(11, steps[2].preservedStorageSlots?.size)
+        assertEquals(5, steps[2].preservedStorageSlots?.size)
 
-        // Step 3: 11 VALUES COPIED
-        assertEquals("11 VALUES COPIED", steps[3].stageLabel)
-        assertEquals(22, steps[3].storageSlots.size)
-        assertEquals((0..10).toSet(), steps[3].highlightedIndices)
+        // Step 3: VALUES COPIED
+        assertEquals("VALUES COPIED", steps[3].stageLabel)
+        assertEquals(10, steps[3].storageSlots.size)
+        assertEquals((0..4).toSet(), steps[3].highlightedIndices)
 
-        // Step 4: 120 APPENDED
-        assertEquals("120 APPENDED", steps[4].stageLabel)
-        assertEquals(22, steps[4].storageSlots.size)
-        assertEquals("120", steps[4].storageSlots[11])
-        assertEquals(setOf(11), steps[4].highlightedIndices)
+        // Step 4: APPENDED
+        assertEquals("APPENDED", steps[4].stageLabel)
+        assertEquals(10, steps[4].storageSlots.size)
+        assertEquals("60", steps[4].storageSlots[5])
+        assertEquals(setOf(5), steps[4].highlightedIndices)
+        assertEquals(listOf("10", "20", "30", "40", null), steps[0].storageSlots)
+        assertEquals(listOf("10", "20", "30", "40", "50"), steps[1].storageSlots)
+        assertEquals(steps[1].storageSlots, steps[2].preservedStorageSlots)
+        assertEquals(steps[1].storageSlots, steps[3].storageSlots.take(5))
+        assertEquals(listOf("10", "20", "30", "40", "50", "60") + List(4) { null }, steps[4].storageSlots)
+        assertEquals(listOf(5, 5, 10, 10, 10), steps.map { it.storageSlots.size })
+        assertEquals(listOf(4, 5, 0, 5, 6), steps.map { it.storageSlots.count { value -> value != null } })
     }
 
     @Test
@@ -78,8 +85,22 @@ class ArrayTraceTest {
     @Test
     fun insertionStepsShiftValuesRightAndPlaceNewValueAtTargetIndex() {
         val steps = ArrayTrace.insertDeleteSteps("INSERT")
+        val expectedStates = listOf(
+            listOf("10", "20", "30", "40", "50", "60", "70", "80", "90", "100"),
+            listOf("10", "20", "30", "40", "50", "60", "70", "80", "90", "100", "  "),
+            listOf("10", "20", "30", "40", "50", "60", "70", "80", "90", "  ", "100"),
+            listOf("10", "20", "30", "40", "50", "60", "70", "80", "  ", "90", "100"),
+            listOf("10", "20", "30", "40", "50", "60", "70", "  ", "80", "90", "100"),
+            listOf("10", "20", "30", "40", "50", "60", "  ", "70", "80", "90", "100"),
+            listOf("10", "20", "30", "40", "50", "  ", "60", "70", "80", "90", "100"),
+            listOf("10", "20", "30", "40", "  ", "50", "60", "70", "80", "90", "100"),
+            listOf("10", "20", "30", "  ", "40", "50", "60", "70", "80", "90", "100"),
+            listOf("10", "20", "  ", "30", "40", "50", "60", "70", "80", "90", "100"),
+            listOf("10", "20", "25", "30", "40", "50", "60", "70", "80", "90", "100")
+        )
 
         assertEquals(11, steps.size)
+        expectedStates.forEachIndexed { index, expected -> assertEquals(expected, steps[index].displayItems) }
 
         // Step 0: Initial
         assertEquals(10, steps[0].displayItems.size)
@@ -108,8 +129,23 @@ class ArrayTraceTest {
     @Test
     fun deletionStepsShiftValuesLeftAndRemoveTrailingSlot() {
         val steps = ArrayTrace.insertDeleteSteps("DELETE")
+        val base = listOf("10", "20", "30", "40", "50", "60", "70", "80", "90", "100")
+        val expectedStates = listOf(
+            base,
+            listOf("10", "  ", "30", "40", "50", "60", "70", "80", "90", "100"),
+            listOf("10", "30", "  ", "40", "50", "60", "70", "80", "90", "100"),
+            listOf("10", "30", "40", "  ", "50", "60", "70", "80", "90", "100"),
+            listOf("10", "30", "40", "50", "  ", "60", "70", "80", "90", "100"),
+            listOf("10", "30", "40", "50", "60", "  ", "70", "80", "90", "100"),
+            listOf("10", "30", "40", "50", "60", "70", "  ", "80", "90", "100"),
+            listOf("10", "30", "40", "50", "60", "70", "80", "  ", "90", "100"),
+            listOf("10", "30", "40", "50", "60", "70", "80", "90", "  ", "100"),
+            listOf("10", "30", "40", "50", "60", "70", "80", "90", "100", "  "),
+            listOf("10", "30", "40", "50", "60", "70", "80", "90", "100")
+        )
 
         assertEquals(11, steps.size)
+        expectedStates.forEachIndexed { index, expected -> assertEquals(expected, steps[index].displayItems) }
 
         // Step 0: Initial
         assertEquals(10, steps[0].displayItems.size)

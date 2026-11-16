@@ -51,6 +51,7 @@ internal object HashTableCollisionTrace {
     }
 
     fun stepsForStrategy(strategy: CollisionStrategy, capacity: Int = 7): List<CollisionTraceStep> {
+        require(capacity > 0) { "Capacity must be positive" }
         return when (strategy) {
             CollisionStrategy.SEPARATE_CHAINING -> generateChainingSteps(capacity)
             CollisionStrategy.LINEAR_PROBING -> generateLinearProbingSteps(capacity)
@@ -58,6 +59,7 @@ internal object HashTableCollisionTrace {
     }
 
     private fun generateChainingSteps(capacity: Int): List<CollisionTraceStep> {
+        require(capacity > 0) { "Capacity must be positive" }
         val steps = mutableListOf<CollisionTraceStep>()
         val buckets = List(capacity) { mutableListOf<ChainingNode>() }
         val emptySlots = List<LinearSlot?>(capacity) { null }
@@ -190,6 +192,7 @@ internal object HashTableCollisionTrace {
     }
 
     private fun generateLinearProbingSteps(capacity: Int): List<CollisionTraceStep> {
+        require(capacity > 0) { "Capacity must be positive" }
         val steps = mutableListOf<CollisionTraceStep>()
         val slots = MutableList<LinearSlot?>(capacity) { null }
         val emptyChaining = List(capacity) { emptyList<ChainingNode>() }
@@ -298,7 +301,14 @@ internal object HashTableCollisionTrace {
                 )
 
                 var probeIndex = (hashIndex + 1) % capacity
-                while (slots[probeIndex] != null) {
+                var probeCount = 1
+                var emptyFoundSlot: Int? = null
+
+                while (probeCount < capacity) {
+                    if (slots[probeIndex] == null) {
+                        emptyFoundSlot = probeIndex
+                        break
+                    }
                     probed.add(probeIndex)
                     steps.add(
                         snapshot(
@@ -314,24 +324,43 @@ internal object HashTableCollisionTrace {
                         )
                     )
                     probeIndex = (probeIndex + 1) % capacity
+                    probeCount++
                 }
 
-                // Empty slot found
-                probed.add(probeIndex)
-                slots[probeIndex] = slotItem
-                steps.add(
-                    snapshot(
-                        event = CollisionTraceEvent.INSERT_ENTRY,
-                        activeKey = key,
-                        activeValue = value,
-                        initialHashIndex = hashIndex,
-                        currentProbeIndex = probeIndex,
-                        highlightedBucketIndex = probeIndex,
-                        probedIndices = probed.toSet(),
-                        explanation = "Found open slot [$probeIndex] after probing ${probed.size - 1} step(s). Stored ('$key' → '$value') at slot [$probeIndex].",
-                        badgeText = "STORED AT [$probeIndex]"
+                if (emptyFoundSlot != null) {
+                    probed.add(emptyFoundSlot)
+                    slots[emptyFoundSlot] = slotItem
+                    steps.add(
+                        snapshot(
+                            event = CollisionTraceEvent.INSERT_ENTRY,
+                            activeKey = key,
+                            activeValue = value,
+                            initialHashIndex = hashIndex,
+                            currentProbeIndex = emptyFoundSlot,
+                            highlightedBucketIndex = emptyFoundSlot,
+                            probedIndices = probed.toSet(),
+                            explanation = "Found open slot [$emptyFoundSlot] after probing ${probed.size - 1} step(s). Stored ('$key' → '$value') at slot [$emptyFoundSlot].",
+                            badgeText = "STORED AT [$emptyFoundSlot]"
+                        )
                     )
-                )
+                } else {
+                    // Table is completely full! Cannot insert key without overwriting.
+                    steps.add(
+                        snapshot(
+                            event = CollisionTraceEvent.COMPLETE,
+                            activeKey = key,
+                            activeValue = value,
+                            initialHashIndex = hashIndex,
+                            currentProbeIndex = null,
+                            highlightedBucketIndex = null,
+                            probedIndices = probed.toSet(),
+                            isTerminal = true,
+                            explanation = "TABLE FULL! Inspected all $capacity slot(s). Could not insert key '$key'.",
+                            badgeText = "TABLE FULL"
+                        )
+                    )
+                    return steps
+                }
             }
         }
 

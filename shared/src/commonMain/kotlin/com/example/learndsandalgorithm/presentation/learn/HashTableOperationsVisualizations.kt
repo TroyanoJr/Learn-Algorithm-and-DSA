@@ -1,6 +1,8 @@
 package com.example.learndsandalgorithm.presentation.learn
 
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -15,12 +17,15 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.layout.SubcomposeLayout
+import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
@@ -37,6 +42,7 @@ internal fun HashTableOperationsVisualizationCard(
     title: String = "Hash Table Operations and Complexity"
 ) {
     val steps = HashTableOperationsTrace.stepsForOperations()
+    val scenes = remember(steps) { HashTableOperationsSceneBuilder.buildScenes(steps) }
     val autoExpand = LocalAutoExpandVisualizer.current
     var isExpanded by rememberSaveable { mutableStateOf(autoExpand) }
 
@@ -60,7 +66,11 @@ internal fun HashTableOperationsVisualizationCard(
             HashOpType.INSERT -> "INSERT: ${step.activeKey ?: "READY"}"
             HashOpType.LOOKUP -> "LOOKUP: ${step.activeKey}"
             HashOpType.DELETE -> "DELETE: ${step.activeKey}"
-            HashOpType.RESIZE_REHASH -> if (step.isThresholdExceeded) "RESIZE & REHASH (CAP ${step.oldCapacity} → ${step.capacity})" else "REHASHING"
+            HashOpType.RESIZE_REHASH -> when {
+                step.oldCapacity != null -> "RESIZE & REHASH (CAP ${step.oldCapacity} → ${step.capacity})"
+                step.isThresholdExceeded -> "RESIZE TRIGGERED · alpha 1.0 > 0.75"
+                else -> "REHASHING"
+            }
         }
 
         val statusColor = when (step.activeOp) {
@@ -78,6 +88,8 @@ internal fun HashTableOperationsVisualizationCard(
             stepCount = steps.size,
             isPlaying = isPlaying,
             layoutMode = VisualizerLayoutMode.FULL_WIDTH,
+            fullWidthVisualWeight = HashTableLessonDetailsLayout.OPERATIONS_VISUAL_WEIGHT,
+            detailsScrollable = false,
             statusColor = statusColor,
             onReset = { playback.reset() },
             onPrevious = { playback.previous() },
@@ -88,9 +100,11 @@ internal fun HashTableOperationsVisualizationCard(
                 isExpanded = false
             },
             visualContent = {
-                FitToPane(modifier = Modifier.fillMaxSize()) {
-                    HashTableOperationsVisualizationContent(step = step, scale = 1f)
-                }
+                HashTableOperationsSceneRenderer(
+                    scene = scenes[stepIndex],
+                    step = step,
+                    modifier = Modifier.fillMaxSize()
+                )
             },
             detailsContent = {
                 HashTableOperationsDetailsAndStepsContent(
@@ -292,16 +306,10 @@ private fun HashTableOperationsDetailsAndStepsContent(
     totalSteps: Int,
     scale: Float
 ) {
-    Column(
-        modifier = Modifier.fillMaxWidth(),
-        verticalArrangement = Arrangement.spacedBy(8.dp * scale)
-    ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+    HashTableMeasuredDetailsLayout(
+        modifier = Modifier.fillMaxSize(),
+        header = {
+            Column(modifier = Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(1.dp)) {
                 Text("OPERATION", color = TextSecondary, fontSize = 9.sp, fontWeight = FontWeight.Bold)
                 Text(
                     step.badgeText,
@@ -314,8 +322,6 @@ private fun HashTableOperationsDetailsAndStepsContent(
                     fontSize = 15.sp,
                     fontWeight = FontWeight.Bold
                 )
-            }
-            Column(horizontalAlignment = Alignment.End, verticalArrangement = Arrangement.spacedBy(2.dp)) {
                 Text("Size: ${step.size} / ${step.capacity}", color = TextPrimary, fontSize = 11.sp)
                 val complexityStr = when (step.activeOp) {
                     HashOpType.RESIZE_REHASH -> "Cost: O(N) rehash"
@@ -325,14 +331,155 @@ private fun HashTableOperationsDetailsAndStepsContent(
                 }
                 Text(complexityStr, color = GreenAccent, fontSize = 10.sp, fontWeight = FontWeight.Bold)
             }
-        }
+        },
+        explanation = step.explanation,
+        stepIndex = stepIndex,
+        totalSteps = totalSteps,
+        isCompleted = stepIndex == totalSteps - 1
+    )
+}
 
-        StepsCard(
-            label = "Steps",
-            explanation = step.explanation,
-            stepIndex = stepIndex,
-            totalSteps = totalSteps,
-            isCompleted = stepIndex == totalSteps - 1
+@Composable
+internal fun HashTableMeasuredDetailsLayout(
+    modifier: Modifier = Modifier,
+    header: @Composable () -> Unit,
+    explanation: String,
+    stepIndex: Int,
+    totalSteps: Int,
+    isCompleted: Boolean
+) {
+    SubcomposeLayout(modifier = modifier) { constraints ->
+        val width = constraints.maxWidth
+        val naturalConstraints = Constraints(
+            minWidth = width,
+            maxWidth = width,
+            minHeight = 0,
+            maxHeight = Constraints.Infinity
         )
+        val headerPlaceable = subcompose("header", header).single().measure(naturalConstraints)
+        val fullStepsPlaceable = subcompose("full_steps") {
+            HashTableResponsiveStepsCard(explanation, stepIndex, totalSteps, isCompleted)
+        }.single().measure(naturalConstraints)
+        val stepsHeaderPlaceable = subcompose("steps_header") {
+            HashTableResponsiveStepsCard(explanation, stepIndex, totalSteps, isCompleted, showExplanation = false)
+        }.single().measure(naturalConstraints)
+
+        val gapPx = HashTableLessonDetailsLayout.SECTION_GAP_DP.dp.roundToPx()
+        val stepsExplanationSpacingPx = 2.dp.roundToPx()
+        val availableHeight = if (constraints.hasBoundedHeight) {
+            constraints.maxHeight
+        } else {
+            headerPlaceable.height + gapPx + fullStepsPlaceable.height
+        }
+        val allocation = HashTableLessonDetailsLayout.resolveMeasuredAllocation(
+            availableHeightPx = availableHeight,
+            headerHeightPx = headerPlaceable.height,
+            fullStepsHeightPx = fullStepsPlaceable.height,
+            stepsHeaderHeightPx = stepsHeaderPlaceable.height,
+            gapPx = gapPx,
+            stepsExplanationSpacingPx = stepsExplanationSpacingPx
+        )
+
+        when (allocation.mode) {
+            HashTableDetailsAllocationMode.FULL_CONTENT -> layout(width, availableHeight) {
+                headerPlaceable.place(0, 0)
+                fullStepsPlaceable.place(0, headerPlaceable.height + allocation.gapPx)
+            }
+            HashTableDetailsAllocationMode.SCROLLING_EXPLANATION -> {
+                val stepsPlaceable = subcompose("scrolling_steps") {
+                    HashTableResponsiveStepsCard(
+                        explanation, stepIndex, totalSteps, isCompleted,
+                        explanationScrollable = true,
+                        modifier = Modifier.fillMaxSize()
+                    )
+                }.single().measure(Constraints.fixed(width, allocation.stepsViewportHeightPx))
+                layout(width, availableHeight) {
+                    headerPlaceable.place(0, 0)
+                    stepsPlaceable.place(0, allocation.headerViewportHeightPx + allocation.gapPx)
+                }
+            }
+            HashTableDetailsAllocationMode.SCROLLING_SECTIONS -> {
+                val headerViewport = subcompose("scrolling_header") {
+                    Box(Modifier.fillMaxSize().verticalScroll(rememberScrollState())) { header() }
+                }.single().measure(Constraints.fixed(width, allocation.headerViewportHeightPx))
+                val stepsViewport = subcompose("minimum_steps") {
+                    HashTableResponsiveStepsCard(
+                        explanation, stepIndex, totalSteps, isCompleted,
+                        explanationScrollable = true,
+                        modifier = Modifier.fillMaxSize()
+                    )
+                }.single().measure(Constraints.fixed(width, allocation.stepsViewportHeightPx))
+                layout(width, availableHeight) {
+                    headerViewport.place(0, 0)
+                    stepsViewport.place(0, allocation.headerViewportHeightPx + allocation.gapPx)
+                }
+            }
+            HashTableDetailsAllocationMode.CONSTRAINED_SECTIONS -> {
+                val headerViewport = if (allocation.headerViewportHeightPx > 0) {
+                    subcompose("constrained_header") {
+                        Box(Modifier.fillMaxSize().verticalScroll(rememberScrollState())) { header() }
+                    }.single().measure(Constraints.fixed(width, allocation.headerViewportHeightPx))
+                } else null
+                val stepsViewport = if (allocation.stepsViewportHeightPx > 0) {
+                    subcompose("constrained_steps") {
+                        Box(Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
+                            HashTableResponsiveStepsCard(explanation, stepIndex, totalSteps, isCompleted)
+                        }
+                    }.single().measure(Constraints.fixed(width, allocation.stepsViewportHeightPx))
+                } else null
+                layout(width, availableHeight) {
+                    headerViewport?.place(0, 0)
+                    stepsViewport?.place(0, allocation.headerViewportHeightPx + allocation.gapPx)
+                }
+            }
+        }
+    }
+}
+
+@Composable
+internal fun HashTableResponsiveStepsCard(
+    explanation: String,
+    stepIndex: Int,
+    totalSteps: Int,
+    isCompleted: Boolean,
+    showExplanation: Boolean = true,
+    explanationScrollable: Boolean = false,
+    modifier: Modifier = Modifier
+) {
+    Surface(
+        color = Color(0xFF161622),
+        shape = RoundedCornerShape(12.dp),
+        modifier = modifier.fillMaxWidth()
+    ) {
+        Column(
+            modifier = (if (explanationScrollable) Modifier.fillMaxSize() else Modifier).padding(6.dp),
+            verticalArrangement = Arrangement.spacedBy(2.dp)
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text("Steps", color = OrangeAccent, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                Text(
+                    "STEP ${stepIndex + 1} / $totalSteps",
+                    color = if (isCompleted) GreenAccent else TextSecondary,
+                    fontSize = 11.sp,
+                    fontWeight = FontWeight.Bold
+                )
+            }
+            if (showExplanation) {
+                val explanationModifier = if (explanationScrollable) {
+                    Modifier.weight(1f).fillMaxWidth().verticalScroll(rememberScrollState())
+                } else Modifier.fillMaxWidth()
+                Text(
+                    text = explanation,
+                    color = TextPrimary,
+                    fontSize = 13.sp,
+                    lineHeight = 18.sp,
+                    modifier = explanationModifier
+                )
+            }
+        }
     }
 }

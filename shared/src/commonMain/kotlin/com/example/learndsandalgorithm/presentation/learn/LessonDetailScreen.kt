@@ -27,11 +27,13 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -73,6 +75,7 @@ fun LessonDetailScreen(
     lessonId: String,
     viewModel: LessonViewModel,
     onBack: () -> Unit,
+    onBackHandlerChanged: ((() -> Unit)?) -> Unit = {},
     onNavigateToLesson: (String) -> Unit = {},
     modifier: Modifier = Modifier
 ) {
@@ -80,6 +83,21 @@ fun LessonDetailScreen(
 
     var lessonQuestionIndex by remember(lessonId) { mutableStateOf(0) }
     var isLessonCompleted by remember { mutableStateOf(false) }
+    var showCelebrationOverlay by remember(lessonId) { mutableStateOf(false) }
+    var showVisualizerModal by remember(lessonId) { mutableStateOf(false) }
+    var showQuestionsModal by remember(lessonId) { mutableStateOf(false) }
+    val latestOnBack by rememberUpdatedState(onBack)
+    val latestBackAction by rememberUpdatedState<() -> Unit> {
+        when {
+            showCelebrationOverlay -> showCelebrationOverlay = false
+            showQuestionsModal -> showQuestionsModal = false
+            !showVisualizerModal -> latestOnBack()
+        }
+    }
+    DisposableEffect(lessonId, onBackHandlerChanged) {
+        onBackHandlerChanged { latestBackAction() }
+        onDispose { onBackHandlerChanged(null) }
+    }
 
     LaunchedEffect(lessonId) {
         viewModel.loadLesson(lessonId)
@@ -98,8 +116,8 @@ fun LessonDetailScreen(
             .fillMaxSize()
             .background(DarkBgColor)
     ) {
-        // Top Header
-        Row(
+        // Hide the lesson header while the quiz occupies the available screen.
+        if (!showQuestionsModal) Row(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = AppSpacing.large, vertical = AppSpacing.medium),
@@ -117,7 +135,7 @@ fun LessonDetailScreen(
                         .size(AppIconSize.boxSmall)
                         .clip(CircleShape)
                         .background(DarkCardBgColor)
-                        .clickable { onBack() },
+                        .clickable { latestBackAction() },
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
@@ -223,11 +241,12 @@ fun LessonDetailScreen(
             }
 
             is LessonUiState.Success -> {
-                var showCelebrationOverlay by remember { mutableStateOf(false) }
-                var showVisualizerModal by remember { mutableStateOf(false) }
-                var showQuestionsModal by remember { mutableStateOf(false) }
-
                 val scrollState = rememberScrollState()
+                val quizQuestionScrollState = rememberScrollState()
+
+                LaunchedEffect(lessonQuestionIndex) {
+                    quizQuestionScrollState.scrollTo(0)
+                }
 
                 LaunchedEffect(lessonId) {
                     scrollState.scrollTo(0)
@@ -251,22 +270,25 @@ fun LessonDetailScreen(
                 )
 
                 Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .graphicsLayer {
-                            alpha = transitionAlpha
-                            translationX = transitionTranslation
-                        }
+                    modifier = Modifier.fillMaxSize()
                 ) {
                     Column(
                         modifier = Modifier
                             .fillMaxSize()
                             .verticalScroll(scrollState)
+                            .graphicsLayer {
+                                alpha = transitionAlpha
+                                translationX = transitionTranslation
+                            }
                             .padding(horizontal = AppSpacing.large, vertical = AppSpacing.medium),
                         verticalArrangement = Arrangement.spacedBy(AppSpacing.medium)
                     ) {
                         // Theory & Key Concepts Markdown Content
                         MarkdownContent(content = state.markdownContent)
+
+                        if (state.lesson.id == "lesson_arrays_5") {
+                            ArrayComplexityComparisonCard()
+                        }
 
                         // 1. Independent Interactive Visualizer Section (When lesson has visualizer)
                         if (hasVisualizerForLesson(state.lesson.id)) {
@@ -474,7 +496,7 @@ fun LessonDetailScreen(
                                 }
                             },
                             onNavigateToNextLesson = onNavigateToLesson,
-                            onBackToTopic = onBack
+                            onBackToTopic = { latestBackAction() }
                         )
 
                         Spacer(modifier = Modifier.height(AppSpacing.large))
@@ -500,128 +522,66 @@ fun LessonDetailScreen(
                         }
                         val question = state.questions[questionIndex]
 
-                        Box(
+                        Column(
                             modifier = Modifier
                                 .fillMaxSize()
                                 .background(DarkBgColor)
-                                .clickable(enabled = false) {}
-                                .padding(AppSpacing.medium),
-                            contentAlignment = Alignment.Center
+                                .padding(horizontal = AppSpacing.large, vertical = AppSpacing.medium),
+                            verticalArrangement = Arrangement.spacedBy(AppSpacing.medium)
                         ) {
-                            Column(
-                                modifier = Modifier
-                                    .fillMaxSize()
-                                    .clip(RoundedCornerShape(AppCornerRadius.cardLarge))
-                                    .background(DarkCardBgColor)
-                                    .border(1.dp, CardBorderColor, RoundedCornerShape(AppCornerRadius.cardLarge))
-                                    .padding(AppCardPadding.standard),
-                                verticalArrangement = Arrangement.SpaceBetween
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
                             ) {
-                                // Top Header Bar
-                                Row(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    horizontalArrangement = Arrangement.SpaceBetween,
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
-                                    Column {
-                                        Text(
-                                            text = "LESSON QUIZ",
-                                            style = AppTypography.sectionHeader,
-                                            color = OrangeAccent
-                                        )
-                                        Text(
-                                            text = "Question ${questionIndex + 1} of ${state.questions.size}",
-                                            style = AppTypography.cardTitle,
-                                            color = TextPrimary
-                                        )
-                                    }
-
-                                    Box(
-                                        modifier = Modifier
-                                            .size(AppIconSize.boxSmall)
-                                            .clip(CircleShape)
-                                            .background(Color(0xFF22222E))
-                                            .clickable { showQuestionsModal = false },
-                                        contentAlignment = Alignment.Center
-                                    ) {
-                                        Text(
-                                            text = "✕",
-                                            style = AppTypography.bodyPrimary.copy(fontWeight = FontWeight.Bold),
-                                            color = TextPrimary
-                                        )
-                                    }
+                                Column {
+                                    Text("LESSON QUIZ", style = AppTypography.sectionHeader, color = OrangeAccent)
+                                    Text("Question ${questionIndex + 1} of ${state.questions.size}", style = AppTypography.cardTitle, color = TextPrimary)
                                 }
-
-                                // Scrollable Center Question Content
-                                Box(
-                                    modifier = Modifier
-                                        .weight(1f)
-                                        .fillMaxWidth()
-                                        .verticalScroll(rememberScrollState())
-                                        .padding(vertical = AppSpacing.small)
-                                ) {
-                                    CheckYourUnderstandingSection(
-                                        statement = question.statement,
-                                        options = question.options,
-                                        correctIndex = question.correctOptionIndex,
-                                        explanation = question.explanation,
-                                        selectedOption = state.displayedSelectedOptions[question.id],
-                                        onSelectOption = { displayedOptionIdx ->
-                                            viewModel.selectQuestionAnswer(question.id, displayedOptionIdx)
-                                        },
-                                        questionType = question.type,
-                                        questionNumber = questionIndex + 1,
-                                        questionCount = if (hasQuestionSequence) state.questions.size else 1,
-                                        showProgress = false,
-                                        onPreviousQuestion = null,
-                                        onNextQuestion = null
-                                    )
+                                Box(Modifier.size(AppIconSize.boxSmall).clip(CircleShape).background(Color(0xFF22222E)).clickable { showQuestionsModal = false }, contentAlignment = Alignment.Center) {
+                                    Text("✕", color = TextPrimary)
                                 }
-
-                                // Bottom Navigation Bar
-                                Row(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    horizontalArrangement = Arrangement.SpaceBetween,
-                                    verticalAlignment = Alignment.CenterVertically
+                            }
+                            androidx.compose.material3.LinearProgressIndicator(
+                                progress = { (questionIndex + 1).toFloat() / state.questions.size },
+                                modifier = Modifier.fillMaxWidth(),
+                                color = OrangeAccent,
+                                trackColor = Color(0xFF292932)
+                            )
+                            Box(
+                                modifier = Modifier.weight(1f).fillMaxWidth().verticalScroll(quizQuestionScrollState)
+                            ) {
+                                CheckYourUnderstandingSection(
+                                    statement = question.statement,
+                                    options = question.options,
+                                    correctIndex = question.correctOptionIndex,
+                                    explanation = question.explanation,
+                                    selectedOption = state.displayedSelectedOptions[question.id],
+                                    onSelectOption = { viewModel.selectQuestionAnswer(question.id, it) },
+                                    questionType = question.type,
+                                    questionNumber = questionIndex + 1,
+                                    questionCount = state.questions.size,
+                                    showProgress = false,
+                                    onPreviousQuestion = null,
+                                    onNextQuestion = null
+                                )
+                            }
+                            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                                Surface(
+                                    color = if (questionIndex > 0) Color(0xFF22222E) else Color(0xFF14141A),
+                                    shape = RoundedCornerShape(AppCornerRadius.compact),
+                                    modifier = Modifier.heightIn(min = AppTouchTarget.buttonHeight).clickable(enabled = questionIndex > 0) { lessonQuestionIndex = (questionIndex - 1).coerceAtLeast(0) }
                                 ) {
-                                    Surface(
-                                        color = if (questionIndex > 0) Color(0xFF22222E) else Color(0xFF14141A),
-                                        shape = RoundedCornerShape(AppCornerRadius.compact),
-                                        border = BorderStroke(1.dp, if (questionIndex > 0) CardBorderColor else Color(0xFF1E1E28)),
-                                        modifier = Modifier
-                                            .heightIn(min = AppTouchTarget.buttonHeight)
-                                            .clickable(enabled = questionIndex > 0) {
-                                                lessonQuestionIndex = (questionIndex - 1).coerceAtLeast(0)
-                                            }
-                                    ) {
-                                        Text(
-                                            text = "‹ Previous",
-                                            color = if (questionIndex > 0) TextPrimary else TextSecondary.copy(alpha = 0.4f),
-                                            style = AppTypography.bodySecondary.copy(fontWeight = FontWeight.Bold),
-                                            modifier = Modifier.padding(horizontal = AppSpacing.large, vertical = AppSpacing.small)
-                                        )
+                                    Text("‹ Previous", color = TextPrimary, modifier = Modifier.padding(horizontal = AppSpacing.large, vertical = AppSpacing.small))
+                                }
+                                Surface(
+                                    color = OrangeAccent,
+                                    shape = RoundedCornerShape(AppCornerRadius.compact),
+                                    modifier = Modifier.heightIn(min = AppTouchTarget.buttonHeight).clickable {
+                                        if (questionIndex < state.questions.lastIndex) lessonQuestionIndex = questionIndex + 1 else showQuestionsModal = false
                                     }
-
-                                    Surface(
-                                        color = OrangeAccent,
-                                        shape = RoundedCornerShape(AppCornerRadius.compact),
-                                        modifier = Modifier
-                                            .heightIn(min = AppTouchTarget.buttonHeight)
-                                            .clickable {
-                                                if (questionIndex < state.questions.lastIndex) {
-                                                    lessonQuestionIndex = (questionIndex + 1).coerceAtMost(state.questions.lastIndex)
-                                                } else {
-                                                    showQuestionsModal = false
-                                                }
-                                            }
-                                    ) {
-                                        Text(
-                                            text = if (questionIndex < state.questions.lastIndex) "Next Question ›" else "Finish Review ➔",
-                                            color = Color(0xFF111115),
-                                            style = AppTypography.bodySecondary.copy(fontWeight = FontWeight.Bold),
-                                            modifier = Modifier.padding(horizontal = AppSpacing.large, vertical = AppSpacing.small)
-                                        )
-                                    }
+                                ) {
+                                    Text(if (questionIndex < state.questions.lastIndex) "Next Question ›" else "Finish Review ➔", color = Color(0xFF111115), modifier = Modifier.padding(horizontal = AppSpacing.large, vertical = AppSpacing.small))
                                 }
                             }
                         }
@@ -1145,7 +1105,10 @@ private fun hasVisualizerForLesson(lessonId: String): Boolean {
         "lesson_introduction_algo_1",
         "lesson_introduction_algo_2",
         "searching_1",
-        "sorting_1" -> false
+        "sorting_1",
+        "lesson_arrays_1",
+        "lesson_arrays_5",
+        "lesson_linked_list_5" -> false
         else -> true
     }
 }
@@ -1161,16 +1124,13 @@ private fun RenderVisualizerCardForLesson(lessonId: String, title: String) {
         "lesson_queues_2" -> QueueVisualizationCard(QueueDemonstration.OPERATIONS, title = title)
         "lesson_queues_3" -> QueueVisualizationCard(QueueDemonstration.IMPLEMENTATIONS, title = title)
         "lesson_queues_4" -> QueueVisualizationCard(QueueDemonstration.CIRCULAR_BUFFER, title = title)
-        "lesson_arrays_1" -> ArrayVisualizationCard()
         "lesson_arrays_2" -> ArrayResizeVisualizationCard()
         "lesson_arrays_3" -> ArrayTraversalVisualizationCard()
         "lesson_arrays_4" -> ArrayInsertDeleteVisualizationCard()
-        "lesson_arrays_5" -> ArrayComplexityComparisonCard()
         "lesson_linked_list_1" -> LinkedListIntroductionVisualizationCard()
         "lesson_linked_list_2" -> LinkedListTraversalSearchAccessVisualizationCard()
         "lesson_linked_list_3" -> LinkedListInsertionVisualizationCard()
         "lesson_linked_list_4" -> LinkedListRemovalVisualizationCard()
-        "lesson_linked_list_5" -> LinkedListPerformanceComparisonVisualizationCard()
         "searching_2" -> LinearSearchVisualizationCard()
         "searching_3" -> BinarySearchVisualizationCard()
         "searching_4" -> SearchComparisonCard()

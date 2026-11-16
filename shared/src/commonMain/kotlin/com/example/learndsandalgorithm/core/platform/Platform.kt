@@ -10,3 +10,6 @@ expect fun getPlatform(): Platform
 
 @Composable
 expect fun LandscapeOrientationEffect(enabled: Boolean)
+
+@Composable
+expect fun PlatformBackHandler(enabled: Boolean = true, onBack: () -> Unit)

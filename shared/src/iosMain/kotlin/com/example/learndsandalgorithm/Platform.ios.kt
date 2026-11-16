@@ -10,4 +10,7 @@ class IOSPlatform: Platform {
 actual fun getPlatform(): Platform = IOSPlatform()
 
 @Composable
+actual fun PlatformBackHandler(enabled: Boolean, onBack: () -> Unit) = Unit
+
+@Composable
 actual fun LandscapeOrientationEffect(enabled: Boolean) = Unit

@@ -20,6 +20,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -45,6 +46,7 @@ internal fun StackVisualizationCard(
     title: String = "Stack Visualizer"
 ) {
     val steps = StackTrace.stepsFor(demonstration)
+    val scenes = remember(steps) { StackSceneBuilder.buildScenes(steps) }
 
     var selectedView by rememberSaveable(demonstration) { mutableStateOf("Array") }
 
@@ -157,9 +159,13 @@ internal fun StackVisualizationCard(
                 }
             } else null,
             visualContent = {
-                FitToPane(modifier = Modifier.fillMaxSize()) {
-                    StackVisualizationContent(step = step, scale = 1f, selectedView = selectedView)
-                }
+                StackSceneRenderer(
+                    scene = scenes[activeStepIndex],
+                    step = step,
+                    sequence = steps,
+                    selectedView = selectedView,
+                    modifier = Modifier.fillMaxSize()
+                )
             },
             detailsContent = {
                 StackDetailsAndStepsContent(
@@ -333,26 +339,20 @@ private fun StackDetailsAndStepsContent(step: StackTraceStep, stepIndex: Int, to
         modifier = Modifier.fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(8.dp * scale)
     ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                Text("OPERATION RESULT", color = TextSecondary, fontSize = 12.sp, fontWeight = FontWeight.Bold)
-                Text(
-                    step.returnedValue ?: "—",
-                    color = if (step.returnedValue != null) GreenAccent else TextPrimary,
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.Bold
-                )
-            }
+        Column(verticalArrangement = Arrangement.spacedBy(2.dp * scale)) {
+            Text("OPERATION RESULT", color = TextSecondary, fontSize = 12.sp, fontWeight = FontWeight.Bold)
             Text(
-                "Bottom → top: ${step.values.joinToString(prefix = "[", postfix = "]")}",
-                color = TextSecondary,
-                fontSize = 12.sp
+                step.returnedValue ?: "—",
+                color = if (step.returnedValue != null) GreenAccent else TextPrimary,
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Bold
             )
         }
+        Text(
+            "Bottom → top: ${step.values.joinToString(prefix = "[", postfix = "]")}",
+            color = TextSecondary,
+            fontSize = 12.sp
+        )
 
         StepsCard(
             label = "Steps",

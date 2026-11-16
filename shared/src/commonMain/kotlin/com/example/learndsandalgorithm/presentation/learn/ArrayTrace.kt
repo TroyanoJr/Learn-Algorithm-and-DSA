@@ -27,48 +27,50 @@ internal data class ArrayInsertDeleteStep(
 )
 
 internal object ArrayTrace {
-    val defaultInitialResizeValues = listOf<String?>("10", "20", "30", "40", "50", "60", "70", "80", "90", "100")
+    val defaultInitialResizeValues = listOf<String?>("10", "20", "30", "40")
     val defaultTraversalData = listOf("10", "25", "42", "67", "91", "116", "135", "158", "176", "204")
     val defaultInsertDeleteData = listOf("10", "20", "30", "40", "50", "60", "70", "80", "90", "100")
 
     fun resizeSteps(initialValues: List<String?> = defaultInitialResizeValues): List<ArrayResizeStep> {
-        val fullArray = initialValues + "110"
-        val copiedArray = fullArray + List(11) { null }
+        val initialCapacity = initialValues.size + 1
+        val fullArray = initialValues + "50"
+        val newCapacity = initialCapacity * 2
+        val copiedArray = fullArray + List(newCapacity - fullArray.size) { null }
         return listOf(
             ArrayResizeStep(
                 stageLabel = "CURRENT STORAGE",
                 storageSlots = initialValues + null,
                 preservedStorageSlots = null,
-                highlightedIndices = setOf(10),
-                explanationText = "Ten values use ten of eleven slots. Append 110 into the free slot at index 10."
+                highlightedIndices = setOf(initialValues.size),
+                explanationText = "Four values use four of five slots. Append 50 into the free slot at index 4."
             ),
             ArrayResizeStep(
                 stageLabel = "CAPACITY FULL",
                 storageSlots = fullArray,
                 preservedStorageSlots = null,
-                highlightedIndices = setOf(10),
-                explanationText = "All eleven slots are occupied. Appending 120 now requires a larger array."
+                highlightedIndices = setOf(initialValues.size),
+                explanationText = "All five slots are occupied. Appending 60 now requires a larger array."
             ),
             ArrayResizeStep(
                 stageLabel = "NEW STORAGE",
-                storageSlots = List(22) { null },
+                storageSlots = List(newCapacity) { null },
                 preservedStorageSlots = fullArray,
                 highlightedIndices = emptySet(),
-                explanationText = "Allocate new storage with 22 slots. The old eleven-value array is still intact."
+                explanationText = "Allocate new storage with ten slots. The old five-value array is still intact."
             ),
             ArrayResizeStep(
-                stageLabel = "11 VALUES COPIED",
+                stageLabel = "VALUES COPIED",
                 storageSlots = copiedArray,
                 preservedStorageSlots = null,
-                highlightedIndices = (0..10).toSet(),
-                explanationText = "Copy each of the eleven existing values to the same index in the new storage."
+                highlightedIndices = (0 until fullArray.size).toSet(),
+                explanationText = "Copy each of the five existing values to the same index in the new storage."
             ),
             ArrayResizeStep(
-                stageLabel = "120 APPENDED",
-                storageSlots = fullArray + "120" + List(10) { null },
+                stageLabel = "APPENDED",
+                storageSlots = fullArray + "60" + List(newCapacity - fullArray.size - 1) { null },
                 preservedStorageSlots = null,
-                highlightedIndices = setOf(11),
-                explanationText = "Append 120 at index 11. Size is 12 and capacity is 22."
+                highlightedIndices = setOf(fullArray.size),
+                explanationText = "Append 60 at index 5. Size is 6 and capacity is 10."
             )
         )
     }

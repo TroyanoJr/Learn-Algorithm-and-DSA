@@ -25,10 +25,12 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -179,6 +181,7 @@ internal fun shuffleQuizQuestionOrder(
 fun TopicQuizFlow(
     contentRepository: ContentRepository,
     initialTopicId: String? = null,
+    onBackHandlerChanged: ((() -> Unit)?) -> Unit = {},
     onBackToPractice: () -> Unit
 ) {
     var topics by remember { mutableStateOf<List<QuizTopicState>>(emptyList()) }
@@ -203,6 +206,20 @@ fun TopicQuizFlow(
         selectedOptionIndex = null
         correctCount = 0
         incorrectCount = 0
+    }
+
+    fun handleBack() {
+        when (flowState) {
+            QuizFlowState.TOPIC_SELECTION -> { resetAttempt(); onBackToPractice() }
+            QuizFlowState.QUESTION -> { resetAttempt(); flowState = QuizFlowState.TOPIC_SELECTION }
+            QuizFlowState.QUIZ_RESULT -> { resetAttempt(); flowState = QuizFlowState.TOPIC_SELECTION }
+            QuizFlowState.QUIZ_REVIEW -> flowState = QuizFlowState.QUIZ_RESULT
+        }
+    }
+    val currentBack by rememberUpdatedState { handleBack() }
+    DisposableEffect(onBackHandlerChanged) {
+        onBackHandlerChanged { currentBack() }
+        onDispose { onBackHandlerChanged(null) }
     }
 
     LaunchedEffect(initialTopicId) {
@@ -316,8 +333,7 @@ fun TopicQuizFlow(
                         flowState = QuizFlowState.QUESTION
                     },
                     onBack = {
-                        resetAttempt()
-                        onBackToPractice()
+                        handleBack()
                     }
                 )
             }
@@ -353,8 +369,7 @@ fun TopicQuizFlow(
                         }
                     },
                     onBack = {
-                        resetAttempt()
-                        flowState = QuizFlowState.TOPIC_SELECTION
+                        handleBack()
                     }
                 )
             }
@@ -386,8 +401,7 @@ fun TopicQuizFlow(
                         flowState = QuizFlowState.QUIZ_REVIEW
                     },
                     onBackToTopicSelection = {
-                        resetAttempt()
-                        flowState = QuizFlowState.TOPIC_SELECTION
+                        handleBack()
                     },
                     onBackToPractice = {
                         resetAttempt()
@@ -416,7 +430,7 @@ fun TopicQuizFlow(
                             flowState = QuizFlowState.QUIZ_RESULT
                         }
                     },
-                    onBack = { flowState = QuizFlowState.QUIZ_RESULT }
+                    onBack = { handleBack() }
                 )
             }
         }

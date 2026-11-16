@@ -36,6 +36,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.learndsandalgorithm.data.repository.ProgressRepository
+import com.example.learndsandalgorithm.core.platform.PlatformBackHandler
 import com.example.learndsandalgorithm.domain.repository.ContentRepository
 import com.example.learndsandalgorithm.presentation.home.HomeScreen
 import com.example.learndsandalgorithm.presentation.home.HomeViewModel
@@ -147,6 +148,20 @@ fun AppNavigation(
     var selectedQuizTopicId by remember { mutableStateOf<String?>(null) }
     var isTopicQuizActive by remember { mutableStateOf(false) }
     var learnExpandedCategoryId by remember { mutableStateOf<String?>(null) }
+    var lessonBack by remember { mutableStateOf<(() -> Unit)?>(null) }
+    var quizBack by remember { mutableStateOf<(() -> Unit)?>(null) }
+    var quizOrigin by remember { mutableStateOf(AppDestination.PRACTICE) }
+    val registerLessonBack: ((() -> Unit)?) -> Unit = remember { { callback -> lessonBack = callback } }
+    val registerQuizBack: ((() -> Unit)?) -> Unit = remember { { callback -> quizBack = callback } }
+
+    PlatformBackHandler(enabled = selectedLessonId != null || selectedTopicId != null || isTopicQuizActive || currentDestination != AppDestination.HOME) {
+        when {
+            selectedLessonId != null -> lessonBack?.invoke() ?: run { selectedLessonId = null }
+            selectedTopicId != null -> { selectedTopicId = null; selectedTopicTitle = ""; currentDestination = AppDestination.LEARN }
+            isTopicQuizActive -> quizBack?.invoke() ?: run { isTopicQuizActive = false; currentDestination = quizOrigin }
+            currentDestination != AppDestination.HOME -> currentDestination = AppDestination.HOME
+        }
+    }
 
     val showBottomBar = selectedLessonId == null && selectedTopicId == null && !isTopicQuizActive
 
@@ -182,7 +197,8 @@ fun AppNavigation(
                     LessonDetailScreen(
                         lessonId = activeLessonId,
                         viewModel = lessonViewModel,
-                        onBack = { selectedLessonId = null },
+                        onBack = { if (selectedTopicId != null) selectedLessonId = null else { selectedLessonId = null; currentDestination = AppDestination.HOME } },
+                        onBackHandlerChanged = registerLessonBack,
                         onNavigateToLesson = { nextLessonId ->
                             selectedLessonId = nextLessonId
                         }
@@ -198,16 +214,18 @@ fun AppNavigation(
                         onLessonClick = { lesson ->
                             selectedLessonId = lesson.id
                         },
-                        onBack = { selectedTopicId = null }
+                        onBack = { selectedTopicId = null; selectedTopicTitle = ""; currentDestination = AppDestination.LEARN }
                     )
                 }
                 isTopicQuizActive -> {
                     TopicQuizFlow(
                         contentRepository = contentRepository,
                         initialTopicId = selectedQuizTopicId,
+                        onBackHandlerChanged = registerQuizBack,
                         onBackToPractice = {
                             isTopicQuizActive = false
                             selectedQuizTopicId = null
+                            currentDestination = quizOrigin
                         }
                     )
                 }
@@ -219,6 +237,7 @@ fun AppNavigation(
                                 selectedLessonId = lessonId
                             },
                             onOpenTopicQuiz = { topicId ->
+                                quizOrigin = AppDestination.HOME
                                 selectedQuizTopicId = topicId
                                 isTopicQuizActive = true
                             }
@@ -237,7 +256,7 @@ fun AppNavigation(
                             }
                         )
                         AppDestination.PRACTICE -> PracticeScreen(
-                            onOpenTopicQuiz = { isTopicQuizActive = true }
+                            onOpenTopicQuiz = { selectedQuizTopicId = null; quizOrigin = AppDestination.PRACTICE; isTopicQuizActive = true }
                         )
                     }
                 }
