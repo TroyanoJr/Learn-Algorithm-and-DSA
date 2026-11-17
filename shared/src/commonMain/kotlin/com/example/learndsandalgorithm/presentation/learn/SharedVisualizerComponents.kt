@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -67,9 +68,21 @@ private fun PlaybackIcon(glyph: PlaybackGlyph, description: String, tint: Color,
         }
         when (glyph) {
             PlaybackGlyph.Replay -> {
-                val r = size.minDimension * 0.39f
-                drawArc(tint, 45f, 300f, false, topLeft = point(3f, 3f), size = androidx.compose.ui.geometry.Size(r * 2, r * 2), style = Stroke(width = size.minDimension * 0.1f))
-                filled(17f to 2f, 22f to 3f, 21f to 8f)
+                val arcInset = size.minDimension * (3.5f / 24f)
+                val arcDiameter = size.minDimension * (17f / 24f)
+                drawArc(
+                    color = tint,
+                    startAngle = 45f,
+                    sweepAngle = 285f,
+                    useCenter = false,
+                    topLeft = androidx.compose.ui.geometry.Offset(arcInset, arcInset),
+                    size = androidx.compose.ui.geometry.Size(arcDiameter, arcDiameter),
+                    style = Stroke(
+                        width = size.minDimension * 0.1f,
+                        cap = androidx.compose.ui.graphics.StrokeCap.Round
+                    )
+                )
+                filled(21f to 10.5f, 16.7f to 8.2f, 20.1f to 5.3f)
             }
             PlaybackGlyph.SkipPrevious -> {
                 filled(6f to 5f, 6f to 19f, 2f to 19f, 2f to 5f)
@@ -119,9 +132,9 @@ internal fun VisualizerPlaybackBar(
     onPrevious: () -> Unit,
     onPlayPause: () -> Unit,
     onNext: () -> Unit,
-    controlSize: Dp = 44.dp,
-    spacing: Dp = 8.dp,
-    cornerRadius: Dp = 12.dp,
+    controlSize: Dp = 40.dp,
+    spacing: Dp = 7.dp,
+    cornerRadius: Dp = 10.dp,
     modifier: Modifier = Modifier
 ) {
     Row(
@@ -136,7 +149,7 @@ internal fun VisualizerPlaybackBar(
             modifier = Modifier.size(controlSize).clickable(onClick = onReset)
         ) {
             Box(contentAlignment = Alignment.Center) {
-                PlaybackIcon(PlaybackGlyph.Replay, "Reset playback", VisualizerTextPrimary, Modifier.size(20.dp))
+                PlaybackIcon(PlaybackGlyph.Replay, "Reset playback", VisualizerTextPrimary, Modifier.size(18.dp))
             }
         }
         Surface(
@@ -146,7 +159,7 @@ internal fun VisualizerPlaybackBar(
             modifier = Modifier.size(controlSize).clickable(enabled = canGoPrevious, onClick = onPrevious)
         ) {
             Box(contentAlignment = Alignment.Center) {
-                PlaybackIcon(PlaybackGlyph.SkipPrevious, "Previous step", if (canGoPrevious) VisualizerTextPrimary else VisualizerTextSecondary.copy(alpha = 0.3f), Modifier.size(20.dp))
+                PlaybackIcon(PlaybackGlyph.SkipPrevious, "Previous step", if (canGoPrevious) VisualizerTextPrimary else VisualizerTextSecondary.copy(alpha = 0.3f), Modifier.size(18.dp))
             }
         }
         Surface(
@@ -160,14 +173,16 @@ internal fun VisualizerPlaybackBar(
             Box(contentAlignment = Alignment.Center) {
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    horizontalArrangement = Arrangement.spacedBy(6.dp)
                 ) {
-                    PlaybackIcon(if (isPlaying) PlaybackGlyph.Pause else PlaybackGlyph.PlayArrow, if (isPlaying) "Pause playback" else "Start playback", if (isCompleted) VisualizerTextSecondary else Color(0xFF111115), Modifier.size(20.dp))
+                    PlaybackIcon(if (isPlaying) PlaybackGlyph.Pause else PlaybackGlyph.PlayArrow, if (isPlaying) "Pause playback" else "Start playback", if (isCompleted) VisualizerTextSecondary else Color(0xFF111115), Modifier.size(18.dp))
                     Text(
                         if (isPlaying) "Pause" else "Play",
                         color = if (isCompleted) VisualizerTextSecondary else Color(0xFF111115),
-                        fontSize = 15.sp,
-                        fontWeight = FontWeight.Bold
+                        style = MaterialTheme.typography.labelLarge.copy(
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.Bold
+                        )
                     )
                 }
             }
@@ -179,7 +194,7 @@ internal fun VisualizerPlaybackBar(
             modifier = Modifier.size(controlSize).clickable(enabled = !isCompleted, onClick = onNext)
         ) {
             Box(contentAlignment = Alignment.Center) {
-                PlaybackIcon(PlaybackGlyph.SkipNext, "Next step", if (!isCompleted) VisualizerTextPrimary else VisualizerTextSecondary.copy(alpha = 0.3f), Modifier.size(20.dp))
+                PlaybackIcon(PlaybackGlyph.SkipNext, "Next step", if (!isCompleted) VisualizerTextPrimary else VisualizerTextSecondary.copy(alpha = 0.3f), Modifier.size(18.dp))
             }
         }
     }
@@ -188,9 +203,9 @@ internal fun VisualizerPlaybackBar(
 @Composable
 internal fun VisualizerPlaybackBar(
     playback: VisualizerPlaybackState,
-    controlSize: Dp = 44.dp,
-    spacing: Dp = 8.dp,
-    cornerRadius: Dp = 12.dp,
+    controlSize: Dp = 40.dp,
+    spacing: Dp = 7.dp,
+    cornerRadius: Dp = 10.dp,
     modifier: Modifier = Modifier
 ) {
     VisualizerPlaybackBar(
