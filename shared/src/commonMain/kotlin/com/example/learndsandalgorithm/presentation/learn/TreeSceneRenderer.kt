@@ -30,6 +30,10 @@ internal fun TreeSceneRenderer(
     scene: VisualizationScene,
     modifier: Modifier = Modifier
 ) {
+    if (isFundamentalsGeneralTreeScene(scene)) {
+        GeneralTreeSceneRenderer(scene, modifier)
+        return
+    }
     val textMeasurer = rememberTextMeasurer()
 
     BoxWithConstraints(modifier = modifier.fillMaxSize()) {

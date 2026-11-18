@@ -324,16 +324,16 @@ private fun TreeTraversalsDetailsAndStepsContent(
 ) {
     Column(
         modifier = Modifier.fillMaxWidth().padding(horizontal = 2.dp),
-        verticalArrangement = Arrangement.spacedBy(8.dp * scale)
+        verticalArrangement = Arrangement.spacedBy(2.dp)
     ) {
         Surface(
             color = Color(0xFF161622),
-            shape = RoundedCornerShape(12.dp),
+            shape = RoundedCornerShape(8.dp),
             modifier = Modifier.fillMaxWidth()
         ) {
             Column(
-                modifier = Modifier.padding(12.dp),
-                verticalArrangement = Arrangement.spacedBy(6.dp)
+                modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                verticalArrangement = Arrangement.spacedBy(2.dp)
             ) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -363,19 +363,32 @@ private fun TreeTraversalsDetailsAndStepsContent(
                         TraversalOrder.LEVEL_ORDER -> BlueAccent
                         else -> OrangeAccent
                     },
-                    fontSize = 13.sp,
+                    fontSize = 11.sp,
                     fontWeight = FontWeight.Bold,
-                    lineHeight = 18.sp
+                    lineHeight = 13.sp
+                )
+                if (step.order == TraversalOrder.LEVEL_ORDER) {
+                    Text(
+                        "BFS QUEUE (FRONT → REAR): " + (step.queueValues.takeIf { it.isNotEmpty() }?.joinToString(" → ") ?: "Queue empty"),
+                        color = BlueAccent, fontSize = 10.sp, lineHeight = 12.sp
+                    )
+                }
+                Text(
+                    (if (step.order == TraversalOrder.IN_ORDER) "VISITED SEQUENCE (SORTED ASCENDING): " else "VISITED SEQUENCE OUTPUT: ") +
+                        (step.visitedNodes.takeIf { it.isNotEmpty() }?.joinToString(" → ") ?: "No nodes visited yet"),
+                    color = GreenAccent, fontSize = 10.sp, lineHeight = 12.sp
                 )
             }
         }
 
-        StepsCard(
-            label = "Steps",
-            explanation = step.explanation,
-            stepIndex = stepIndex,
-            totalSteps = totalSteps,
-            isCompleted = stepIndex == totalSteps - 1
-        )
+        Surface(color = Color(0xFF161622), shape = RoundedCornerShape(8.dp), modifier = Modifier.fillMaxWidth()) {
+            Column(Modifier.padding(horizontal = 8.dp, vertical = 5.dp), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+                    Text("Steps", color = OrangeAccent, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                    Text("STEP ${stepIndex + 1} / $totalSteps", color = if (stepIndex == totalSteps - 1) GreenAccent else TextSecondary, fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                }
+                Text(step.explanation, color = TextPrimary, fontSize = 12.sp, lineHeight = 15.sp)
+            }
+        }
     }
 }

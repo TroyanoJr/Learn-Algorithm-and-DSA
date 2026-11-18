@@ -34,6 +34,26 @@ private val RedAccent = Color(0xFFEF4444)
 private val TextPrimary = Color(0xFFFFFFFF)
 private val TextSecondary = Color(0xFF9CA3AF)
 
+internal enum class BstPresentationState { CHECKING, VALID, INVALID }
+
+internal fun bstPresentationState(step: BinaryTreeBstTraceStep): BstPresentationState = when {
+    !step.isValidBst -> BstPresentationState.INVALID
+    step.scenario == BstComparisonScenario.INVALID_BST_VIOLATION -> BstPresentationState.CHECKING
+    else -> BstPresentationState.VALID
+}
+
+private val BstPresentationState.label: String get() = when (this) {
+    BstPresentationState.CHECKING -> "CHECKING BST"
+    BstPresentationState.VALID -> "VALID BST"
+    BstPresentationState.INVALID -> "INVALID BST"
+}
+
+private val BstPresentationState.accent: Color get() = when (this) {
+    BstPresentationState.CHECKING -> OrangeAccent
+    BstPresentationState.VALID -> GreenAccent
+    BstPresentationState.INVALID -> RedAccent
+}
+
 @Composable
 internal fun BinaryTreeBstVisualizationCard(
     title: String = "Binary Trees and Binary Search Trees"
@@ -176,6 +196,7 @@ private fun BstScenarioSelector(
 
 @Composable
 private fun BinaryTreeBstVisualizationContent(step: BinaryTreeBstTraceStep, scale: Float) {
+    val presentation = bstPresentationState(step)
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(8.dp * scale),
@@ -213,13 +234,17 @@ private fun BinaryTreeBstVisualizationContent(step: BinaryTreeBstTraceStep, scal
                 }
 
                 Surface(
-                    color = if (!step.isValidBst) Color(0xFF381212) else Color(0xFF123820),
+                    color = when (presentation) {
+                        BstPresentationState.INVALID -> Color(0xFF381212)
+                        BstPresentationState.VALID -> Color(0xFF123820)
+                        BstPresentationState.CHECKING -> Color(0xFF2A1C12)
+                    },
                     shape = RoundedCornerShape(6.dp),
-                    border = BorderStroke(1.dp, if (!step.isValidBst) RedAccent else GreenAccent)
+                    border = BorderStroke(1.dp, presentation.accent)
                 ) {
                     Text(
-                        text = if (!step.isValidBst) "INVALID BST" else "VALID BST",
-                        color = if (!step.isValidBst) RedAccent else GreenAccent,
+                        text = presentation.label,
+                        color = presentation.accent,
                         fontSize = 10.sp,
                         fontWeight = FontWeight.Bold,
                         modifier = Modifier.padding(horizontal = 8.dp * scale, vertical = 4.dp * scale)
@@ -237,56 +262,42 @@ private fun BinaryTreeBstDetailsAndStepsContent(
     totalSteps: Int,
     scale: Float
 ) {
+    val presentation = bstPresentationState(step)
     Column(
         modifier = Modifier.fillMaxWidth().padding(horizontal = 2.dp),
-        verticalArrangement = Arrangement.spacedBy(8.dp * scale)
+        verticalArrangement = Arrangement.spacedBy(2.dp)
     ) {
-        Surface(
-            color = Color(0xFF161622),
-            shape = RoundedCornerShape(12.dp),
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Column(
-                modifier = Modifier.padding(12.dp),
-                verticalArrangement = Arrangement.spacedBy(6.dp)
-            ) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text("CURRENT CHECK", color = TextSecondary, fontSize = 9.sp, fontWeight = FontWeight.Bold)
-                    Surface(
-                        color = Color(0xFF22222E),
-                        shape = RoundedCornerShape(6.dp),
-                        border = BorderStroke(1.dp, CardBorderColor)
-                    ) {
-                        Text(
-                            text = "BST Invariant Rule",
-                            color = GreenAccent,
-                            fontSize = 9.sp,
-                            fontWeight = FontWeight.Bold,
-                            modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
-                        )
+        Surface(color = Color(0xFF13131C), shape = RoundedCornerShape(8.dp), modifier = Modifier.fillMaxWidth()) {
+            Column(Modifier.padding(horizontal = 8.dp, vertical = 4.dp), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+                    Text("BST ORDERING RULE: left < parent < right", color = OrangeAccent, fontSize = 10.sp, fontWeight = FontWeight.Bold)
+                    Text(presentation.label, color = presentation.accent, fontSize = 10.sp, fontWeight = FontWeight.Bold)
+                }
+                when (step.scenario) {
+                    BstComparisonScenario.VALID_BST -> Text("Root 5 · < 5 left · > 5 right", color = TextSecondary, fontSize = 9.sp)
+                    BstComparisonScenario.INVALID_BST_VIOLATION -> {
+                        if (step.violationMessage != null) Text(step.violationMessage, color = RedAccent, fontSize = 9.sp)
+                    }
+                    BstComparisonScenario.BALANCED_VS_SKEWED -> {
+                        Text("SKEWED BINARY TREE (SORTED INPUT 1,2,3,4,5):", color = OrangeAccent, fontSize = 9.sp, fontWeight = FontWeight.Bold)
+                        Text("↘ right: 1 → 2 → 3 → 4 → 5 · leaf: 5", color = TextPrimary, fontSize = 9.sp)
                     }
                 }
-
-                Text(
-                    text = step.badgeText,
-                    color = if (!step.isValidBst) RedAccent else GreenAccent,
-                    fontSize = 13.sp,
-                    fontWeight = FontWeight.Bold,
-                    lineHeight = 18.sp
-                )
+                Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                    Text("CURRENT CHECK  ", color = TextSecondary, fontSize = 9.sp, fontWeight = FontWeight.Bold)
+                    Text(step.badgeText, color = presentation.accent, fontSize = 11.sp, fontWeight = FontWeight.Bold, lineHeight = 13.sp)
+                }
             }
         }
 
-        StepsCard(
-            label = "Steps",
-            explanation = step.explanation,
-            stepIndex = stepIndex,
-            totalSteps = totalSteps,
-            isCompleted = stepIndex == totalSteps - 1
-        )
+        Surface(color = Color(0xFF161622), shape = RoundedCornerShape(8.dp), modifier = Modifier.fillMaxWidth()) {
+            Column(Modifier.padding(horizontal = 8.dp, vertical = 5.dp), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+                    Text("Steps", color = OrangeAccent, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                    Text("STEP ${stepIndex + 1} / $totalSteps", color = if (stepIndex == totalSteps - 1) GreenAccent else TextSecondary, fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                }
+                Text(step.explanation, color = TextPrimary, fontSize = 12.sp, lineHeight = 15.sp)
+            }
+        }
     }
 }

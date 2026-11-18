@@ -48,6 +48,26 @@ class TreeFundamentalsSceneBuilderTest {
     }
 
     @Test
+    fun testDynamicBadgesAndHighlightsRemainPresent() {
+        val scenes = TreeFundamentalsSceneBuilder.buildFundamentalsScenes(TreeFundamentalsTrace.stepsForFundamentals())
+
+        val parentScene = scenes[2].subScenes.first()
+        assertEquals(EntityVisualState.ACTIVE, parentScene.entities.first { it.elementId == "node:B" }.visualState)
+        assertEquals("Parent", parentScene.entities.first { it.elementId == "node:B" }.badgeLabel)
+        assertEquals("Leaf", parentScene.entities.first { it.elementId == "node:E" }.badgeLabel)
+
+        val subtreeScene = scenes[5].subScenes.first()
+        assertEquals("Subtree Root", subtreeScene.entities.first { it.elementId == "node:B" }.badgeLabel)
+        assertEquals(EntityVisualState.ACTIVE, subtreeScene.entities.first { it.elementId == "node:E" }.visualState)
+
+        val leafScene = scenes[4].subScenes.first()
+        assertEquals(setOf("node:D", "node:E", "node:F", "node:G"), leafScene.entities
+            .filter { it.visualState == EntityVisualState.ACTIVE }
+            .map { it.elementId }
+            .toSet())
+    }
+
+    @Test
     fun testEmptyInputBehavior() {
         val scenes = TreeFundamentalsSceneBuilder.buildFundamentalsScenes(emptyList())
         assertTrue(scenes.isEmpty())

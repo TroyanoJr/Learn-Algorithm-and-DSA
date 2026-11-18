@@ -9,6 +9,37 @@ import kotlin.test.assertTrue
 class TreeTraversalSceneBuilderTest {
 
     @Test
+    fun everyTraversalScenePreservesTraceProgressAndExplanation() {
+        val expected = mapOf(
+            TraversalOrder.PRE_ORDER to listOf(5, 3, 2, 4, 7, 6, 8),
+            TraversalOrder.IN_ORDER to listOf(2, 3, 4, 5, 6, 7, 8),
+            TraversalOrder.POST_ORDER to listOf(2, 4, 3, 6, 8, 7, 5),
+            TraversalOrder.LEVEL_ORDER to listOf(5, 3, 7, 2, 4, 6, 8)
+        )
+        expected.forEach { (order, finalOrder) ->
+            val steps = TreeTraversalsTrace.stepsForOrder(order)
+            val scenes = TreeTraversalSceneBuilder.buildTraversalScenes(steps)
+            assertEquals(9, steps.size)
+            assertEquals(finalOrder, steps.last().visitedNodes)
+            assertEquals(steps.indices.toList(), scenes.map { it.stepIndex })
+            assertEquals(steps.map { it.explanation }, scenes.map { it.globalMessage })
+            steps.forEachIndexed { index, step ->
+                val scene = scenes[index]
+                val tree = scene.subScenes.first { it.subPaneId == "tree_traversal_tree" }
+                val queue = scene.subScenes.first { it.subPaneId == "tree_traversal_queue" }
+                val visited = scene.subScenes.first { it.subPaneId == "tree_traversal_visited" }
+                assertEquals(7, tree.entities.size)
+                assertEquals(6, tree.connections.size)
+                assertEquals(step.queueValues, queue.entities.map { it.dataValue.toInt() })
+                assertEquals(step.visitedNodes, visited.entities.map { it.dataValue.toInt() })
+                step.currentNodeId?.let { activeId ->
+                    assertEquals(EntityVisualState.ACTIVE, tree.entities.first { it.elementId == "node:$activeId" }.visualState)
+                }
+            }
+        }
+    }
+
+    @Test
     fun testFullBfsTraceAccepted() {
         val steps = TreeTraversalsTrace.stepsForOrder(TraversalOrder.LEVEL_ORDER)
         val scenes = TreeTraversalSceneBuilder.buildLevelOrderScenes(steps)

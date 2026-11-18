@@ -41,6 +41,11 @@ internal object BstSceneBuilder {
                 }
                 val badge = when {
                     !isPresent -> null
+                    step.scenario == BstComparisonScenario.VALID_BST && nodeDef.id == "N5" -> "Root 5"
+                    step.scenario == BstComparisonScenario.VALID_BST && nodeDef.id == "N3" -> "< 5"
+                    step.scenario == BstComparisonScenario.VALID_BST && nodeDef.id == "N7" -> "> 5"
+                    step.scenario == BstComparisonScenario.BALANCED_VS_SKEWED && stepNode?.rightId != null -> "↘ right"
+                    step.scenario == BstComparisonScenario.BALANCED_VS_SKEWED -> "leaf"
                     isViolation -> "Violation"
                     isActive -> "Inspecting"
                     else -> null

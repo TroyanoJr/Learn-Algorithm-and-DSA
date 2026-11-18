@@ -3,6 +3,8 @@ package com.example.learndsandalgorithm.presentation.learn
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -29,6 +31,15 @@ private val BlueAccent = Color(0xFF38BDF8)
 private val GreenAccent = Color(0xFF10B981)
 private val TextPrimary = Color(0xFFFFFFFF)
 private val TextSecondary = Color(0xFF9CA3AF)
+
+internal fun treeFundamentalsConceptTitle(concept: TreeConcept): String = when (concept) {
+    TreeConcept.ROOT -> "Root Node"
+    TreeConcept.PARENT_CHILD -> "Parent & Child Relationships"
+    TreeConcept.SIBLINGS -> "Sibling Nodes"
+    TreeConcept.LEAVES -> "Leaf Nodes"
+    TreeConcept.SUBTREE -> "Subtrees"
+    TreeConcept.DEPTH_AND_HEIGHT -> "Tree Measurements: Depth & Height"
+}
 
 @Composable
 internal fun TreeFundamentalsVisualizationCard(
@@ -63,14 +74,7 @@ internal fun TreeFundamentalsVisualizationCard(
     }
 
     if (isExpanded) {
-        val statusText = when (step.concept) {
-            TreeConcept.ROOT -> "ROOT NODE"
-            TreeConcept.PARENT_CHILD -> "PARENT & CHILD RELATIONSHIPS"
-            TreeConcept.SIBLINGS -> "SIBLING NODES"
-            TreeConcept.LEAVES -> "LEAF NODES (TERMINAL)"
-            TreeConcept.SUBTREE -> "SUBTREE STRUCTURE"
-            TreeConcept.DEPTH_AND_HEIGHT -> "DEPTH & HEIGHT MEASUREMENTS"
-        }
+        val statusText = treeFundamentalsConceptTitle(step.concept)
 
         val statusColor = when (step.concept) {
             TreeConcept.ROOT, TreeConcept.SUBTREE -> OrangeAccent
@@ -178,9 +182,12 @@ private fun TreeFundamentalsDetailsAndStepsContent(
     totalSteps: Int,
     scale: Float
 ) {
+    val root = step.nodes.first { it.parentId == null }
+    val rootHeight = root.height
+    val treeHeight = step.nodes.maxOf { it.height }
     Column(
         modifier = Modifier.fillMaxWidth().padding(horizontal = 2.dp),
-        verticalArrangement = Arrangement.spacedBy(8.dp * scale)
+        verticalArrangement = Arrangement.spacedBy(3.dp)
     ) {
         Surface(
             color = Color(0xFF161622),
@@ -188,8 +195,8 @@ private fun TreeFundamentalsDetailsAndStepsContent(
             modifier = Modifier.fillMaxWidth()
         ) {
             Column(
-                modifier = Modifier.padding(12.dp),
-                verticalArrangement = Arrangement.spacedBy(6.dp)
+                modifier = Modifier.padding(horizontal = 8.dp, vertical = 5.dp),
+                verticalArrangement = Arrangement.spacedBy(3.dp)
             ) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -203,7 +210,7 @@ private fun TreeFundamentalsDetailsAndStepsContent(
                         border = BorderStroke(1.dp, CardBorderColor)
                     ) {
                         Text(
-                            text = "Tree Measurements: Depth & Height",
+                            text = treeFundamentalsConceptTitle(step.concept),
                             color = GreenAccent,
                             fontSize = 9.sp,
                             fontWeight = FontWeight.Bold,
@@ -219,19 +226,67 @@ private fun TreeFundamentalsDetailsAndStepsContent(
                         TreeConcept.LEAVES, TreeConcept.DEPTH_AND_HEIGHT -> GreenAccent
                         else -> BlueAccent
                     },
-                    fontSize = 13.sp,
+                    fontSize = 11.sp,
                     fontWeight = FontWeight.Bold,
-                    lineHeight = 18.sp
+                    lineHeight = 13.sp
                 )
             }
         }
 
-        StepsCard(
-            label = "Steps",
-            explanation = step.explanation,
-            stepIndex = stepIndex,
-            totalSteps = totalSteps,
-            isCompleted = stepIndex == totalSteps - 1
-        )
+        Surface(
+            color = Color(0xFF13131C),
+            shape = RoundedCornerShape(12.dp),
+            border = BorderStroke(1.dp, CardBorderColor),
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Column(
+                modifier = Modifier.padding(horizontal = 7.dp, vertical = 4.dp),
+                verticalArrangement = Arrangement.spacedBy(2.dp)
+            ) {
+                Text(
+                    text = "TREE TERMINOLOGY & MEASUREMENTS",
+                    color = OrangeAccent,
+                    fontSize = 10.sp,
+                    fontWeight = FontWeight.Bold
+                )
+                Text(
+                    text = "Root Height = $rootHeight | Tree Height = $treeHeight | Total Nodes = ${step.nodes.size}",
+                    color = TextSecondary,
+                    fontSize = 8.sp
+                )
+                step.nodes.chunked(2).forEach { pair ->
+                    Row(modifier = Modifier.fillMaxWidth()) {
+                        pair.forEach { node ->
+                            Box(modifier = Modifier.weight(1f)) {
+                                Text(
+                                    text = buildString {
+                                        append("${node.id}: d${node.depth} · h${node.height}")
+                                        if (node.parentId == null) append(" · Root")
+                                        if (node.isLeaf) append(" · Leaf")
+                                    },
+                                    color = TextPrimary,
+                                    fontSize = 8.sp,
+                                    lineHeight = 9.sp
+                                )
+                            }
+                        }
+                        if (pair.size == 1) Box(Modifier.weight(1f))
+                    }
+                }
+            }
+        }
+
+        Surface(color = Color(0xFF161622), shape = RoundedCornerShape(8.dp), modifier = Modifier.fillMaxWidth()) {
+            Column(
+                modifier = Modifier.padding(horizontal = 8.dp, vertical = 5.dp),
+                verticalArrangement = Arrangement.spacedBy(2.dp)
+            ) {
+                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+                    Text("Steps", color = OrangeAccent, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                    Text("STEP ${stepIndex + 1} / $totalSteps", color = if (stepIndex == totalSteps - 1) GreenAccent else TextSecondary, fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                }
+                Text(step.explanation, color = TextPrimary, fontSize = 12.sp, lineHeight = 15.sp)
+            }
+        }
     }
 }

@@ -34,6 +34,14 @@ private val RedAccent = Color(0xFFEF4444)
 private val TextPrimary = Color(0xFFFFFFFF)
 private val TextSecondary = Color(0xFF9CA3AF)
 
+private fun BstOpType.detailsLabel(): String = when (this) {
+    BstOpType.SEARCH -> "SEARCH"
+    BstOpType.INSERT -> "INSERT"
+    BstOpType.DELETE_CASE_1_LEAF -> "DELETE LEAF"
+    BstOpType.DELETE_CASE_2_ONE_CHILD -> "DELETE 1-CHILD"
+    BstOpType.DELETE_CASE_3_TWO_CHILDREN -> "DELETE 2-CHILDREN"
+}
+
 @Composable
 internal fun BstOperationsVisualizationCard(
     title: String = "Binary Search Tree Operations, Complexity, and Trade-offs"
@@ -238,37 +246,37 @@ private fun BstOperationsDetailsAndStepsContent(
 ) {
     Column(
         modifier = Modifier.fillMaxWidth().padding(horizontal = 2.dp),
-        verticalArrangement = Arrangement.spacedBy(8.dp * scale)
+        verticalArrangement = Arrangement.spacedBy(2.dp)
     ) {
         Surface(
             color = Color(0xFF161622),
-            shape = RoundedCornerShape(12.dp),
+            shape = RoundedCornerShape(8.dp),
             modifier = Modifier.fillMaxWidth()
         ) {
             Column(
-                modifier = Modifier.padding(12.dp),
-                verticalArrangement = Arrangement.spacedBy(6.dp)
+                modifier = Modifier.padding(horizontal = 7.dp, vertical = 2.dp),
+                verticalArrangement = Arrangement.spacedBy(1.dp)
             ) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text("CURRENT OPERATION STEP", color = TextSecondary, fontSize = 9.sp, fontWeight = FontWeight.Bold)
-                    Surface(
-                        color = Color(0xFF22222E),
-                        shape = RoundedCornerShape(6.dp),
-                        border = BorderStroke(1.dp, CardBorderColor)
-                    ) {
-                        Text(
-                            text = "Balanced: O(log N) | Skewed: O(N)",
-                            color = GreenAccent,
-                            fontSize = 9.sp,
-                            fontWeight = FontWeight.Bold,
-                            modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
-                        )
-                    }
+                    Text("BST: ${step.opType.detailsLabel()}", modifier = Modifier.weight(1f), color = OrangeAccent, fontSize = 9.sp, fontWeight = FontWeight.Bold, maxLines = 1)
+                    Text("TARGET ${step.targetVal}", color = TextSecondary, fontSize = 9.sp, fontWeight = FontWeight.Bold, maxLines = 1)
                 }
+
+                Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                    Text("AVG O(log N)", modifier = Modifier.weight(0.8f), color = TextSecondary, fontSize = 9.sp, maxLines = 1)
+                    Text("BALANCED O(log N) · SKEWED O(N)", modifier = Modifier.weight(1.5f), color = GreenAccent, fontSize = 9.sp, maxLines = 1)
+                }
+
+                Text(
+                    "INSPECTING: " + (step.inspectedNodeId?.let { id ->
+                        step.nodes.firstOrNull { it.id == id }?.let { "[${it.value}]" }
+                    } ?: "NO NODE SELECTED"),
+                    color = TextSecondary, fontSize = 9.sp, maxLines = 1
+                )
+                step.successorVal?.let { Text("SUCCESSOR: $it", color = BlueAccent, fontSize = 9.sp, maxLines = 1) }
 
                 Text(
                     text = step.badgeText,
@@ -277,19 +285,21 @@ private fun BstOperationsDetailsAndStepsContent(
                         BstOpType.INSERT -> OrangeAccent
                         else -> RedAccent
                     },
-                    fontSize = 13.sp,
+                    fontSize = 10.sp,
                     fontWeight = FontWeight.Bold,
-                    lineHeight = 18.sp
+                    lineHeight = 13.sp
                 )
             }
         }
 
-        StepsCard(
-            label = "Steps",
-            explanation = step.explanation,
-            stepIndex = stepIndex,
-            totalSteps = totalSteps,
-            isCompleted = stepIndex == totalSteps - 1
-        )
+        Surface(color = Color(0xFF161622), shape = RoundedCornerShape(8.dp), modifier = Modifier.fillMaxWidth()) {
+            Column(Modifier.padding(horizontal = 8.dp, vertical = 5.dp), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+                    Text("Steps", color = OrangeAccent, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                    Text("STEP ${stepIndex + 1} / $totalSteps", color = if (stepIndex == totalSteps - 1) GreenAccent else TextSecondary, fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                }
+                Text(step.explanation, color = TextPrimary, fontSize = 12.sp, lineHeight = 15.sp)
+            }
+        }
     }
 }
