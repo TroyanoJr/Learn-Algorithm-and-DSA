@@ -7,6 +7,8 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -58,7 +60,7 @@ internal fun HeapInsertSiftUpVisualizationCard(
 
     if (isExpanded) {
         val statusText = when (step.event) {
-            InsertSiftUpEvent.START -> "READY · INSERT $step.insertedValue"
+            InsertSiftUpEvent.START -> "READY · INSERT ${step.insertedValue}"
             InsertSiftUpEvent.APPEND_VALUE -> "APPENDED $step.insertedValue AT INDEX ${step.currentIndex}"
             InsertSiftUpEvent.COMPARE_PARENT -> "COMPARING WITH PARENT AT INDEX ${step.parentIndex}"
             InsertSiftUpEvent.SWAP_UP -> "SIFTING UP: SWAPPED WITH PARENT"
@@ -251,10 +253,12 @@ private fun HeapInsertSiftUpDetailsAndStepsContent(
     ) {
         Row(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+            Column(
+                modifier = Modifier.weight(1f),
+                verticalArrangement = Arrangement.spacedBy(2.dp)
+            ) {
                 Text("CURRENT STEP", color = TextSecondary, fontSize = 9.sp, fontWeight = FontWeight.Bold)
                 Text(
                     step.badgeText,
@@ -267,6 +271,7 @@ private fun HeapInsertSiftUpDetailsAndStepsContent(
                     fontWeight = FontWeight.Bold
                 )
             }
+            Spacer(modifier = Modifier.width(8.dp))
             Text("Insertion Time: O(log N)", color = GreenAccent, fontSize = 10.sp, fontWeight = FontWeight.Bold)
         }
 
