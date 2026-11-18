@@ -1,6 +1,8 @@
 package com.example.learndsandalgorithm.presentation.learn
 
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -12,6 +14,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.ui.graphics.Color
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -20,7 +23,6 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -61,7 +63,7 @@ internal fun HeapInsertSiftUpVisualizationCard(
     if (isExpanded) {
         val statusText = when (step.event) {
             InsertSiftUpEvent.START -> "READY · INSERT ${step.insertedValue}"
-            InsertSiftUpEvent.APPEND_VALUE -> "APPENDED $step.insertedValue AT INDEX ${step.currentIndex}"
+            InsertSiftUpEvent.APPEND_VALUE -> "APPENDED ${step.insertedValue} AT INDEX ${step.currentIndex}"
             InsertSiftUpEvent.COMPARE_PARENT -> "COMPARING WITH PARENT AT INDEX ${step.parentIndex}"
             InsertSiftUpEvent.SWAP_UP -> "SIFTING UP: SWAPPED WITH PARENT"
             InsertSiftUpEvent.SIFT_UP_COMPLETE -> "INSERTION COMPLETE"
@@ -81,6 +83,7 @@ internal fun HeapInsertSiftUpVisualizationCard(
             stepCount = steps.size,
             isPlaying = isPlaying,
             layoutMode = VisualizerLayoutMode.FULL_WIDTH,
+            detailsScrollable = false,
             statusColor = statusColor,
             onReset = { playback.reset() },
             onPrevious = { playback.previous() },
@@ -248,7 +251,7 @@ private fun HeapInsertSiftUpDetailsAndStepsContent(
     scale: Float
 ) {
     Column(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier.fillMaxSize(),
         verticalArrangement = Arrangement.spacedBy(8.dp * scale)
     ) {
         Row(
@@ -275,12 +278,36 @@ private fun HeapInsertSiftUpDetailsAndStepsContent(
             Text("Insertion Time: O(log N)", color = GreenAccent, fontSize = 10.sp, fontWeight = FontWeight.Bold)
         }
 
-        StepsCard(
-            label = "Steps",
-            explanation = step.explanation,
-            stepIndex = stepIndex,
-            totalSteps = totalSteps,
-            isCompleted = stepIndex == totalSteps - 1
-        )
+        Surface(
+            color = Color(0xFF161622),
+            shape = RoundedCornerShape(12.dp),
+            modifier = Modifier.weight(1f).fillMaxWidth()
+        ) {
+            Column(
+                modifier = Modifier.fillMaxSize().padding(horizontal = 12.dp, vertical = 12.dp),
+                verticalArrangement = Arrangement.spacedBy(4.dp)
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text("Steps", color = OrangeAccent, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                    Text(
+                        "STEP ${stepIndex + 1} / $totalSteps",
+                        color = if (stepIndex == totalSteps - 1) GreenAccent else TextSecondary,
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+                Text(
+                    text = step.explanation,
+                    color = TextPrimary,
+                    fontSize = 13.sp,
+                    lineHeight = 18.sp,
+                    modifier = Modifier.weight(1f).fillMaxWidth().verticalScroll(rememberScrollState())
+                )
+            }
+        }
     }
 }
