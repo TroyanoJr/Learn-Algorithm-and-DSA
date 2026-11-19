@@ -266,10 +266,9 @@ private fun HeapPropertiesDetailsAndStepsContent(
         modifier = Modifier.fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(8.dp * scale)
     ) {
-        Row(
+        Column(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
+            verticalArrangement = Arrangement.spacedBy(3.dp)
         ) {
             Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
                 Text("CURRENT CONCEPT", color = TextSecondary, fontSize = 9.sp, fontWeight = FontWeight.Bold)
@@ -281,7 +280,8 @@ private fun HeapPropertiesDetailsAndStepsContent(
                         HeapPropertyTopic.MAX_HEAP_STRUCTURE -> OrangeAccent
                     },
                     fontSize = 15.sp,
-                    fontWeight = FontWeight.Bold
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.fillMaxWidth()
                 )
             }
             Text("Root Access: O(1) Constant Time", color = GreenAccent, fontSize = 10.sp, fontWeight = FontWeight.Bold)
