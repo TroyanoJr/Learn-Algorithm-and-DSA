@@ -291,6 +291,11 @@ private fun HeapBuildDetailsAndStepsContent(
                     fontWeight = FontWeight.Bold,
                     lineHeight = 18.sp
                 )
+                Text(
+                    text = "Start index = floor(N/2) - 1 = ${step.array.size / 2 - 1}, the last non-leaf node.",
+                    color = TextSecondary,
+                    fontSize = 10.sp
+                )
             }
         }
 

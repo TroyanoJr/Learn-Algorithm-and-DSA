@@ -286,8 +286,11 @@ fun LessonDetailScreen(
                         // Theory & Key Concepts Markdown Content
                         MarkdownContent(content = state.markdownContent)
 
-                        if (state.lesson.id == "lesson_arrays_5") {
-                            ArrayComplexityComparisonCard()
+                        // Static comparison cards embedded directly in lesson content
+                        when (state.lesson.id) {
+                            "lesson_arrays_5" -> ArrayComplexityComparisonCard()
+                            "searching_4" -> SearchComparisonCard()
+                            "sorting_5" -> SortingComparisonCard()
                         }
 
                         // 1. Independent Interactive Visualizer Section (When lesson has visualizer)
@@ -1108,7 +1111,9 @@ private fun hasVisualizerForLesson(lessonId: String): Boolean {
         "sorting_1",
         "lesson_arrays_1",
         "lesson_arrays_5",
-        "lesson_linked_list_5" -> false
+        "lesson_linked_list_5",
+        "searching_4",
+        "sorting_5" -> false
         else -> true
     }
 }
@@ -1133,11 +1138,9 @@ private fun RenderVisualizerCardForLesson(lessonId: String, title: String) {
         "lesson_linked_list_4" -> LinkedListRemovalVisualizationCard()
         "searching_2" -> LinearSearchVisualizationCard()
         "searching_3" -> BinarySearchVisualizationCard()
-        "searching_4" -> SearchComparisonCard()
         "sorting_2" -> BubbleSortVisualizationCard()
         "sorting_3" -> SelectionSortVisualizationCard()
         "sorting_4" -> InsertionSortVisualizationCard()
-        "sorting_5" -> SortingComparisonCard()
         "lesson_hash_tables_1" -> HashTableVisualizationCard(title = title)
         "lesson_hash_tables_2" -> HashTableCollisionVisualizationCard(title = title)
         "lesson_hash_tables_3" -> HashTableOperationsVisualizationCard(title = title)

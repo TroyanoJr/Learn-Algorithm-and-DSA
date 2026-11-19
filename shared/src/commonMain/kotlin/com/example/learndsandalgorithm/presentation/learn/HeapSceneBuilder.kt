@@ -498,8 +498,15 @@ internal object HeapSceneBuilder {
             for (i in 0 until n) {
                 val elementId = identityAtSlot.getOrElse(i) { "elem:$i" }
                 val valStr = heap[i].toString()
+                val isSwapped = swapped != null && (swapped.first == i || swapped.second == i)
                 val isCurr = step.currentIndex == i
-                val entityState = if (isCurr) EntityVisualState.ACTIVE else EntityVisualState.DEFAULT
+                val isChild = step.smallerChildIndex == i
+                val entityState = when {
+                    isSwapped -> EntityVisualState.TARGET
+                    isCurr -> EntityVisualState.ACTIVE
+                    isChild -> EntityVisualState.TARGET
+                    else -> EntityVisualState.DEFAULT
+                }
 
                 arrayEntities.add(
                     VisualEntity(
