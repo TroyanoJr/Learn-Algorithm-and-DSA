@@ -177,7 +177,7 @@ internal data class BruteForceSceneLayoutResult(
 
 internal object BruteForceSceneLayout {
     private const val MARGIN = 12f
-    private const val WIDTH = 520f
+    private const val WIDTH = 420f
     private const val CELL = 52f
     private const val GAP = 10f
 
@@ -194,7 +194,8 @@ internal object BruteForceSceneLayout {
             BruteForceLesson.STRING_MATCHING -> frames.maxOf { maxOf(it.meta.text.length, it.meta.pattern.length) }
         }
         val naturalWidth = MARGIN * 2 + maxItems * CELL + (maxItems - 1).coerceAtLeast(0) * GAP
-        val width = maxOf(WIDTH, naturalWidth)
+        val minimumWidth = if (lesson == BruteForceLesson.STRING_MATCHING) 520f else WIDTH
+        val width = maxOf(minimumWidth, naturalWidth)
         val header = Rect2D(MARGIN, MARGIN, width - MARGIN * 2, 48f)
         val title = Rect2D(MARGIN + 10f, MARGIN + 5f, width - 170f, 17f)
         val goal = Rect2D(MARGIN + 10f, MARGIN + 24f, width - 170f, 17f)
@@ -214,24 +215,26 @@ internal object BruteForceSceneLayout {
             cells[item] = Rect2D(x, baseTop, CELL, 46f)
             primaryTexts[item] = Rect2D(x, baseTop + 4f, CELL, 18f)
             secondaryTexts[item] = Rect2D(x, baseTop + 24f, CELL, 16f)
-            indices[item] = Rect2D(x, baseTop + 50f, CELL, 16f)
-            secondaryLabels[item] = Rect2D(x - 3f, baseTop + 72f, CELL + 6f, 18f)
+            indices[item] = if (lesson == BruteForceLesson.FUNDAMENTALS) Rect2D(x, 0f, 0f, 0f) else Rect2D(x, baseTop + 50f, CELL, 16f)
+            secondaryLabels[item] = if (lesson == BruteForceLesson.STRING_MATCHING) Rect2D(x - 3f, baseTop + 72f, CELL + 6f, 18f) else Rect2D(x, 0f, 0f, 0f)
         }
         val maxHistory = frames.maxOf { it.meta.evaluatedPairs.size }
         val history = linkedMapOf<Int, Rect2D>()
         repeat(maxHistory) { item ->
             val column = item % 3
             val row = item / 3
-            history[item] = Rect2D(MARGIN + column * ((width - MARGIN * 2 + 6f) / 3f), 180f + row * 28f, (width - MARGIN * 2 - 12f) / 3f, 22f)
+            history[item] = if (lesson == BruteForceLesson.PAIR_PROBLEMS) {
+                Rect2D(MARGIN + column * ((width - MARGIN * 2 + 6f) / 3f), 180f + row * 28f, (width - MARGIN * 2 - 12f) / 3f, 22f)
+            } else Rect2D(0f, 0f, 0f, 0f)
         }
         val height = when (lesson) {
-            BruteForceLesson.FUNDAMENTALS -> 180f
-            BruteForceLesson.PAIR_PROBLEMS -> maxOf(214f, 190f + ((maxHistory + 2) / 3) * 28f)
+            BruteForceLesson.FUNDAMENTALS -> 150f
+            BruteForceLesson.PAIR_PROBLEMS -> maxOf(214f, 186f + ((maxHistory + 2) / 3) * 28f)
             BruteForceLesson.STRING_MATCHING -> 252f
         }
         return BruteForceSceneLayoutResult(
             header, title, goal, status, cells, primaryTexts, secondaryTexts, labels, secondaryLabels, indices, history,
-            Rect2D(MARGIN, 154f, width - MARGIN * 2, 22f), width, height
+            if (lesson == BruteForceLesson.PAIR_PROBLEMS) Rect2D(MARGIN, 154f, width - MARGIN * 2, 22f) else Rect2D(0f, 0f, 0f, 0f), width, height
         )
     }
 

@@ -2,7 +2,6 @@ package com.example.learndsandalgorithm.presentation.learn
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material3.Text
@@ -12,7 +11,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
@@ -70,12 +68,10 @@ internal fun BruteForceFundamentalsVisualizationCard(title: String = "Brute Forc
 @Composable
 private fun BruteForceFundamentalsDetails(step: BruteForceFundamentalsTraceStep, stepIndex: Int, totalSteps: Int) {
     Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-            Column {
-                Text("SEARCH STEP", color = FundamentalsSecondary, fontSize = 9.sp, fontWeight = FontWeight.Bold)
-                Text(step.badgeText, color = if (step.foundSolution != null) FundamentalsGreen else FundamentalsOrange, fontSize = 15.sp, fontWeight = FontWeight.Bold)
-            }
-            Text("Time: O(k) candidates", color = FundamentalsGreen, fontSize = 10.sp, fontWeight = FontWeight.Bold)
+        Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+            Text("SEARCH STEP", color = FundamentalsSecondary, fontSize = 9.sp, fontWeight = FontWeight.Bold)
+            Text(step.badgeText, modifier = Modifier.fillMaxWidth(), color = if (step.foundSolution != null) FundamentalsGreen else FundamentalsOrange, fontSize = 15.sp, fontWeight = FontWeight.Bold)
+            Text("Time: O(k) candidates", modifier = Modifier.fillMaxWidth(), color = FundamentalsGreen, fontSize = 10.sp, fontWeight = FontWeight.Bold)
         }
         StepsCard("Steps", step.explanation, stepIndex, totalSteps, stepIndex == totalSteps - 1)
     }

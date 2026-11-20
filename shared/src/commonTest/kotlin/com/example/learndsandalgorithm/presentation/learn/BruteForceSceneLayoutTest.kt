@@ -112,6 +112,32 @@ class BruteForceSceneLayoutTest {
         }
     }
 
+    @Test
+    fun compactLessonsUseLessReservedCanvasSpaceWithoutChangingStringGeometry() {
+        val fundamentals = BruteForceSceneLayout.calculate(BruteForceSceneBuilder.fundamentals(BruteForceFundamentalsTrace.stepsForSquareSearch()))
+        val pairs = BruteForceSceneLayout.calculate(BruteForceSceneBuilder.pairs(BruteForcePairProblemsTrace.stepsForFindPair()))
+        val strings = BruteForceSceneLayout.calculate(BruteForceSceneBuilder.stringMatching(NaiveStringMatchingTrace.stepsForNaiveMatch()))
+        assertTrue(fundamentals.requiredSceneWidth < 520f)
+        assertTrue(fundamentals.requiredSceneHeight < 180f)
+        assertTrue(fundamentals.indexBounds.values.all { it.width == 0f && it.height == 0f })
+        assertTrue(pairs.requiredSceneWidth < 520f)
+        assertTrue(pairs.indexBounds.values.all { it.width > 0f && it.height > 0f })
+        assertContained(pairs, listOf(pairs.currentSumBounds) + pairs.historyBounds.values)
+        assertNoOverlap(pairs.historyBounds.values.toList())
+        val lastHistoryBottom = pairs.historyBounds.values.maxOf { it.bottom }
+        assertTrue(pairs.requiredSceneHeight - lastHistoryBottom >= 12f)
+        assertEquals(520f, strings.requiredSceneWidth)
+        assertEquals(252f, strings.requiredSceneHeight)
+        assertTrue(strings.indexBounds.values.all { it.width > 0f && it.height > 0f })
+        listOf(fundamentals, pairs, strings).forEach { layout ->
+            val bounds = listOf(layout.headerBounds, layout.titleBounds, layout.goalBounds, layout.statusBounds, layout.currentSumBounds) +
+                layout.cellBounds.values + layout.primaryTextBounds.values + layout.secondaryTextBounds.values +
+                layout.labelBounds.values + layout.secondaryLabelBounds.values + layout.indexBounds.values + layout.historyBounds.values
+            assertContained(layout, bounds)
+            assertNoOverlap(layout.historyBounds.values.toList())
+        }
+    }
+
     private fun assertContained(layout: BruteForceSceneLayoutResult, bounds: Collection<Rect2D>) {
         assertTrue(bounds.all { it.left >= 0f && it.top >= 0f && it.right <= layout.requiredSceneWidth && it.bottom <= layout.requiredSceneHeight })
     }
