@@ -53,14 +53,33 @@ internal object NaiveStringMatchingTrace {
             isTerminal = isTerminal
         )
 
+        val alignmentDescription = when {
+            m == 0 -> "all boundaries [0..$n] (empty pattern)"
+            m > n -> "no valid alignments (pattern is longer than text)"
+            else -> "all valid alignments [0..${n - m}]"
+        }
+
         // Step 0: Ready
         steps.add(
             snapshot(
                 event = StringMatchEvent.START,
-                explanation = "Naive Pattern Matching: Sliding pattern '$pattern' across text '$text' at all valid alignments [0..${n - m}].",
+                explanation = "Naive Pattern Matching: Sliding pattern '$pattern' across text '$text' at $alignmentDescription.",
                 badgeText = "READY · TEXT \"$text\" | PATTERN \"$pattern\""
             )
         )
+
+        if (m == 0) {
+            matches.addAll(0..n)
+            steps.add(
+                snapshot(
+                    event = StringMatchEvent.MATCHING_COMPLETE,
+                    isTerminal = true,
+                    explanation = "Naive Pattern Matching Complete! Empty pattern matches at every boundary: [${matches.joinToString(", ")}]. Time: O(N), Space: O(1).",
+                    badgeText = "COMPLETE: EMPTY PATTERN MATCHES [${matches.joinToString(", ")}]"
+                )
+            )
+            return steps
+        }
 
         for (start in 0..(n - m)) {
             var matched = true

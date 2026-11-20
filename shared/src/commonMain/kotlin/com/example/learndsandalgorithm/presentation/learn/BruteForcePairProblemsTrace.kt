@@ -34,7 +34,7 @@ internal object BruteForcePairProblemsTrace {
 
     fun stepsForFindPair(
         values: List<Int> = listOf(2, 7, 11, 15),
-        target: Int = 9
+        target: Int = 18
     ): List<BruteForcePairProblemsTraceStep> {
         val steps = mutableListOf<BruteForcePairProblemsTraceStep>()
         val evaluated = mutableListOf<EvaluatedPair>()

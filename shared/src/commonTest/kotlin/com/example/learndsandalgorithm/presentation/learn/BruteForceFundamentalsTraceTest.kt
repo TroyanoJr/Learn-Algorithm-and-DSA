@@ -17,4 +17,13 @@ class BruteForceFundamentalsTraceTest {
         assertEquals(4, lastStep.foundSolution)
         assertEquals(4, lastStep.evaluatedCandidates.size)
     }
+
+    @Test
+    fun noMatchEvaluatesEntireRangeAndTerminatesCleanly() {
+        val steps = BruteForceFundamentalsTrace.stepsForSquareSearch(1..3, target = 20)
+        assertEquals(listOf(1, 2, 3), steps.last().evaluatedCandidates.map { it.candidate })
+        assertEquals(FundamentalsSearchEvent.SEARCH_COMPLETE, steps.last().event)
+        assertEquals(null, steps.last().foundSolution)
+        assertTrue(steps.last().isTerminal)
+    }
 }
