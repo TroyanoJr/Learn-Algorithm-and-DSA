@@ -256,13 +256,21 @@ internal fun BruteForceSceneRenderer(
                     }
                 }
                 BruteForceLesson.STRING_MATCHING -> {
+                    val terminalPresentation = BruteForceSceneLayout.terminalStringMatchPresentation(frame, layout)
                     text("NAIVE PATTERN MATCHING", layout.titleBounds, BruteOrange, 10, true)
                     text("TEXT \"${frame.meta.text}\" · PATTERN \"${frame.meta.pattern}\"", layout.goalBounds, BruteSecondary, 9, true)
-                    card(layout.statusBounds, when { frame.meta.fullAlignmentMatch -> Color(0xFF123820); frame.meta.mismatchOffset != null -> Color(0xFF381212); else -> Color(0xFF2A1C12) }, when { frame.meta.fullAlignmentMatch -> BruteGreen; frame.meta.mismatchOffset != null -> BruteRed; else -> BruteOrange }, 6f)
-                    centered("ALIGN ${frame.meta.alignmentStart ?: "—"}", layout.statusBounds, when { frame.meta.fullAlignmentMatch -> BruteGreen; frame.meta.mismatchOffset != null -> BruteRed; else -> BruteOrange }, 8, true)
+                    if (terminalPresentation == null) {
+                        card(layout.statusBounds, when { frame.meta.fullAlignmentMatch -> Color(0xFF123820); frame.meta.mismatchOffset != null -> Color(0xFF381212); else -> Color(0xFF2A1C12) }, when { frame.meta.fullAlignmentMatch -> BruteGreen; frame.meta.mismatchOffset != null -> BruteRed; else -> BruteOrange }, 6f)
+                        centered("ALIGN ${frame.meta.alignmentStart ?: "—"}", layout.statusBounds, when { frame.meta.fullAlignmentMatch -> BruteGreen; frame.meta.mismatchOffset != null -> BruteRed; else -> BruteOrange }, 8, true)
+                    } else {
+                        val foundMatches = frame.meta.foundMatches.isNotEmpty()
+                        card(layout.statusBounds, if (foundMatches) Color(0xFF123820) else Color(0xFF381212), if (foundMatches) BruteGreen else BruteRed, 6f)
+                        centeredFitted(terminalPresentation.resultText, layout.statusBounds, if (foundMatches) BruteGreen else BruteRed, 8, true)
+                    }
                     frame.meta.text.forEachIndexed { index, char ->
                         val comparing = frame.meta.alignmentStart != null && frame.meta.comparisonOffset != null && index == frame.meta.alignmentStart + frame.meta.comparisonOffset
-                        val previousMatch = frame.meta.foundMatches.any { start -> index in start until start + frame.meta.pattern.length }
+                        val previousMatch = terminalPresentation?.let { index in it.matchedTextIndices }
+                            ?: frame.meta.foundMatches.any { start -> index in start until start + frame.meta.pattern.length }
                         centered(when { comparing -> "COMPARE"; previousMatch -> "MATCH"; index == frame.meta.alignmentStart -> "START"; else -> "" }, layout.labelBounds.getValue(index), when { comparing -> BruteOrange; previousMatch -> BruteGreen; else -> BruteBlue }, 8, true)
                         val bounds = layout.cellBounds.getValue(index)
                         val mismatch = comparing && frame.meta.comparisonMatches == false
@@ -270,16 +278,25 @@ internal fun BruteForceSceneRenderer(
                         centered("'$char'", bounds, BrutePrimary, 12, true)
                         centered("[$index]", layout.indexBounds.getValue(index), BruteSecondary, 9)
                     }
-                    val patternBounds = BruteForceSceneLayout.patternCellBounds(frame, layout)
-                    patternBounds.forEach { (offset, bounds) ->
-                        val matched = offset in frame.meta.matchedOffsets
-                        val mismatch = offset == frame.meta.mismatchOffset
-                        card(bounds, when { mismatch -> Color(0xFF381212); matched -> Color(0xFF123820); else -> BruteBg }, when { mismatch -> BruteRed; matched -> BruteGreen; else -> BruteBlue })
-                        centered("'${frame.meta.pattern[offset]}'", bounds, BrutePrimary, 12, true)
-                        centered("p[$offset]", BruteForceSceneLayout.patternIndexBounds(frame, layout).getValue(offset), BruteSecondary, 8)
-                    }
-                    BruteForceSceneLayout.comparisonMarkerBounds(frame, layout)?.let { marker ->
-                        centered(if (frame.meta.comparisonMatches == false) "≠" else "=", marker, if (frame.meta.comparisonMatches == false) BruteRed else BruteGreen, 12, true)
+                    if (terminalPresentation != null) {
+                        text("PATTERN", terminalPresentation.patternLabelBounds, BruteSecondary, 9, true)
+                        terminalPresentation.patternCells.forEach { cell ->
+                            card(cell.cellBounds, BruteBg, BruteBlue)
+                            centered("'${cell.character}'", cell.cellBounds, BrutePrimary, 12, true)
+                            centered("p[${cell.offset}]", cell.indexBounds, BruteSecondary, 8)
+                        }
+                    } else {
+                        val patternBounds = BruteForceSceneLayout.patternCellBounds(frame, layout)
+                        patternBounds.forEach { (offset, bounds) ->
+                            val matched = offset in frame.meta.matchedOffsets
+                            val mismatch = offset == frame.meta.mismatchOffset
+                            card(bounds, when { mismatch -> Color(0xFF381212); matched -> Color(0xFF123820); else -> BruteBg }, when { mismatch -> BruteRed; matched -> BruteGreen; else -> BruteBlue })
+                            centered("'${frame.meta.pattern[offset]}'", bounds, BrutePrimary, 12, true)
+                            centered("p[$offset]", BruteForceSceneLayout.patternIndexBounds(frame, layout).getValue(offset), BruteSecondary, 8)
+                        }
+                        BruteForceSceneLayout.comparisonMarkerBounds(frame, layout)?.let { marker ->
+                            centered(if (frame.meta.comparisonMatches == false) "≠" else "=", marker, if (frame.meta.comparisonMatches == false) BruteRed else BruteGreen, 12, true)
+                        }
                     }
                 }
             }

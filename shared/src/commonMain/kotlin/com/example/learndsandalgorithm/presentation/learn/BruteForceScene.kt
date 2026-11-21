@@ -103,7 +103,9 @@ internal object BruteForceSceneBuilder {
     fun stringMatching(steps: List<NaiveStringMatchingTraceStep>): List<BruteForceSceneFrame> =
         steps.mapIndexed { index, step ->
             val validMaxStart = (step.text.length - step.pattern.length).coerceAtLeast(0)
+            val isComplete = step.event == StringMatchEvent.MATCHING_COMPLETE
             val displayStart = when {
+                isComplete -> null
                 step.pattern.isEmpty() || step.pattern.length > step.text.length -> null
                 step.currentStart != null -> step.currentStart
                 step.foundMatches.isNotEmpty() -> step.foundMatches.last()
@@ -118,17 +120,18 @@ internal object BruteForceSceneBuilder {
                 text = step.text,
                 pattern = step.pattern,
                 alignmentStart = displayStart,
-                comparisonOffset = step.currentOffset,
-                comparisonMatches = step.isCharMatch,
+                comparisonOffset = step.currentOffset.takeUnless { isComplete },
+                comparisonMatches = step.isCharMatch.takeUnless { isComplete },
                 matchedOffsets = when {
+                    isComplete -> emptySet()
                     step.event == StringMatchEvent.ALIGNMENT_MATCH -> step.pattern.indices.toSet()
                     step.currentOffset == null -> emptySet()
                     step.isCharMatch == true -> (0..step.currentOffset).toSet()
                     else -> (0 until step.currentOffset).toSet()
                 },
-                mismatchOffset = step.currentOffset?.takeIf { step.isCharMatch == false },
+                mismatchOffset = step.currentOffset?.takeIf { !isComplete && step.isCharMatch == false },
                 foundMatches = step.foundMatches,
-                fullAlignmentMatch = step.event == StringMatchEvent.ALIGNMENT_MATCH
+                fullAlignmentMatch = !isComplete && step.event == StringMatchEvent.ALIGNMENT_MATCH
             )
             val textEntities = step.text.mapIndexed { slot, character ->
                 VisualEntity("text:$slot", "text:$slot", character.toString(), "text:$slot")
@@ -218,6 +221,20 @@ internal data class BruteForceSceneLayoutResult(
     val currentSumBounds: Rect2D,
     val requiredSceneWidth: Float,
     val requiredSceneHeight: Float
+)
+
+internal data class StringMatchPatternCellPresentation(
+    val offset: Int,
+    val character: Char,
+    val cellBounds: Rect2D,
+    val indexBounds: Rect2D
+)
+
+internal data class TerminalStringMatchPresentation(
+    val resultText: String,
+    val patternLabelBounds: Rect2D,
+    val patternCells: List<StringMatchPatternCellPresentation>,
+    val matchedTextIndices: Set<Int>
 )
 
 internal object BruteForceSceneLayout {
@@ -310,6 +327,37 @@ internal object BruteForceSceneLayout {
 
     fun patternIndexBounds(frame: BruteForceSceneFrame, layout: BruteForceSceneLayoutResult): Map<Int, Rect2D> =
         patternCellBounds(frame, layout).mapValues { (_, cell) -> Rect2D(cell.left, cell.bottom + 4f, cell.width, 16f) }
+
+    fun terminalStringMatchPresentation(
+        frame: BruteForceSceneFrame,
+        layout: BruteForceSceneLayoutResult
+    ): TerminalStringMatchPresentation? {
+        if (frame.meta.eventName != StringMatchEvent.MATCHING_COMPLETE.name) return null
+
+        val patternWidth = frame.meta.pattern.length * CELL + (frame.meta.pattern.length - 1).coerceAtLeast(0) * GAP
+        val patternLeft = (layout.requiredSceneWidth - patternWidth) / 2f
+        val patternCells = frame.meta.pattern.mapIndexed { offset, character ->
+            val left = patternLeft + offset * (CELL + GAP)
+            val cellBounds = Rect2D(left, 184f, CELL, 46f)
+            StringMatchPatternCellPresentation(
+                offset = offset,
+                character = character,
+                cellBounds = cellBounds,
+                indexBounds = Rect2D(left, cellBounds.bottom + 4f, CELL, 16f)
+            )
+        }
+        val matchedTextIndices = frame.meta.foundMatches
+            .flatMap { start -> frame.meta.pattern.indices.map { start + it } }
+            .filter { it in frame.meta.text.indices }
+            .toSet()
+
+        return TerminalStringMatchPresentation(
+            resultText = if (frame.meta.foundMatches.isEmpty()) "NO MATCH" else "FOUND AT [${frame.meta.foundMatches.joinToString(", ")}]",
+            patternLabelBounds = Rect2D(MARGIN, 160f, layout.requiredSceneWidth - MARGIN * 2, 16f),
+            patternCells = patternCells,
+            matchedTextIndices = matchedTextIndices
+        )
+    }
 
     fun comparisonMarkerBounds(frame: BruteForceSceneFrame, layout: BruteForceSceneLayoutResult): Rect2D? {
         val start = frame.meta.alignmentStart ?: return null

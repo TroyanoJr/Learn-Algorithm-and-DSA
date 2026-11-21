@@ -108,7 +108,11 @@ internal object NaiveStringMatchingTrace {
                             offset = offset,
                             charMatch = false,
                             event = StringMatchEvent.ALIGNMENT_MISMATCH,
-                            explanation = "MISMATCH at alignment $start! text[${start + offset}] ('$tChar') != pattern[$offset] ('$pChar'). Shift pattern to start ${start + 1}.",
+                            explanation = if (start == n - m) {
+                                "MISMATCH at last valid alignment $start! text[${start + offset}] ('$tChar') != pattern[$offset] ('$pChar'). There are no further valid alignments."
+                            } else {
+                                "MISMATCH at alignment $start! text[${start + offset}] ('$tChar') != pattern[$offset] ('$pChar'). Shift pattern to start ${start + 1}."
+                            },
                             badgeText = "MISMATCH AT ALIGNMENT $start"
                         )
                     )

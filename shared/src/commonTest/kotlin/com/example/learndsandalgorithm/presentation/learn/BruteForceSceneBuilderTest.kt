@@ -101,6 +101,12 @@ class BruteForceSceneBuilderTest {
         assertEquals(trace.map { it.explanation }, frames.map { it.meta.explanation })
         assertEquals(listOf(0, 2), frames.last().meta.foundMatches)
         assertTrue(frames.last().meta.isTerminal)
+        assertNull(frames.last().meta.alignmentStart)
+        assertNull(frames.last().meta.comparisonOffset)
+        assertNull(frames.last().meta.comparisonMatches)
+        assertNull(frames.last().meta.mismatchOffset)
+        assertTrue(frames.last().meta.matchedOffsets.isEmpty())
+        assertTrue(!frames.last().meta.fullAlignmentMatch)
         val mismatch = frames.first { it.meta.mismatchOffset != null }
         assertEquals(false, mismatch.meta.comparisonMatches)
         assertEquals(mismatch.meta.comparisonOffset, mismatch.meta.mismatchOffset)
@@ -110,14 +116,37 @@ class BruteForceSceneBuilderTest {
         assertTrue(frames.first().meta.alignmentStart == 0 && frames.first().meta.comparisonOffset == null)
         assertEquals(listOf(0, 1, 2), frames.mapNotNull { it.meta.alignmentStart }.distinct())
         assertEquals(listOf(0, 2), frames.last().meta.foundMatches)
-        frames.forEach { frame ->
+        val expectedComparisons = listOf(0 to 0, 0 to 1, 0 to 2, 1 to 0, 2 to 0, 2 to 1, 2 to 2)
+        assertEquals(
+            expectedComparisons,
+            frames.zip(trace).filter { (_, step) -> step.event == StringMatchEvent.COMPARE_CHAR }
+                .map { (frame, _) -> frame.meta.alignmentStart!! to frame.meta.comparisonOffset!! }
+        )
+        frames.zip(trace).forEach { (frame, step) ->
+            if (step.event == StringMatchEvent.COMPARE_CHAR) {
+                val start = step.currentStart!!
+                val offset = step.currentOffset!!
+                assertEquals(start, frame.meta.alignmentStart)
+                assertEquals(offset, frame.meta.comparisonOffset)
+                assertEquals(step.text[start + offset], frame.meta.text[start + offset])
+                assertEquals(step.pattern[offset], frame.meta.pattern[offset])
+                assertEquals(step.isCharMatch, frame.meta.text[start + offset] == frame.meta.pattern[offset])
+            }
             val textIds = frame.scene.subScenes.first().entities.map { it.elementId }
             assertEquals(frame.meta.text.indices.map { "text:$it" }, textIds)
-            frame.scene.subScenes.getOrNull(1)?.entities.orEmpty().forEachIndexed { offset, entity ->
-                assertEquals("pattern:$offset", entity.elementId)
-                assertNotEquals("text:$offset", entity.elementId)
-            }
+            val patternIds = frame.scene.subScenes.getOrNull(1)?.entities.orEmpty().map { it.elementId }
+            assertEquals(frame.meta.pattern.indices.map { "pattern:$it" }, patternIds)
+            patternIds.forEachIndexed { offset, id -> assertNotEquals("text:$offset", id) }
         }
+        assertTrue(frames.all { it.scene.subScenes.first().entities.map(VisualEntity::elementId) == frames.first().scene.subScenes.first().entities.map(VisualEntity::elementId) })
+        assertTrue(frames.all { frame ->
+            frame.scene.subScenes.getOrNull(1)?.entities.orEmpty().map(VisualEntity::elementId) ==
+                frames.first().scene.subScenes.getOrNull(1)?.entities.orEmpty().map(VisualEntity::elementId)
+        })
+
+        val overlapping = BruteForceSceneBuilder.stringMatching(NaiveStringMatchingTrace.stepsForNaiveMatch("AAAA", "AA")).last()
+        assertEquals(listOf(0, 1, 2), overlapping.meta.foundMatches)
+        assertNull(overlapping.meta.alignmentStart)
     }
 
     @Test
@@ -137,6 +166,7 @@ class BruteForceSceneBuilderTest {
         }
         assertTrue(BruteForceSceneBuilder.stringMatching(cases[0]).all { it.meta.alignmentStart == null })
         assertTrue(BruteForceSceneBuilder.stringMatching(cases[1]).all { it.meta.alignmentStart == null })
+        assertTrue(BruteForceSceneBuilder.stringMatching(cases[2]).last().meta.alignmentStart == null)
     }
 
     private fun BruteForceSceneFrame.entities(): List<VisualEntity> = scene.subScenes.first().entities

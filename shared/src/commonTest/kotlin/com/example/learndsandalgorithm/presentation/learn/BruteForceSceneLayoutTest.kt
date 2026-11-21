@@ -3,6 +3,7 @@ package com.example.learndsandalgorithm.presentation.learn
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
+import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 class BruteForceSceneLayoutTest {
@@ -96,6 +97,120 @@ class BruteForceSceneLayoutTest {
             assertEquals(layout, BruteForceSceneLayout.calculate(frames))
             frames.forEach { frame -> assertContained(layout, BruteForceSceneLayout.patternCellBounds(frame, layout).values) }
         }
+    }
+
+    @Test
+    fun generatedStringPatternAndComparisonBoundsStayInsideTheScene() {
+        val traces = listOf(
+            NaiveStringMatchingTrace.stepsForNaiveMatch("ABABA", "ABA"),
+            NaiveStringMatchingTrace.stepsForNaiveMatch("AAAA", "AA"),
+            NaiveStringMatchingTrace.stepsForNaiveMatch("AB", "A"),
+            NaiveStringMatchingTrace.stepsForNaiveMatch("", ""),
+            NaiveStringMatchingTrace.stepsForNaiveMatch("ABC", ""),
+            NaiveStringMatchingTrace.stepsForNaiveMatch("AB", "ABCD"),
+            NaiveStringMatchingTrace.stepsForNaiveMatch("AAAA", "B")
+        )
+
+        traces.forEach { trace ->
+            val frames = BruteForceSceneBuilder.stringMatching(trace)
+            val layout = BruteForceSceneLayout.calculate(frames)
+            frames.forEach { frame ->
+                val activePatternCells = BruteForceSceneLayout.patternCellBounds(frame, layout)
+                val activePatternIndices = BruteForceSceneLayout.patternIndexBounds(frame, layout)
+                val expectedActiveOffsets = if (frame.meta.alignmentStart == null) emptySet() else frame.meta.pattern.indices.toSet()
+                assertEquals(expectedActiveOffsets, activePatternCells.keys)
+                assertEquals(expectedActiveOffsets, activePatternIndices.keys)
+                assertContained(layout, activePatternCells.values + activePatternIndices.values)
+
+                val marker = BruteForceSceneLayout.comparisonMarkerBounds(frame, layout)
+                if (frame.meta.comparisonOffset == null) {
+                    assertNull(marker)
+                } else {
+                    assertNotNull(marker)
+                    assertTrue(frame.meta.alignmentStart!! + frame.meta.comparisonOffset!! in frame.meta.text.indices)
+                    assertTrue(frame.meta.comparisonOffset in frame.meta.pattern.indices)
+                    assertContained(layout, listOf(marker))
+                }
+
+                if (frame.meta.eventName == StringMatchEvent.MATCHING_COMPLETE.name) {
+                    assertNull(frame.meta.alignmentStart)
+                    assertNull(frame.meta.comparisonOffset)
+                    assertNull(frame.meta.comparisonMatches)
+                    assertNull(frame.meta.mismatchOffset)
+                    assertTrue(!frame.meta.fullAlignmentMatch)
+                    assertTrue(activePatternCells.isEmpty())
+                    assertNull(marker)
+
+                    val presentation = assertNotNull(BruteForceSceneLayout.terminalStringMatchPresentation(frame, layout))
+                    assertEquals(frame.meta.pattern.indices.toList(), presentation.patternCells.map { it.offset })
+                    assertEquals(frame.meta.pattern.toList(), presentation.patternCells.map { it.character })
+                    assertEquals(
+                        if (frame.meta.foundMatches.isEmpty()) "NO MATCH" else "FOUND AT [${frame.meta.foundMatches.joinToString(", ")}]",
+                        presentation.resultText
+                    )
+                    val presentationBounds = listOf(presentation.patternLabelBounds) + presentation.patternCells.flatMap { listOf(it.cellBounds, it.indexBounds) }
+                    assertContained(layout, presentationBounds)
+                    assertNoOverlap(
+                        (layout.cellBounds.values + layout.indexBounds.values + presentationBounds).toList()
+                    )
+                } else {
+                    assertNull(BruteForceSceneLayout.terminalStringMatchPresentation(frame, layout))
+                }
+            }
+        }
+    }
+
+    @Test
+    fun terminalPatternPresentationKeepsAllMatchesAndHandlesEmptyAndLongPatterns() {
+        fun terminal(text: String, pattern: String): Pair<BruteForceSceneFrame, BruteForceSceneLayoutResult> {
+            val frames = BruteForceSceneBuilder.stringMatching(NaiveStringMatchingTrace.stepsForNaiveMatch(text, pattern))
+            return frames.last() to BruteForceSceneLayout.calculate(frames)
+        }
+
+        val (overlapping, overlappingLayout) = terminal("ABABA", "ABA")
+        val overlappingPresentation = assertNotNull(BruteForceSceneLayout.terminalStringMatchPresentation(overlapping, overlappingLayout))
+        assertEquals(520f, overlappingLayout.requiredSceneWidth)
+        assertEquals(252f, overlappingLayout.requiredSceneHeight)
+        assertEquals(listOf(0, 2), overlapping.meta.foundMatches)
+        assertEquals("FOUND AT [0, 2]", overlappingPresentation.resultText)
+        assertEquals("ABA".toList(), overlappingPresentation.patternCells.map { it.character })
+        assertEquals(listOf(0, 1, 2), overlappingPresentation.patternCells.map { it.offset })
+        assertEquals(setOf(0, 1, 2, 3, 4), overlappingPresentation.matchedTextIndices)
+        assertTrue(BruteForceSceneLayout.patternCellBounds(overlapping, overlappingLayout).isEmpty())
+        assertNull(BruteForceSceneLayout.comparisonMarkerBounds(overlapping, overlappingLayout))
+
+        val (multipleOverlaps, multipleOverlapsLayout) = terminal("AAAA", "AA")
+        val multipleOverlapsPresentation = assertNotNull(BruteForceSceneLayout.terminalStringMatchPresentation(multipleOverlaps, multipleOverlapsLayout))
+        assertEquals(listOf(0, 1, 2), multipleOverlaps.meta.foundMatches)
+        assertEquals("FOUND AT [0, 1, 2]", multipleOverlapsPresentation.resultText)
+        assertEquals(setOf(0, 1, 2, 3), multipleOverlapsPresentation.matchedTextIndices)
+        assertEquals("AA".toList(), multipleOverlapsPresentation.patternCells.map { it.character })
+
+        val (noMatch, noMatchLayout) = terminal("AAAA", "B")
+        val noMatchPresentation = assertNotNull(BruteForceSceneLayout.terminalStringMatchPresentation(noMatch, noMatchLayout))
+        assertEquals(emptyList(), noMatch.meta.foundMatches)
+        assertEquals("NO MATCH", noMatchPresentation.resultText)
+        assertEquals(listOf('B'), noMatchPresentation.patternCells.map { it.character })
+        assertTrue(noMatchPresentation.matchedTextIndices.isEmpty())
+
+        val (longPattern, longPatternLayout) = terminal("AB", "ABCD")
+        val longPatternPresentation = assertNotNull(BruteForceSceneLayout.terminalStringMatchPresentation(longPattern, longPatternLayout))
+        assertEquals("NO MATCH", longPatternPresentation.resultText)
+        assertEquals("ABCD".toList(), longPatternPresentation.patternCells.map { it.character })
+        assertNull(longPattern.meta.alignmentStart)
+        assertNull(BruteForceSceneLayout.comparisonMarkerBounds(longPattern, longPatternLayout))
+
+        val (emptyPattern, emptyPatternLayout) = terminal("ABC", "")
+        val emptyPatternPresentation = assertNotNull(BruteForceSceneLayout.terminalStringMatchPresentation(emptyPattern, emptyPatternLayout))
+        assertEquals(listOf(0, 1, 2, 3), emptyPattern.meta.foundMatches)
+        assertEquals("FOUND AT [0, 1, 2, 3]", emptyPatternPresentation.resultText)
+        assertTrue(emptyPatternPresentation.patternCells.isEmpty())
+
+        val (emptyInput, emptyInputLayout) = terminal("", "")
+        val emptyInputPresentation = assertNotNull(BruteForceSceneLayout.terminalStringMatchPresentation(emptyInput, emptyInputLayout))
+        assertEquals(listOf(0), emptyInput.meta.foundMatches)
+        assertEquals("FOUND AT [0]", emptyInputPresentation.resultText)
+        assertTrue(emptyInputPresentation.patternCells.isEmpty())
     }
 
     @Test

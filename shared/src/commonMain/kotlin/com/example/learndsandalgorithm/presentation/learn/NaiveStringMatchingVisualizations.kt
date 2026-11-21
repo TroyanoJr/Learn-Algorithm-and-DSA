@@ -76,8 +76,15 @@ private fun NaiveStringMatchingDetails(step: NaiveStringMatchingTraceStep, stepI
                     StringMatchEvent.ALIGNMENT_MISMATCH -> StringRed
                     else -> StringOrange
                 }, fontSize = 15.sp, fontWeight = FontWeight.Bold)
-            Text("Worst-case: O(N * M)", modifier = Modifier.fillMaxWidth(), color = StringGreen, fontSize = 10.sp, fontWeight = FontWeight.Bold)
+            naiveStringMatchingComplexityLines(step.pattern).forEach { explanation ->
+                Text(explanation, modifier = Modifier.fillMaxWidth(), color = StringGreen, fontSize = 10.sp, fontWeight = FontWeight.Bold)
+            }
         }
         StepsCard("Steps", step.explanation, stepIndex, totalSteps, stepIndex == totalSteps - 1)
     }
+}
+
+internal fun naiveStringMatchingComplexityLines(pattern: String): List<String> = buildList {
+    add("Worst-case: O(N * M)")
+    if (pattern.isEmpty()) add("Empty pattern: enumerate N + 1 boundaries in O(N) time")
 }
