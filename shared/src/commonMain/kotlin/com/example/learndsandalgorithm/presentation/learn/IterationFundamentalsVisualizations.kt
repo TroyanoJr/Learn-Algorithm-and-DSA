@@ -15,6 +15,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -36,7 +37,8 @@ private val TextSecondary = Color(0xFF9CA3AF)
 internal fun IterationFundamentalsVisualizationCard(
     title: String = "Iteration Fundamentals"
 ) {
-    val steps = IterationFundamentalsTrace.createTrace()
+    val steps = remember { IterationFundamentalsTrace.createTrace() }
+    val sceneFrames = remember(steps) { IterationRecursionSceneBuilder.iteration(steps) }
     val autoExpand = LocalAutoExpandVisualizer.current
     var isExpanded by rememberSaveable { mutableStateOf(autoExpand) }
 
@@ -89,9 +91,12 @@ internal fun IterationFundamentalsVisualizationCard(
                 isExpanded = false
             },
             visualContent = {
-                FitToPane(modifier = Modifier.fillMaxSize()) {
-                    IterationFundamentalsVisualizationContent(step = step, scale = 1f)
-                }
+                IterationRecursionSceneRenderer(
+                    frame = sceneFrames[stepIndex],
+                    sequence = sceneFrames,
+                    viewportKey = "iteration_fundamentals",
+                    modifier = Modifier.fillMaxSize()
+                )
             },
             detailsContent = {
                 IterationFundamentalsDetailsAndStepsContent(
@@ -223,10 +228,9 @@ private fun IterationFundamentalsDetailsAndStepsContent(
         modifier = Modifier.fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(8.dp * scale)
     ) {
-        Row(
+        Column(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
+            verticalArrangement = Arrangement.spacedBy(4.dp)
         ) {
             Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
                 Text("ITERATION DECISION", color = TextSecondary, fontSize = 9.sp, fontWeight = FontWeight.Bold)

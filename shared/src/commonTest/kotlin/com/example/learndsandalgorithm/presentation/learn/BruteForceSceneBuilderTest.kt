@@ -8,16 +8,22 @@ import kotlin.test.assertTrue
 
 class BruteForceSceneBuilderTest {
     @Test
-    fun rejectedCurrentCandidateEntityAndDisplayLabelStayRejected() {
+    fun activeCandidateIsTestingWhilePreviouslyRejectedCandidatesStayVisited() {
         val frame = BruteForceSceneBuilder.fundamentals(
             BruteForceFundamentalsTrace.stepsForSquareSearch()
-        ).first { frame -> frame.meta.evaluations.any { it.candidate == frame.meta.currentCandidate && !it.isMatch } }
-        val candidate = frame.meta.currentCandidate!!
-        assertEquals(EntityVisualState.VISITED, frame.entities().first { it.dataValue == candidate.toString() }.visualState)
-        assertEquals("REJECT", fundamentalsDisplayLabel(false, true, true))
+        ).first { it.meta.currentCandidate == 2 }
+        assertEquals(EntityVisualState.ACTIVE, frame.entities().first { it.dataValue == "2" }.visualState)
+        assertEquals(EntityVisualState.VISITED, frame.entities().first { it.dataValue == "1" }.visualState)
+        assertEquals("TEST", fundamentalsDisplayLabel(false, true, true))
+        assertEquals("REJECT", fundamentalsDisplayLabel(false, true, false))
         assertEquals("MATCH", fundamentalsDisplayLabel(true, true, true))
         assertEquals("TEST", fundamentalsDisplayLabel(false, false, true))
         assertEquals("", fundamentalsDisplayLabel(false, false, false))
+
+        assertEquals("READY", fundamentalsStatusLabel("START"))
+        assertEquals("TESTING", fundamentalsStatusLabel("EVALUATE_CANDIDATE"))
+        assertEquals("MATCH FOUND", fundamentalsStatusLabel("SOLUTION_FOUND"))
+        assertEquals("NO MATCH", fundamentalsStatusLabel("SEARCH_COMPLETE"))
     }
 
     @Test
@@ -33,12 +39,18 @@ class BruteForceSceneBuilderTest {
             assertEquals((1..5).map { "fundamentals:candidate:$it" }, frame.entities().map { it.elementId })
         }
         assertEquals(EntityVisualState.TARGET, frames.last().entities().first { it.dataValue == "4" }.visualState)
+        assertEquals("MATCH", fundamentalsDisplayLabel(true, true, true))
+        assertEquals("4 × 4 = 16 = 16", fundamentalsEvaluationText(frames.last().meta))
+        assertEquals("Ready · test each x where x² = 16", fundamentalsEvaluationText(frames.first().meta))
+        assertEquals("1 × 1 = 1 ≠ 16", fundamentalsEvaluationText(frames[1].meta))
 
         val noMatchTrace = BruteForceFundamentalsTrace.stepsForSquareSearch(1..2, 50)
         val noMatch = BruteForceSceneBuilder.fundamentals(noMatchTrace).last()
         assertTrue(noMatch.meta.isTerminal)
         assertNull(noMatch.meta.foundSolution)
         assertTrue(noMatch.entities().all { it.visualState == EntityVisualState.VISITED })
+        assertEquals("NO MATCH", fundamentalsStatusLabel(noMatch.meta.eventName))
+        assertEquals("Search exhausted: no x in [1..2] has x² = 50", fundamentalsEvaluationText(noMatch.meta))
     }
 
     @Test
@@ -51,6 +63,19 @@ class BruteForceSceneBuilderTest {
         assertEquals(PairSearchEvent.PAIR_FOUND.name, frames.last().meta.eventName)
         assertTrue(frames[1].meta.evaluatedPairs.single().isMatch.not())
         assertTrue(frames.last().meta.evaluatedPairs.last().isMatch)
+        assertEquals("Ready · find two distinct indices whose values sum to 18", pairEvaluationText(frames.first().meta))
+        assertEquals("values[0] + values[1] = 2 + 7 = 9 ≠ 18", pairEvaluationText(frames[1].meta))
+        assertEquals("values[1] + values[2] = 7 + 11 = 18 = 18", pairEvaluationText(frames.last().meta))
+        assertEquals("READY", pairStatusLabel("START"))
+        assertEquals("TESTING PAIR", pairStatusLabel("EVALUATE_PAIR"))
+        assertEquals("PAIR FOUND", pairStatusLabel("PAIR_FOUND"))
+        assertEquals("NO PAIR FOUND", pairStatusLabel("NO_PAIR_FOUND"))
+        assertNull(currentPairHistoryIndex(frames.first().meta))
+        assertEquals(0, currentPairHistoryIndex(frames[1].meta))
+        assertEquals(3, currentPairHistoryIndex(frames.last().meta))
+        assertEquals(EntityVisualState.ACTIVE, frames[1].entities().first { it.elementId == "pair:item:0" }.visualState)
+        assertEquals(EntityVisualState.ACTIVE, frames[1].entities().first { it.elementId == "pair:item:1" }.visualState)
+        assertTrue(frames.last().entities().filter { it.elementId in setOf("pair:item:1", "pair:item:2") }.all { it.visualState == EntityVisualState.TARGET })
         frames.forEachIndexed { index, frame ->
             assertEquals(trace[index].currentI, frame.meta.currentI)
             assertEquals(trace[index].currentJ, frame.meta.currentJ)
@@ -58,6 +83,14 @@ class BruteForceSceneBuilderTest {
             assertEquals(trace[index].evaluatedPairs, frame.meta.evaluatedPairs)
             assertEquals(trace[index].values.indices.map { "pair:item:$it" }, frame.entities().map { it.elementId })
         }
+        val noMatch = BruteForceSceneBuilder.pairs(BruteForcePairProblemsTrace.stepsForFindPair(listOf(1, 2, 3), 100)).last()
+        assertEquals("Search exhausted · no pair sums to 100", pairEvaluationText(noMatch.meta))
+        assertEquals("NO PAIR FOUND", pairStatusLabel(noMatch.meta.eventName))
+        assertNull(currentPairHistoryIndex(noMatch.meta))
+        assertEquals(
+            "(12,13)" to "-123456789 + 987654321 = 864197532 ✕",
+            pairHistoryLines(EvaluatedPair(12, 13, -123456789, 987654321, 864197532, false))
+        )
     }
 
     @Test

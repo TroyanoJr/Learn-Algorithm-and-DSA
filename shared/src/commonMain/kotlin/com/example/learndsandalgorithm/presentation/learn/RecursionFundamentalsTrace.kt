@@ -95,7 +95,7 @@ internal object RecursionFundamentalsTrace {
                     n = n,
                     retVal = result,
                     act = RecursionAction.RETURN_ASCENT,
-                    explanation = "Return sumTo($n) = $n + sumTo(${n - 1}) = $n + $childAns = $result. Popped frame sumTo($n) from call stack.",
+                    explanation = "Return sumTo($n) = $n + sumTo(${n - 1}) = $n + $childAns = $result. Frame sumTo($n) is returning its computed value and will be removed after this return step.",
                     badgeText = "ASCENT: RETURN sumTo($n) = $result"
                 )
             )

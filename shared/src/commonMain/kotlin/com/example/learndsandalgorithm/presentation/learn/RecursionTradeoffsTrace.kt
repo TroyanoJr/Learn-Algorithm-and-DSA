@@ -53,7 +53,7 @@ internal object RecursionTradeoffsTrace {
                 i = 1,
                 retVal = null,
                 act = TradeoffAction.INIT,
-                explanation = "Recursion Patterns & Trade-offs: Comparing Iteration vs Recursion for sumTo($inputN). Both compute sum = 10, but have different space costs.",
+                explanation = "Compare iteration and recursion for sumTo($inputN). Both compute sum = ${inputN * (inputN + 1) / 2}, but use different auxiliary memory.",
                 badgeText = "READY · ITERATION VS RECURSION ($inputN)"
             )
         )
@@ -66,7 +66,7 @@ internal object RecursionTradeoffsTrace {
                     i = i,
                     retVal = null,
                     act = TradeoffAction.ITERATIVE_LOOP,
-                    explanation = "Iterative Loop: i = $i, total = $iterTotal. Loop uses O(1) constant auxiliary space with no call stack frames.",
+                    explanation = "Add $i to the reused accumulator, producing total = $iterTotal. The loop keeps O(1) auxiliary state.",
                     badgeText = "ITERATION: i=$i -> TOTAL $iterTotal (SPACE O(1))"
                 )
             )
@@ -82,7 +82,7 @@ internal object RecursionTradeoffsTrace {
                         i = inputN,
                         retVal = 0,
                         act = TradeoffAction.RECURSIVE_BASE,
-                        explanation = "Recursive Base Case: sumTo(0) = 0. Maximum call stack depth = ${stack.size} frames (O(N) space).",
+                        explanation = "sumTo(0) returns 0, stopping the descent. The stack reaches ${stack.size} active frames, demonstrating O(N) auxiliary space.",
                         badgeText = "RECURSION BASE: sumTo(0) = 0 (STACK DEPTH ${stack.size})"
                     )
                 )
@@ -95,20 +95,21 @@ internal object RecursionTradeoffsTrace {
                     i = inputN,
                     retVal = null,
                     act = TradeoffAction.RECURSIVE_DESCENT,
-                    explanation = "Recursive Descent: Call sumTo($n). Call stack height grows to ${stack.size} frames.",
+                    explanation = "Enter sumTo($n); because $n > 0, it calls sumTo(${n - 1}). Active stack depth grows to ${stack.size}.",
                     badgeText = "RECURSIVE DESCENT: CALL sumTo($n)"
                 )
             )
 
             val child = recSum(n - 1)
             val res = n + child
+            val recipient = stack.dropLast(1).lastOrNull()?.let { "sumTo($it)" } ?: "the final result"
 
             steps.add(
                 snapshot(
                     i = inputN,
                     retVal = res,
                     act = TradeoffAction.RECURSIVE_ASCENT,
-                    explanation = "Recursive Ascent: sumTo($n) = $n + $child = $res. Unwinding call frame.",
+                    explanation = "sumTo($n) combines $n + $child = $res and returns $res to $recipient. Its stack frame is then released.",
                     badgeText = "RECURSIVE ASCENT: sumTo($n) = $res"
                 )
             )
@@ -125,7 +126,7 @@ internal object RecursionTradeoffsTrace {
                 i = inputN,
                 retVal = recAns,
                 act = TradeoffAction.FINISHED,
-                explanation = "Trade-offs Comparison Complete! Both methods produce sum = $recAns. Iteration uses O(1) space, while direct recursion uses O(N) call-stack space. Note: The JVM does not perform automatic tail-call optimization for standard recursion.",
+                explanation = "Both methods return $recAns: iteration uses O(1) auxiliary state, while recursion uses O(N) stack space. Standard JVM recursion has no automatic general-purpose tail-call optimization.",
                 badgeText = "COMPLETE: ITERATION O(1) vs RECURSION O(N) STACK",
                 isTerminal = true
             )

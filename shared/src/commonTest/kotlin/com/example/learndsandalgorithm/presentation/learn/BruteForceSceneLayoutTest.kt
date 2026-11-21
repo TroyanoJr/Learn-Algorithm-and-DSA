@@ -15,7 +15,7 @@ class BruteForceSceneLayoutTest {
         sequences.forEach { frames ->
             val layout = BruteForceSceneLayout.calculate(frames)
             assertEquals(layout, BruteForceSceneLayout.calculate(frames))
-            val bounds = listOf(layout.headerBounds, layout.titleBounds, layout.goalBounds, layout.statusBounds, layout.currentSumBounds) +
+            val bounds = listOf(layout.headerBounds, layout.titleBounds, layout.goalBounds, layout.statusBounds, layout.evaluationBounds, layout.currentSumBounds) +
                 layout.cellBounds.values + layout.primaryTextBounds.values + layout.secondaryTextBounds.values +
                 layout.labelBounds.values + layout.indexBounds.values + layout.historyBounds.values
             assertContained(layout, bounds)
@@ -113,14 +113,69 @@ class BruteForceSceneLayoutTest {
     }
 
     @Test
+    fun pairEvaluationPanelAndLongSearchHistoryHaveReservedNonOverlappingGeometry() {
+        val trace = BruteForcePairProblemsTrace.stepsForFindPair(listOf(1, 2, 3, 4, 5, 6, 7, 8), 100)
+        val frames = BruteForceSceneBuilder.pairs(trace)
+        val layout = BruteForceSceneLayout.calculate(frames)
+        assertEquals(layout, BruteForceSceneLayout.calculate(frames))
+        assertEquals(28, layout.historyBounds.size)
+        assertEquals(2, pairHistoryColumnCount(frames.flatMap { it.meta.evaluatedPairs }, layout.requiredSceneWidth))
+        assertEquals(936f, layout.requiredSceneHeight)
+        assertContained(layout, listOf(layout.evaluationBounds, layout.currentSumBounds) + layout.cellBounds.values + layout.indexBounds.values + layout.historyBounds.values)
+        assertNoOverlap(listOf(layout.evaluationBounds, layout.currentSumBounds) + layout.cellBounds.values + layout.indexBounds.values + layout.historyBounds.values)
+        assertEquals(40f, layout.historyBounds.getValue(0).height)
+        assertEquals(layout.historyBounds.getValue(0).top, layout.historyBounds.getValue(1).top)
+        assertTrue(layout.historyBounds.getValue(1).left > layout.historyBounds.getValue(0).left)
+        assertEquals(layout.historyBounds.getValue(0).top + 46f, layout.historyBounds.getValue(2).top)
+        assertEquals(layout.historyBounds.getValue(1).top + 46f, layout.historyBounds.getValue(3).top)
+        assertTrue(layout.historyBounds.values.all { it.width == (layout.requiredSceneWidth - 24f - 6f) / 2f })
+        frames.forEach { frame ->
+            assertEquals(layout, BruteForceSceneLayout.calculate(frames))
+            assertEquals(frame.meta.evaluatedPairs.size, frame.meta.evaluatedPairs.indices.count { it in layout.historyBounds })
+        }
+        val scale = BruteForceSceneLayout.initialFitScale(layout, 360f, 190f)
+        assertTrue(layout.requiredSceneWidth * scale <= 360.01f)
+        assertTrue(layout.requiredSceneHeight * scale <= 190.01f)
+    }
+
+    @Test
+    fun longArithmeticSelectsStableWideHistoryFallback() {
+        val trace = BruteForcePairProblemsTrace.stepsForFindPair(listOf(Int.MIN_VALUE, -2_147_483_647, 0), 1_234_567_890)
+        val frames = BruteForceSceneBuilder.pairs(trace)
+        val pairs = frames.flatMap { it.meta.evaluatedPairs }
+        assertTrue(pairs.isNotEmpty())
+        assertEquals(1, pairHistoryColumnCount(pairs, 420f))
+
+        val layout = BruteForceSceneLayout.calculate(frames)
+        assertTrue(layout.historyBounds.values.all { it.width == 396f })
+        assertEquals(layout.historyBounds.getValue(0).top + 46f, layout.historyBounds.getValue(1).top)
+        assertEquals(layout.historyBounds.getValue(1).top + 46f, layout.historyBounds.getValue(2).top)
+        assertNoOverlap(layout.historyBounds.values.toList())
+        assertContained(layout, layout.historyBounds.values + listOf(layout.evaluationBounds, layout.currentSumBounds))
+        assertEquals(layout, BruteForceSceneLayout.calculate(frames))
+    }
+
+    @Test
     fun compactLessonsUseLessReservedCanvasSpaceWithoutChangingStringGeometry() {
         val fundamentals = BruteForceSceneLayout.calculate(BruteForceSceneBuilder.fundamentals(BruteForceFundamentalsTrace.stepsForSquareSearch()))
         val pairs = BruteForceSceneLayout.calculate(BruteForceSceneBuilder.pairs(BruteForcePairProblemsTrace.stepsForFindPair()))
         val strings = BruteForceSceneLayout.calculate(BruteForceSceneBuilder.stringMatching(NaiveStringMatchingTrace.stepsForNaiveMatch()))
         assertTrue(fundamentals.requiredSceneWidth < 520f)
-        assertTrue(fundamentals.requiredSceneHeight < 180f)
+        assertEquals(208f, fundamentals.requiredSceneHeight)
+        assertEquals(Rect2D(12f, 148f, fundamentals.requiredSceneWidth - 24f, 48f), fundamentals.evaluationBounds)
+        assertContained(fundamentals, listOf(fundamentals.evaluationBounds))
+        assertNoOverlap(listOf(fundamentals.evaluationBounds) + fundamentals.cellBounds.values)
+        assertNoOverlap(listOf(fundamentals.evaluationBounds) + fundamentals.labelBounds.values)
         assertTrue(fundamentals.indexBounds.values.all { it.width == 0f && it.height == 0f })
         assertTrue(pairs.requiredSceneWidth < 520f)
+        assertEquals(420f, pairs.requiredSceneWidth)
+        assertEquals(384f, pairs.requiredSceneHeight)
+        assertEquals(Rect2D(12f, 166f, 396f, 80f), pairs.evaluationBounds)
+        assertEquals(Rect2D(91f, 88f, 52f, 46f), pairs.cellBounds.getValue(0))
+        assertEquals(Rect2D(12f, 254f, 396f, 22f), pairs.currentSumBounds)
+        assertEquals(2, pairHistoryColumnCount(BruteForceSceneBuilder.pairs(BruteForcePairProblemsTrace.stepsForFindPair()).flatMap { it.meta.evaluatedPairs }, pairs.requiredSceneWidth))
+        assertEquals(pairs.historyBounds.getValue(0).top, pairs.historyBounds.getValue(1).top)
+        assertEquals(pairs.historyBounds.getValue(0).top + 46f, pairs.historyBounds.getValue(2).top)
         assertTrue(pairs.indexBounds.values.all { it.width > 0f && it.height > 0f })
         assertContained(pairs, listOf(pairs.currentSumBounds) + pairs.historyBounds.values)
         assertNoOverlap(pairs.historyBounds.values.toList())
@@ -128,6 +183,8 @@ class BruteForceSceneLayoutTest {
         assertTrue(pairs.requiredSceneHeight - lastHistoryBottom >= 12f)
         assertEquals(520f, strings.requiredSceneWidth)
         assertEquals(252f, strings.requiredSceneHeight)
+        assertEquals(Rect2D(0f, 0f, 0f, 0f), strings.evaluationBounds)
+        assertEquals(Rect2D(110f, 88f, 52f, 46f), strings.cellBounds.getValue(0))
         assertTrue(strings.indexBounds.values.all { it.width > 0f && it.height > 0f })
         listOf(fundamentals, pairs, strings).forEach { layout ->
             val bounds = listOf(layout.headerBounds, layout.titleBounds, layout.goalBounds, layout.statusBounds, layout.currentSumBounds) +

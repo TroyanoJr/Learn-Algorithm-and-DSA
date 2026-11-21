@@ -61,8 +61,8 @@ internal object BruteForceSceneBuilder {
                     slotKey = "candidate:$candidate",
                     visualState = when {
                         evaluation?.isMatch == true -> EntityVisualState.TARGET
+                        step.event == FundamentalsSearchEvent.EVALUATE_CANDIDATE && candidate == step.currentCandidate -> EntityVisualState.ACTIVE
                         evaluation != null -> EntityVisualState.VISITED
-                        candidate == step.currentCandidate -> EntityVisualState.ACTIVE
                         else -> EntityVisualState.DEFAULT
                     }
                 )
@@ -158,11 +158,56 @@ internal object BruteForceSceneBuilder {
     )
 }
 
+internal fun fundamentalsEvaluationText(meta: BruteForceTeachingMeta): String = when (meta.eventName) {
+    "START" -> "Ready · test each x where x² = ${meta.target}"
+    "EVALUATE_CANDIDATE" -> "${meta.currentCandidate} × ${meta.currentCandidate} = ${meta.currentSquare} ≠ ${meta.target}"
+    "SOLUTION_FOUND" -> "${meta.currentCandidate} × ${meta.currentCandidate} = ${meta.currentSquare} = ${meta.target}"
+    "SEARCH_COMPLETE" -> "Search exhausted: no x in [${meta.range?.first}..${meta.range?.last}] has x² = ${meta.target}"
+    else -> "Evaluation unavailable"
+}
+
+internal fun fundamentalsStatusLabel(eventName: String): String = when (eventName) {
+    "START" -> "READY"
+    "EVALUATE_CANDIDATE" -> "TESTING"
+    "SOLUTION_FOUND" -> "MATCH FOUND"
+    "SEARCH_COMPLETE" -> "NO MATCH"
+    else -> eventName
+}
+
+internal fun pairEvaluationText(meta: BruteForceTeachingMeta): String = when (meta.eventName) {
+    "START" -> "Ready · find two distinct indices whose values sum to ${meta.target}"
+    "EVALUATE_PAIR" -> "values[${meta.currentI}] + values[${meta.currentJ}] = ${meta.values.getOrNull(meta.currentI ?: -1)} + ${meta.values.getOrNull(meta.currentJ ?: -1)} = ${meta.currentSum} ≠ ${meta.target}"
+    "PAIR_FOUND" -> "values[${meta.currentI}] + values[${meta.currentJ}] = ${meta.values.getOrNull(meta.currentI ?: -1)} + ${meta.values.getOrNull(meta.currentJ ?: -1)} = ${meta.currentSum} = ${meta.target}"
+    "NO_PAIR_FOUND" -> "Search exhausted · no pair sums to ${meta.target}"
+    else -> "Evaluation unavailable"
+}
+
+internal fun pairStatusLabel(eventName: String): String = when (eventName) {
+    "START" -> "READY"
+    "EVALUATE_PAIR" -> "TESTING PAIR"
+    "PAIR_FOUND" -> "PAIR FOUND"
+    "NO_PAIR_FOUND" -> "NO PAIR FOUND"
+    else -> eventName
+}
+
+internal fun currentPairHistoryIndex(meta: BruteForceTeachingMeta): Int? =
+    if (meta.eventName in setOf("EVALUATE_PAIR", "PAIR_FOUND") && meta.evaluatedPairs.isNotEmpty()) meta.evaluatedPairs.lastIndex else null
+
+internal fun pairHistoryLines(pair: EvaluatedPair): Pair<String, String> =
+    "(${pair.i},${pair.j})" to "${pair.valI} + ${pair.valJ} = ${pair.sum} ${if (pair.isMatch) "✓" else "✕"}"
+
+internal fun pairHistoryColumnCount(pairs: List<EvaluatedPair>, sceneWidth: Float): Int {
+    val twoColumnCardWidth = (sceneWidth - 24f - 6f) / 2f
+    val textWidthAtMinimumReadableSize = pairs.maxOfOrNull { pairHistoryLines(it).second.length * 6f } ?: 0f
+    return if (textWidthAtMinimumReadableSize <= twoColumnCardWidth - 16f) 2 else 1
+}
+
 internal data class BruteForceSceneLayoutResult(
     val headerBounds: Rect2D,
     val titleBounds: Rect2D,
     val goalBounds: Rect2D,
     val statusBounds: Rect2D,
+    val evaluationBounds: Rect2D,
     val cellBounds: Map<Int, Rect2D>,
     val primaryTextBounds: Map<Int, Rect2D>,
     val secondaryTextBounds: Map<Int, Rect2D>,
@@ -180,11 +225,18 @@ internal object BruteForceSceneLayout {
     private const val WIDTH = 420f
     private const val CELL = 52f
     private const val GAP = 10f
+    private const val PAIR_EVALUATION_TOP = 166f
+    private const val PAIR_EVALUATION_HEIGHT = 80f
+    private const val PAIR_CURRENT_SUM_TOP = 254f
+    private const val PAIR_HISTORY_TOP = 286f
+    private const val PAIR_HISTORY_CARD_HEIGHT = 40f
+    private const val PAIR_HISTORY_ROW_GAP = 6f
+    private const val PAIR_HISTORY_COLUMN_GAP = 6f
 
     fun calculate(frames: List<BruteForceSceneFrame>): BruteForceSceneLayoutResult {
         if (frames.isEmpty()) return BruteForceSceneLayoutResult(
             Rect2D(0f, 0f, 0f, 0f), Rect2D(0f, 0f, 0f, 0f), Rect2D(0f, 0f, 0f, 0f), Rect2D(0f, 0f, 0f, 0f),
-            emptyMap(), emptyMap(), emptyMap(), emptyMap(), emptyMap(), emptyMap(), emptyMap(), Rect2D(0f, 0f, 0f, 0f), 0f, 0f
+            Rect2D(0f, 0f, 0f, 0f), emptyMap(), emptyMap(), emptyMap(), emptyMap(), emptyMap(), emptyMap(), emptyMap(), Rect2D(0f, 0f, 0f, 0f), 0f, 0f
         )
         val lesson = frames.first().meta.lesson
         require(frames.all { it.meta.lesson == lesson }) { "Brute-force scene sequences must contain one lesson" }
@@ -200,6 +252,11 @@ internal object BruteForceSceneLayout {
         val title = Rect2D(MARGIN + 10f, MARGIN + 5f, width - 170f, 17f)
         val goal = Rect2D(MARGIN + 10f, MARGIN + 24f, width - 170f, 17f)
         val status = Rect2D(width - 142f, MARGIN + 8f, 120f, 30f)
+        val evaluation = when (lesson) {
+            BruteForceLesson.FUNDAMENTALS -> Rect2D(MARGIN, 148f, width - MARGIN * 2, 48f)
+            BruteForceLesson.PAIR_PROBLEMS -> Rect2D(MARGIN, PAIR_EVALUATION_TOP, width - MARGIN * 2, PAIR_EVALUATION_HEIGHT)
+            BruteForceLesson.STRING_MATCHING -> Rect2D(0f, 0f, 0f, 0f)
+        }
         val cells = linkedMapOf<Int, Rect2D>()
         val labels = linkedMapOf<Int, Rect2D>()
         val primaryTexts = linkedMapOf<Int, Rect2D>()
@@ -219,22 +276,27 @@ internal object BruteForceSceneLayout {
             secondaryLabels[item] = if (lesson == BruteForceLesson.STRING_MATCHING) Rect2D(x - 3f, baseTop + 72f, CELL + 6f, 18f) else Rect2D(x, 0f, 0f, 0f)
         }
         val maxHistory = frames.maxOf { it.meta.evaluatedPairs.size }
+        val historyTop = if (lesson == BruteForceLesson.PAIR_PROBLEMS) PAIR_HISTORY_TOP else 180f
+        val pairHistoryEntries = if (lesson == BruteForceLesson.PAIR_PROBLEMS) frames.flatMap { it.meta.evaluatedPairs } else emptyList()
+        val historyColumns = if (lesson == BruteForceLesson.PAIR_PROBLEMS) pairHistoryColumnCount(pairHistoryEntries, width) else 1
+        val historyCardWidth = (width - MARGIN * 2 - PAIR_HISTORY_COLUMN_GAP * (historyColumns - 1)) / historyColumns
         val history = linkedMapOf<Int, Rect2D>()
         repeat(maxHistory) { item ->
-            val column = item % 3
-            val row = item / 3
             history[item] = if (lesson == BruteForceLesson.PAIR_PROBLEMS) {
-                Rect2D(MARGIN + column * ((width - MARGIN * 2 + 6f) / 3f), 180f + row * 28f, (width - MARGIN * 2 - 12f) / 3f, 22f)
+                val column = item % historyColumns
+                val row = item / historyColumns
+                Rect2D(MARGIN + column * (historyCardWidth + PAIR_HISTORY_COLUMN_GAP), historyTop + row * (PAIR_HISTORY_CARD_HEIGHT + PAIR_HISTORY_ROW_GAP), historyCardWidth, PAIR_HISTORY_CARD_HEIGHT)
             } else Rect2D(0f, 0f, 0f, 0f)
         }
+        val finalHistoryBottom = history.values.maxOfOrNull { it.bottom }
         val height = when (lesson) {
-            BruteForceLesson.FUNDAMENTALS -> 150f
-            BruteForceLesson.PAIR_PROBLEMS -> maxOf(214f, 186f + ((maxHistory + 2) / 3) * 28f)
+            BruteForceLesson.FUNDAMENTALS -> 208f
+            BruteForceLesson.PAIR_PROBLEMS -> (finalHistoryBottom ?: (PAIR_CURRENT_SUM_TOP + 22f)) + MARGIN
             BruteForceLesson.STRING_MATCHING -> 252f
         }
         return BruteForceSceneLayoutResult(
-            header, title, goal, status, cells, primaryTexts, secondaryTexts, labels, secondaryLabels, indices, history,
-            if (lesson == BruteForceLesson.PAIR_PROBLEMS) Rect2D(MARGIN, 154f, width - MARGIN * 2, 22f) else Rect2D(0f, 0f, 0f, 0f), width, height
+            header, title, goal, status, evaluation, cells, primaryTexts, secondaryTexts, labels, secondaryLabels, indices, history,
+            if (lesson == BruteForceLesson.PAIR_PROBLEMS) Rect2D(MARGIN, PAIR_CURRENT_SUM_TOP, width - MARGIN * 2, 22f) else Rect2D(0f, 0f, 0f, 0f), width, height
         )
     }
 

@@ -15,6 +15,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -36,7 +37,8 @@ private val TextSecondary = Color(0xFF9CA3AF)
 internal fun NestedIterationVisualizationCard(
     title: String = "Nested Iteration and Loop Control"
 ) {
-    val steps = NestedIterationTrace.createTrace()
+    val steps = remember { NestedIterationTrace.createTrace() }
+    val sceneFrames = remember(steps) { IterationRecursionSceneBuilder.nested(steps) }
     val autoExpand = LocalAutoExpandVisualizer.current
     var isExpanded by rememberSaveable { mutableStateOf(autoExpand) }
 
@@ -88,9 +90,12 @@ internal fun NestedIterationVisualizationCard(
                 isExpanded = false
             },
             visualContent = {
-                FitToPane(modifier = Modifier.fillMaxSize()) {
-                    NestedIterationVisualizationContent(step = step, scale = 1f)
-                }
+                IterationRecursionSceneRenderer(
+                    frame = sceneFrames[stepIndex],
+                    sequence = sceneFrames,
+                    viewportKey = "nested_iteration",
+                    modifier = Modifier.fillMaxSize()
+                )
             },
             detailsContent = {
                 NestedIterationDetailsAndStepsContent(
@@ -217,10 +222,9 @@ private fun NestedIterationDetailsAndStepsContent(
         modifier = Modifier.fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(8.dp * scale)
     ) {
-        Row(
+        Column(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
+            verticalArrangement = Arrangement.spacedBy(4.dp)
         ) {
             Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
                 Text("NESTED LOOP DECISION", color = TextSecondary, fontSize = 9.sp, fontWeight = FontWeight.Bold)
@@ -235,7 +239,7 @@ private fun NestedIterationDetailsAndStepsContent(
                     fontWeight = FontWeight.Bold
                 )
             }
-            Text("Complexity: O(M*N) Time, O(1) Space", color = GreenAccent, fontSize = 10.sp, fontWeight = FontWeight.Bold)
+            Text("Complexity: O(M × N) Time, O(1) Auxiliary Space", color = GreenAccent, fontSize = 10.sp, fontWeight = FontWeight.Bold)
         }
 
         StepsCard(
