@@ -10,6 +10,59 @@ import kotlin.test.assertTrue
 class VisualizerCanvasViewportTest {
 
     @Test
+    fun activityTimelineNaturalScaleFitsShortViewportWithoutPan() {
+        val scene = ActivitySelectionSceneBuilder.build(ActivitySelectionTrace.createTrace().first(), 360f, 224f)
+        assertEquals(360f, scene.width)
+        assertEquals(215f, scene.height)
+        val state = VisualizerCanvasState(initialScaleMode = VisualizerCanvasInitialScale.NATURAL)
+        state.updateViewportSize(IntSize(360, 224))
+        state.updateContentSize(IntSize(scene.width.toInt(), scene.height.toInt()))
+        assertEquals(1f, state.scale)
+        assertEquals(0f, state.translationX)
+        assertEquals(0f, state.translationY)
+        state.onTransform(1f, Offset(100f, -1000f), Offset(180f, 112f))
+        assertEquals(0f, state.translationX)
+        assertEquals(0f, state.translationY)
+        state.onTransform(1f, Offset(-100f, 1000f), Offset(180f, 112f))
+        assertEquals(0f, state.translationX)
+        assertEquals(0f, state.translationY)
+        state.onTransform(2f, Offset.Zero, Offset(180f, 112f))
+        assertEquals(2f, state.scale)
+        state.reset()
+        assertEquals(1f, state.scale)
+        assertEquals(0f, state.translationY)
+    }
+
+    @Test
+    fun naturalScaleRemainsStableAcrossMeasurementUpdatesAndDefaultStillFits() {
+        val scene = ActivitySelectionSceneBuilder.build(ActivitySelectionTrace.createTrace().first(), 460f, 320f)
+        assertEquals(314f, scene.height)
+        val natural = VisualizerCanvasState(initialScaleMode = VisualizerCanvasInitialScale.NATURAL)
+        natural.updateViewportSize(IntSize(460, 320))
+        natural.updateContentSize(IntSize(460, 314))
+        assertEquals(1f, natural.scale)
+        assertEquals(0f, natural.translationY)
+        natural.updateViewportSize(IntSize(360, 224))
+        natural.updateContentSize(IntSize(360, 314))
+        assertEquals(1f, natural.scale)
+        natural.onTransform(1f, Offset(0f, -50f), Offset(180f, 112f))
+        assertEquals(-50f, natural.translationY)
+        natural.updateContentSize(IntSize(360, 300))
+        assertEquals(1f, natural.scale)
+        assertEquals(-50f, natural.translationY)
+        natural.updateViewportSize(IntSize(460, 320))
+        assertEquals(0f, natural.translationY)
+
+        val default = VisualizerCanvasState()
+        default.updateViewportSize(IntSize(360, 224))
+        default.updateContentSize(IntSize(360, 314))
+        assertEquals(224f / 314f, default.scale, 0.001f)
+        default.onTransform(2f, Offset.Zero, Offset(180f, 112f))
+        default.reset()
+        assertEquals(224f / 314f, default.scale, 0.001f)
+    }
+
+    @Test
     fun centerPlacementRemainsCenteredAndTopUsesInsetAtScaleOneAndFitScale() {
         val center = VisualizerCanvasState()
         center.viewportSize = IntSize(400, 300)

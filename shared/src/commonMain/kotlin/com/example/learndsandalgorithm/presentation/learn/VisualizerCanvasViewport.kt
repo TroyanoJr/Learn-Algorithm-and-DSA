@@ -55,6 +55,8 @@ internal enum class VisualizerCanvasMode {
 
 internal enum class VisualizerCanvasVerticalAlignment { CENTER, TOP }
 
+internal enum class VisualizerCanvasInitialScale { AUTO_FIT, NATURAL }
+
 /**
  * State object holding scale, translation offsets, and viewport/content dimensions.
  *
@@ -75,6 +77,7 @@ internal class VisualizerCanvasState(
     val minScale: Float = 0.5f,
     val maxScale: Float = 3.5f,
     val verticalAlignment: VisualizerCanvasVerticalAlignment = VisualizerCanvasVerticalAlignment.CENTER,
+    val initialScaleMode: VisualizerCanvasInitialScale = VisualizerCanvasInitialScale.AUTO_FIT,
     private val topInsetPx: Float = 0f
 ) {
     var scale by mutableStateOf(initialScale)
@@ -125,14 +128,14 @@ internal class VisualizerCanvasState(
     private fun recalculateInitialFitIfNeeded() {
         if (viewportSize.width > 0 && viewportSize.height > 0 && contentSize.width > 0 && contentSize.height > 0) {
             if (!hasCalculatedInitialFit) {
-                val fitScale = calculateFitScale().coerceAtMost(maxScale)
+                val fitScale = calculateStartingScale()
                 autoFitScale = fitScale
                 scale = fitScale
                 hasCalculatedInitialFit = true
                 applyClampedTranslation(0f, 0f)
             } else if (!hasUserInteracted) {
                 // Recalculate automatic fit when dimensions change before manual interaction
-                val fitScale = calculateFitScale().coerceAtMost(maxScale)
+                val fitScale = calculateStartingScale()
                 autoFitScale = fitScale
                 scale = fitScale
                 applyClampedTranslation(0f, 0f)
@@ -155,9 +158,14 @@ internal class VisualizerCanvasState(
         return minOf(fitX, fitY, 1.0f)
     }
 
+    private fun calculateStartingScale(): Float = when (initialScaleMode) {
+        VisualizerCanvasInitialScale.AUTO_FIT -> calculateFitScale().coerceAtMost(maxScale)
+        VisualizerCanvasInitialScale.NATURAL -> initialScale.coerceAtMost(maxScale)
+    }
+
     fun reset() {
         hasUserInteracted = false
-        val fitScale = calculateFitScale().coerceAtMost(maxScale)
+        val fitScale = calculateStartingScale()
         autoFitScale = fitScale
         scale = fitScale
         translationX = 0f
@@ -281,16 +289,18 @@ internal fun rememberVisualizerCanvasState(
     minScale: Float = 0.5f,
     maxScale: Float = 3.5f,
     key: Any? = Unit,
-    verticalAlignment: VisualizerCanvasVerticalAlignment = VisualizerCanvasVerticalAlignment.CENTER
+    verticalAlignment: VisualizerCanvasVerticalAlignment = VisualizerCanvasVerticalAlignment.CENTER,
+    initialScaleMode: VisualizerCanvasInitialScale = VisualizerCanvasInitialScale.AUTO_FIT
 ): VisualizerCanvasState {
     val density = androidx.compose.ui.platform.LocalDensity.current
     val insetPx = with(density) { 12.dp.toPx() }
-    return remember(key, verticalAlignment, insetPx) {
+    return remember(key, verticalAlignment, insetPx, initialScaleMode) {
         VisualizerCanvasState(
             initialScale = initialScale,
             minScale = minScale,
             maxScale = maxScale,
             verticalAlignment = verticalAlignment,
+            initialScaleMode = initialScaleMode,
             topInsetPx = insetPx
         )
     }

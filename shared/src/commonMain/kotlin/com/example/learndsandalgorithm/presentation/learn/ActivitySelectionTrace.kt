@@ -18,7 +18,7 @@ internal enum class ActivitySelectionStatus {
 internal data class ActivitySelectionStep(
     val allActivities: List<Activity> = emptyList(),
     val sortedActivities: List<Activity> = emptyList(),
-    val lastFinish: Int = -1,
+    val lastFinish: Int? = null,
     val currentActivityIndex: Int? = null,
     val currentActivity: Activity? = null,
     val selectedActivities: List<Activity> = emptyList(),
@@ -49,7 +49,7 @@ internal object ActivitySelectionTrace {
         val sorted = activities.sortedBy { it.finish }
         val selected = mutableListOf<Activity>()
         val rejected = mutableListOf<Activity>()
-        var lastFinish = -1
+        var lastFinish: Int? = null
 
         // Step 0: INIT
         steps.add(
@@ -76,7 +76,8 @@ internal object ActivitySelectionTrace {
         )
 
         for ((idx, act) in sorted.withIndex()) {
-            val isCompatible = act.start >= lastFinish
+            val previousFinish = lastFinish
+            val isCompatible = previousFinish == null || act.start >= previousFinish
 
             // CHECKING
             steps.add(
@@ -89,14 +90,21 @@ internal object ActivitySelectionTrace {
                     selectedActivities = selected.toList(),
                     rejectedActivities = rejected.toList(),
                     status = ActivitySelectionStatus.CHECKING,
-                    explanation = "Check activity ${act.name} (${act.start}, ${act.finish}). Start time ${act.start} vs last finish $lastFinish.",
-                    badgeText = "CHECK ${act.name} (${act.start}..${act.finish}) VS LAST FINISH $lastFinish"
+                    explanation = if (previousFinish == null) {
+                        "Check activity ${act.name} (${act.start}, ${act.finish}). It is the first activity, so no previous finish boundary applies."
+                    } else {
+                        "Check activity ${act.name} (${act.start}, ${act.finish}). Start time ${act.start} vs last finish $previousFinish."
+                    },
+                    badgeText = if (previousFinish == null) {
+                        "CHECK ${act.name} (${act.start}..${act.finish}) · NO PREVIOUS FINISH"
+                    } else {
+                        "CHECK ${act.name} (${act.start}..${act.finish}) VS LAST FINISH $previousFinish"
+                    }
                 )
             )
 
             if (isCompatible) {
                 selected.add(act)
-                val prevFinish = lastFinish
                 lastFinish = act.finish
 
                 // SELECTED
@@ -110,12 +118,17 @@ internal object ActivitySelectionTrace {
                         selectedActivities = selected.toList(),
                         rejectedActivities = rejected.toList(),
                         status = ActivitySelectionStatus.SELECTED,
-                        explanation = "Select activity ${act.name} (${act.start}, ${act.finish}). Compatible because start ${act.start} ≥ prev finish $prevFinish. Updated lastFinish = ${act.finish}.",
+                        explanation = if (previousFinish == null) {
+                            "Select activity ${act.name} (${act.start}, ${act.finish}). It is the first activity, so no previous finish boundary applies. Updated lastFinish = ${act.finish}."
+                        } else {
+                            "Select activity ${act.name} (${act.start}, ${act.finish}). Compatible because start ${act.start} ≥ prev finish $previousFinish. Updated lastFinish = ${act.finish}."
+                        },
                         badgeText = "SELECTED ${act.name} · LAST FINISH = $lastFinish"
                     )
                 )
             } else {
                 rejected.add(act)
+                val acceptedFinish = requireNotNull(previousFinish)
 
                 // REJECTED
                 steps.add(
@@ -128,7 +141,7 @@ internal object ActivitySelectionTrace {
                         selectedActivities = selected.toList(),
                         rejectedActivities = rejected.toList(),
                         status = ActivitySelectionStatus.REJECTED,
-                        explanation = "Reject activity ${act.name} (${act.start}, ${act.finish}). Overlaps with previously selected activity (start ${act.start} < last finish $lastFinish).",
+                        explanation = "Reject activity ${act.name} (${act.start}, ${act.finish}). Overlaps with previously selected activity (start ${act.start} < last finish $acceptedFinish).",
                         badgeText = "REJECTED ${act.name} (OVERLAPS)"
                     )
                 )

@@ -66,8 +66,8 @@ internal object FractionalKnapsackTrace {
                 items = items,
                 sortedItems = sorted,
                 status = FractionalKnapsackStatus.INIT,
-                explanation = "Fractional Knapsack: Capacity = $capacity. Items: ${items.map { "${it.name}(w:${it.weight.toInt()}, v:${it.value.toInt()})" }}. Goal: maximize total value.",
-                badgeText = "READY · CAPACITY ${capacity.toInt()}"
+                explanation = "Fractional Knapsack: Capacity = ${formatGreedyDecimal(capacity)}. Items: ${items.map { "${it.name}(w:${formatGreedyDecimal(it.weight)}, v:${formatGreedyDecimal(it.value)})" }}. Goal: maximize total value.",
+                badgeText = "READY · CAPACITY ${formatGreedyDecimal(capacity)}"
             )
         )
 
@@ -80,7 +80,7 @@ internal object FractionalKnapsackTrace {
                 items = items,
                 sortedItems = sorted,
                 status = FractionalKnapsackStatus.SORTED,
-                explanation = "Calculate value/weight ratio for each item and sort descending: ${sorted.map { "${it.name}: ${it.ratio}" }}. Highest ratio gives most value per weight unit.",
+                explanation = "Calculate value/weight ratio for each item and sort descending: ${sorted.map { "${it.name}: ${formatGreedyDecimal(it.ratio)}" }}. Highest ratio gives most value per weight unit.",
                 badgeText = "SORTED BY RATIO (DESCENDING)"
             )
         )
@@ -100,8 +100,8 @@ internal object FractionalKnapsackTrace {
                     currentItem = item,
                     selections = selections.toList(),
                     status = FractionalKnapsackStatus.EVALUATING,
-                    explanation = "Evaluate item ${item.name} (w:${item.weight.toInt()}, v:${item.value.toInt()}, ratio:${item.ratio}). Remaining capacity = ${remainingCap.toInt()}.",
-                    badgeText = "EVALUATE ${item.name} (RATIO ${item.ratio})"
+                    explanation = "Evaluate item ${item.name} (w:${formatGreedyDecimal(item.weight)}, v:${formatGreedyDecimal(item.value)}, ratio:${formatGreedyDecimal(item.ratio)}). Remaining capacity = ${formatGreedyDecimal(remainingCap)}.",
+                    badgeText = "EVALUATE ${item.name} (RATIO ${formatGreedyDecimal(item.ratio)})"
                 )
             )
 
@@ -125,8 +125,8 @@ internal object FractionalKnapsackTrace {
                         currentItem = item,
                         selections = selections.toList(),
                         status = FractionalKnapsackStatus.TAKE_FULL,
-                        explanation = "Take 100% of ${item.name}. Added weight ${takenW.toInt()}, value ${takenV.toInt()}. Remaining capacity = ${remainingCap.toInt()}, Total value = ${totalVal.toInt()}.",
-                        badgeText = "TAKE FULL ${item.name} (+${takenV.toInt()} VALUE)"
+                        explanation = "Take 100% of ${item.name}. Added weight ${formatGreedyDecimal(takenW)}, value ${formatGreedyDecimal(takenV)}. Remaining capacity = ${formatGreedyDecimal(remainingCap)}, Total value = ${formatGreedyDecimal(totalVal)}.",
+                        badgeText = "TAKE FULL ${item.name} (+${formatGreedyDecimal(takenV)} VALUE)"
                     )
                 )
             } else {
@@ -138,7 +138,7 @@ internal object FractionalKnapsackTrace {
                 remainingCap = 0.0
 
                 // TAKE_FRACTION
-                val pctStr = "${(fraction * 100).toInt()}%"
+                val pctStr = formatGreedyPercent(fraction)
                 steps.add(
                     FractionalKnapsackStep(
                         capacity = capacity,
@@ -150,8 +150,8 @@ internal object FractionalKnapsackTrace {
                         currentItem = item,
                         selections = selections.toList(),
                         status = FractionalKnapsackStatus.TAKE_FRACTION,
-                        explanation = "Take $pctStr (${takenW.toInt()} / ${item.weight.toInt()}) fraction of ${item.name}. Added weight ${takenW.toInt()}, value ${takenV.toInt()}. Capacity filled (0 remaining).",
-                        badgeText = "TAKE $pctStr FRACTION OF ${item.name} (+${takenV.toInt()} VALUE)"
+                        explanation = "Take $pctStr (${formatGreedyDecimal(takenW)} / ${formatGreedyDecimal(item.weight)}) fraction of ${item.name}. Added weight ${formatGreedyDecimal(takenW)}, value ${formatGreedyDecimal(takenV)}. Capacity filled (0 remaining).",
+                        badgeText = "TAKE $pctStr FRACTION OF ${item.name} (+${formatGreedyDecimal(takenV)} VALUE)"
                     )
                 )
             }
@@ -167,8 +167,8 @@ internal object FractionalKnapsackTrace {
                 sortedItems = sorted,
                 selections = selections.toList(),
                 status = FractionalKnapsackStatus.FINISHED,
-                explanation = "Fractional knapsack complete! Total Value = ${totalVal.toInt()}. Value-per-weight ratio strategy is globally optimal when item fractioning is allowed. Complexity: O(N log N).",
-                badgeText = "COMPLETE: TOTAL VALUE ${totalVal.toInt()}",
+                explanation = "Fractional knapsack complete! Total Value = ${formatGreedyDecimal(totalVal)}. Value-per-weight ratio strategy is globally optimal when item fractioning is allowed. Complexity: O(N log N).",
+                badgeText = "COMPLETE: TOTAL VALUE ${formatGreedyDecimal(totalVal)}",
                 isTerminal = true
             )
         )
