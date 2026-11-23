@@ -14,6 +14,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -35,6 +36,7 @@ internal fun DivideConquerFundamentalsVisualizationCard(
     title: String = "Divide & Conquer Fundamentals"
 ) {
     val steps = DivideConquerFundamentalsTrace.stepsForMaxFinder()
+    val sceneFrames = remember(steps) { DivideConquerSceneBuilder.build(steps) }
     val autoExpand = LocalAutoExpandVisualizer.current
     var isExpanded by rememberSaveable { mutableStateOf(autoExpand) }
 
@@ -84,9 +86,11 @@ internal fun DivideConquerFundamentalsVisualizationCard(
                 isExpanded = false
             },
             visualContent = {
-                FitToPane(modifier = Modifier.fillMaxSize()) {
-                    DivideConquerFundamentalsVisualizationContent(step = step, scale = 1f)
-                }
+                DivideConquerSceneRenderer(
+                    frame = sceneFrames[stepIndex],
+                    sequence = sceneFrames,
+                    modifier = Modifier.fillMaxSize()
+                )
             },
             detailsContent = {
                 DivideConquerFundamentalsDetailsAndStepsContent(

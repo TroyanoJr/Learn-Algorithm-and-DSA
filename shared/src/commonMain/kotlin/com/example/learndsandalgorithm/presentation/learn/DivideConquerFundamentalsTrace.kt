@@ -32,185 +32,193 @@ internal data class FundamentalsTraceStep(
 internal object DivideConquerFundamentalsTrace {
 
     fun stepsForMaxFinder(initialArr: List<Int> = listOf(4, 2, 9, 7, 5)): List<FundamentalsTraceStep> {
+        require(initialArr.isNotEmpty()) { "initialArr must not be empty" }
+
+        val input = initialArr.toList()
         val steps = mutableListOf<FundamentalsTraceStep>()
-
-        val rootNode = SubproblemNode(
-            id = "root",
-            low = 0,
-            high = initialArr.lastIndex,
-            elements = initialArr,
-            isBaseCase = initialArr.size <= 1
+        val nodes = mutableListOf(
+            SubproblemNode(
+                id = "root",
+                low = 0,
+                high = input.lastIndex,
+                elements = input,
+                isBaseCase = input.size == 1
+            )
         )
-
-        val nodeList = mutableListOf(rootNode)
 
         fun snapshot(
             phase: DivideConquerPhase,
             activeId: String?,
-            leftVal: Int? = null,
-            rightVal: Int? = null,
-            combinedVal: Int? = null,
+            leftValue: Int? = null,
+            rightValue: Int? = null,
+            combinedValue: Int? = null,
             isTerminal: Boolean = false,
             explanation: String,
             badgeText: String
-        ) = FundamentalsTraceStep(
-            phase = phase,
-            activeSubproblemId = activeId,
-            nodes = nodeList.toList(),
-            leftValue = leftVal,
-            rightValue = rightVal,
-            combinedValue = combinedVal,
-            explanation = explanation,
-            badgeText = badgeText,
-            isTerminal = isTerminal
+        ) {
+            steps += FundamentalsTraceStep(
+                phase = phase,
+                activeSubproblemId = activeId,
+                nodes = nodes.toList(),
+                leftValue = leftValue,
+                rightValue = rightValue,
+                combinedValue = combinedValue,
+                explanation = explanation,
+                badgeText = badgeText,
+                isTerminal = isTerminal
+            )
+        }
+
+        fun idForPath(path: String): String = when {
+            path.isEmpty() -> "root"
+            path.length == 1 -> "${path}1"
+            else -> path
+        }
+
+        fun valuesText(values: List<Int>): String = values.joinToString(", ", prefix = "[", postfix = "]")
+
+        fun divideExplanation(node: SubproblemNode, mid: Int, left: SubproblemNode, right: SubproblemNode): String {
+            val prefix = when {
+                node.id == "root" -> "1. DIVIDE: Split root ${valuesText(input)} at mid = index $mid into Left ${valuesText(left.elements)} and Right ${valuesText(right.elements)}"
+                node.id == "L1" -> "1. DIVIDE: Split Left subproblem ${valuesText(node.elements)} at mid = index $mid into ${valuesText(left.elements)} and ${valuesText(right.elements)}"
+                node.id == "R1" && left.isBaseCase && right.isBaseCase -> "1. DIVIDE: Split Right subproblem ${valuesText(node.elements)} into base cases ${valuesText(left.elements)} and ${valuesText(right.elements)}"
+                node.id == "R1" -> "1. DIVIDE: Split Right subproblem ${valuesText(node.elements)} at mid = index $mid into ${valuesText(left.elements)} and ${valuesText(right.elements)}"
+                node.elements.size == 2 -> "1. DIVIDE: Split ${valuesText(node.elements)} into singletons ${valuesText(left.elements)} and ${valuesText(right.elements)} (base cases)"
+                else -> "1. DIVIDE: Split ${valuesText(node.elements)} at mid = index $mid into ${valuesText(left.elements)} and ${valuesText(right.elements)}"
+            }
+            if (left.isBaseCase && right.isBaseCase && (node.elements.size == 2 || node.id == "R1")) return "$prefix."
+            val baseCaseNotes = listOf(left, right)
+                .filter { it.isBaseCase }
+                .joinToString(" ") { "Note: ${valuesText(it.elements)} is a base case (length 1)." }
+            return if (baseCaseNotes.isEmpty()) "$prefix." else "$prefix. $baseCaseNotes"
+        }
+
+        fun divideBadge(node: SubproblemNode, left: SubproblemNode, right: SubproblemNode): String = when {
+            node.id == "root" -> "DIVIDE ROOT → LEFT & RIGHT"
+            node.id == "L1" -> "DIVIDE LEFT → ${valuesText(left.elements)} & ${valuesText(right.elements)}"
+            node.id == "R1" -> "DIVIDE RIGHT → ${valuesText(left.elements)} & ${valuesText(right.elements)}"
+            left.isBaseCase && right.isBaseCase -> "DIVIDE → BASE CASES ${valuesText(left.elements)} & ${valuesText(right.elements)}"
+            else -> "DIVIDE ${valuesText(node.elements)} → ${valuesText(left.elements)} & ${valuesText(right.elements)}"
+        }
+
+        snapshot(
+            phase = DivideConquerPhase.DIVIDE,
+            activeId = "root",
+            explanation = "Divide & Conquer: Finding the maximum element in ${valuesText(input)}. 3 Phases: Divide → Conquer → Combine.",
+            badgeText = "READY · INPUT ${valuesText(input)}"
         )
 
-        // Step 0: Ready
-        steps.add(
+        fun divide(nodeId: String, path: String) {
+            val index = nodes.indexOfFirst { it.id == nodeId }
+            val parent = nodes[index]
+            if (parent.isBaseCase) return
+
+            val mid = parent.low + (parent.high - parent.low) / 2
+            val leftPath = "$path" + "L"
+            val rightPath = "$path" + "R"
+            val leftId = idForPath(leftPath)
+            val rightId = idForPath(rightPath)
+            val left = SubproblemNode(
+                id = leftId,
+                low = parent.low,
+                high = mid,
+                elements = input.subList(parent.low, mid + 1),
+                isBaseCase = mid == parent.low
+            )
+            val right = SubproblemNode(
+                id = rightId,
+                low = mid + 1,
+                high = parent.high,
+                elements = input.subList(mid + 1, parent.high + 1),
+                isBaseCase = mid + 1 == parent.high
+            )
+            nodes[index] = parent.copy(leftChildId = leftId, rightChildId = rightId)
+            nodes += left
+            nodes += right
+
             snapshot(
                 phase = DivideConquerPhase.DIVIDE,
-                activeId = "root",
-                explanation = "Divide & Conquer: Finding the maximum element in [${initialArr.joinToString(", ")}]. 3 Phases: Divide → Conquer → Combine.",
-                badgeText = "READY · INPUT [${initialArr.joinToString(", ")}]"
+                activeId = nodeId,
+                explanation = divideExplanation(parent, mid, left, right),
+                badgeText = divideBadge(parent, left, right)
             )
-        )
 
-        // Phase 1: Divide root [4, 2, 9, 7, 5] (low=0, high=4) -> mid = 2. Left: [4, 2, 9], Right: [7, 5]
-        val leftNode1 = SubproblemNode("L1", 0, 2, listOf(4, 2, 9), false)
-        val rightNode1 = SubproblemNode("R1", 3, 4, listOf(7, 5), false)
+            divide(leftId, leftPath)
+            divide(rightId, rightPath)
+        }
 
-        nodeList.add(leftNode1)
-        nodeList.add(rightNode1)
+        divide("root", "")
 
-        steps.add(
-            snapshot(
-                phase = DivideConquerPhase.DIVIDE,
-                activeId = "root",
-                explanation = "1. DIVIDE: Split root [4, 2, 9, 7, 5] at mid = index 2 into Left [4, 2, 9] and Right [7, 5].",
-                badgeText = "DIVIDE ROOT → LEFT & RIGHT"
-            )
-        )
-
-        // Sub-divide Left [4, 2, 9] (low=0, high=2) -> mid = 1. Left-Left: [4, 2], Left-Right: [9]
-        val llNode = SubproblemNode("LL", 0, 1, listOf(4, 2), false)
-        val lrNode = SubproblemNode("LR", 2, 2, listOf(9), true, maxValue = 9)
-        nodeList.add(llNode)
-        nodeList.add(lrNode)
-
-        steps.add(
-            snapshot(
-                phase = DivideConquerPhase.DIVIDE,
-                activeId = "L1",
-                explanation = "1. DIVIDE: Split Left subproblem [4, 2, 9] at mid = index 1 into [4, 2] and [9]. Note: [9] is a base case (length 1).",
-                badgeText = "DIVIDE LEFT → [4, 2] & [9]"
-            )
-        )
-
-        // Sub-divide [4, 2] (low=0, high=1) -> mid = 0. [4] and [2]
-        val lllNode = SubproblemNode("LLL", 0, 0, listOf(4), true, maxValue = 4)
-        val llrNode = SubproblemNode("LLR", 1, 1, listOf(2), true, maxValue = 2)
-        nodeList.add(lllNode)
-        nodeList.add(llrNode)
-
-        steps.add(
-            snapshot(
-                phase = DivideConquerPhase.DIVIDE,
-                activeId = "LL",
-                explanation = "1. DIVIDE: Split [4, 2] into singletons [4] and [2] (base cases).",
-                badgeText = "DIVIDE → BASE CASES [4] & [2]"
-            )
-        )
-
-        // Sub-divide Right [7, 5] (low=3, high=4) -> mid = 3. [7] and [5]
-        val rlNode = SubproblemNode("RL", 3, 3, listOf(7), true, maxValue = 7)
-        val rrNode = SubproblemNode("RR", 4, 4, listOf(5), true, maxValue = 5)
-        nodeList.add(rlNode)
-        nodeList.add(rrNode)
-
-        steps.add(
-            snapshot(
-                phase = DivideConquerPhase.DIVIDE,
-                activeId = "R1",
-                explanation = "1. DIVIDE: Split Right subproblem [7, 5] into base cases [7] and [5].",
-                badgeText = "DIVIDE RIGHT → [7] & [5]"
-            )
-        )
-
-        // Phase 2: Conquer (Base Cases solved)
-        steps.add(
+        nodes.indices.forEach { index ->
+            val node = nodes[index]
+            if (node.isBaseCase) {
+                nodes[index] = node.copy(maxValue = node.elements.single())
+            }
+        }
+        val baseCases = nodes.filter { it.isBaseCase }.sortedBy { it.low }
+        if (input.size == 1) {
+            val value = input.single()
             snapshot(
                 phase = DivideConquerPhase.CONQUER,
                 activeId = null,
-                explanation = "2. CONQUER: Base cases reached (length = 1). Subproblem results solved directly: [4]→4, [2]→2, [9]→9, [7]→7, [5]→5.",
-                badgeText = "CONQUER: BASE CASES SOLVED"
-            )
-        )
-
-        // Phase 3: Combine
-        // Combine [4] and [2] -> max(4, 2) = 4
-        updateNodeMax(nodeList, "LL", 4)
-        steps.add(
-            snapshot(
-                phase = DivideConquerPhase.COMBINE,
-                activeId = "LL",
-                leftVal = 4,
-                rightVal = 2,
-                combinedVal = 4,
-                explanation = "3. COMBINE: max(leftMax=4, rightMax=2) = 4 for subproblem [4, 2].",
-                badgeText = "COMBINE [4, 2] → 4"
-            )
-        )
-
-        // Combine [4, 2] (max 4) and [9] (max 9) -> max(4, 9) = 9
-        updateNodeMax(nodeList, "L1", 9)
-        steps.add(
-            snapshot(
-                phase = DivideConquerPhase.COMBINE,
-                activeId = "L1",
-                leftVal = 4,
-                rightVal = 9,
-                combinedVal = 9,
-                explanation = "3. COMBINE: max(leftMax=4, rightMax=9) = 9 for Left half [4, 2, 9].",
-                badgeText = "COMBINE LEFT [4, 2, 9] → 9"
-            )
-        )
-
-        // Combine [7] and [5] -> max(7, 5) = 7
-        updateNodeMax(nodeList, "R1", 7)
-        steps.add(
-            snapshot(
-                phase = DivideConquerPhase.COMBINE,
-                activeId = "R1",
-                leftVal = 7,
-                rightVal = 5,
-                combinedVal = 7,
-                explanation = "3. COMBINE: max(leftMax=7, rightMax=5) = 7 for Right half [7, 5].",
-                badgeText = "COMBINE RIGHT [7, 5] → 7"
-            )
-        )
-
-        // Final Combine: Left max (9) and Right max (7) -> max(9, 7) = 9
-        updateNodeMax(nodeList, "root", 9)
-        steps.add(
-            snapshot(
-                phase = DivideConquerPhase.COMBINE,
-                activeId = "root",
-                leftVal = 9,
-                rightVal = 7,
-                combinedVal = 9,
                 isTerminal = true,
-                explanation = "3. COMBINE COMPLETE: max(leftMax=9, rightMax=7) = 9. Original problem solved: Maximum value in [4, 2, 9, 7, 5] is 9!",
-                badgeText = "FINAL RESULT: MAX = 9"
+                explanation = "2. CONQUER COMPLETE: ${valuesText(input)} is a base case (length = 1); maximum = $value.",
+                badgeText = "CONQUER COMPLETE: MAX = $value"
             )
+            return steps
+        }
+
+        val solvedLeaves = baseCases.joinToString(", ") { node ->
+            "${node.elements.joinToString(",", prefix = "[", postfix = "]")}→${node.maxValue}"
+        }
+        snapshot(
+            phase = DivideConquerPhase.CONQUER,
+            activeId = null,
+            explanation = "2. CONQUER: Base cases reached (length = 1). Subproblem results solved directly: $solvedLeaves.",
+            badgeText = "CONQUER: BASE CASES SOLVED"
         )
 
-        return steps
-    }
+        fun combine(nodeId: String): Int {
+            val node = nodes.first { it.id == nodeId }
+            if (node.isBaseCase) return node.maxValue!!
 
-    private fun updateNodeMax(list: MutableList<SubproblemNode>, id: String, max: Int) {
-        val idx = list.indexOfFirst { it.id == id }
-        if (idx >= 0) {
-            list[idx] = list[idx].copy(maxValue = max)
+            val leftId = node.leftChildId!!
+            val rightId = node.rightChildId!!
+            val leftValue = combine(leftId)
+            val rightValue = combine(rightId)
+            val combinedValue = maxOf(leftValue, rightValue)
+            val index = nodes.indexOfFirst { it.id == nodeId }
+            val solvedNode = nodes[index].copy(maxValue = combinedValue)
+            nodes[index] = solvedNode
+
+            val isTerminal = nodeId == "root"
+            val explanation = when {
+                isTerminal -> "3. COMBINE COMPLETE: max(leftMax=$leftValue, rightMax=$rightValue) = $combinedValue. Original problem solved: Maximum value in ${valuesText(input)} is $combinedValue!"
+                nodeId == "L1" -> "3. COMBINE: max(leftMax=$leftValue, rightMax=$rightValue) = $combinedValue for Left half ${valuesText(solvedNode.elements)}."
+                nodeId == "R1" -> "3. COMBINE: max(leftMax=$leftValue, rightMax=$rightValue) = $combinedValue for Right half ${valuesText(solvedNode.elements)}."
+                else -> "3. COMBINE: max(leftMax=$leftValue, rightMax=$rightValue) = $combinedValue for subproblem ${valuesText(solvedNode.elements)}."
+            }
+            val badge = when {
+                isTerminal -> "FINAL RESULT: MAX = $combinedValue"
+                nodeId == "L1" -> "COMBINE LEFT ${valuesText(solvedNode.elements)} → $combinedValue"
+                nodeId == "R1" -> "COMBINE RIGHT ${valuesText(solvedNode.elements)} → $combinedValue"
+                else -> "COMBINE ${valuesText(solvedNode.elements)} → $combinedValue"
+            }
+
+            snapshot(
+                phase = DivideConquerPhase.COMBINE,
+                activeId = nodeId,
+                leftValue = leftValue,
+                rightValue = rightValue,
+                combinedValue = combinedValue,
+                isTerminal = isTerminal,
+                explanation = explanation,
+                badgeText = badge
+            )
+            return combinedValue
         }
+
+        combine("root")
+        return steps
     }
 }

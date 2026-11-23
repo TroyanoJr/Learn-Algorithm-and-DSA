@@ -292,6 +292,9 @@ fun LessonDetailScreen(
                             "searching_4" -> SearchComparisonCard()
                             "sorting_5" -> SortingComparisonCard()
                         }
+                        if (hasDivideConquerTradeoffsComparisonLessonContent(state.lesson.id)) {
+                            DivideConquerTradeoffsComparisonLessonContent()
+                        }
 
                         // 1. Independent Interactive Visualizer Section (When lesson has visualizer)
                         if (hasVisualizerForLesson(state.lesson.id)) {
