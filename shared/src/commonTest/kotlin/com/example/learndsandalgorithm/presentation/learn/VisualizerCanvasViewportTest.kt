@@ -10,27 +10,46 @@ import kotlin.test.assertTrue
 class VisualizerCanvasViewportTest {
 
     @Test
-    fun activityTimelineNaturalScaleFitsShortViewportWithoutPan() {
-        val scene = ActivitySelectionSceneBuilder.build(ActivitySelectionTrace.createTrace().first(), 360f, 224f)
-        assertEquals(360f, scene.width)
-        assertEquals(215f, scene.height)
-        val state = VisualizerCanvasState(initialScaleMode = VisualizerCanvasInitialScale.NATURAL)
-        state.updateViewportSize(IntSize(360, 224))
-        state.updateContentSize(IntSize(scene.width.toInt(), scene.height.toInt()))
-        assertEquals(1f, state.scale)
-        assertEquals(0f, state.translationX)
-        assertEquals(0f, state.translationY)
-        state.onTransform(1f, Offset(100f, -1000f), Offset(180f, 112f))
-        assertEquals(0f, state.translationX)
-        assertEquals(0f, state.translationY)
-        state.onTransform(1f, Offset(-100f, 1000f), Offset(180f, 112f))
-        assertEquals(0f, state.translationX)
-        assertEquals(0f, state.translationY)
-        state.onTransform(2f, Offset.Zero, Offset(180f, 112f))
-        assertEquals(2f, state.scale)
-        state.reset()
-        assertEquals(1f, state.scale)
-        assertEquals(0f, state.translationY)
+    fun activityTimelineAutoFitsEverySnapshotAtLargestProportionalScale() {
+        val viewports = listOf(360 to 224, 460 to 320, 400 to 260)
+        val snapshots = ActivitySelectionTrace.createTrace()
+
+        viewports.forEach { (width, height) ->
+            var expectedScale: Float? = null
+            snapshots.forEach { snapshot ->
+                val scene = ActivitySelectionSceneBuilder.build(snapshot, width.toFloat(), height.toFloat())
+                val state = VisualizerCanvasState(initialScaleMode = VisualizerCanvasInitialScale.AUTO_FIT)
+                state.updateViewportSize(IntSize(width, height))
+                state.updateContentSize(IntSize(scene.width.toInt(), scene.height.toInt()))
+                val expected = minOf(width / scene.width, height / scene.height, 1f)
+
+                assertEquals(expected, state.scale, 0.001f)
+                assertEquals(0f, state.translationX)
+                assertEquals(0f, state.translationY)
+                assertTrue(scene.width * state.scale <= width + 0.001f)
+                assertTrue(scene.height * state.scale <= height + 0.001f)
+                if (expectedScale == null) expectedScale = state.scale
+                assertEquals(expectedScale!!, state.scale, 0.001f)
+            }
+        }
+
+        val short = ActivitySelectionSceneBuilder.build(snapshots.first(), 360f, 224f)
+        assertEquals(215f, short.height)
+        assertEquals(1f, minOf(360f / short.width, 224f / short.height, 1f))
+
+        val zoomScene = ActivitySelectionSceneBuilder.build(snapshots.first(), 400f, 260f)
+        val zoomState = VisualizerCanvasState(initialScaleMode = VisualizerCanvasInitialScale.AUTO_FIT)
+        zoomState.updateViewportSize(IntSize(400, 260))
+        zoomState.updateContentSize(IntSize(zoomScene.width.toInt(), zoomScene.height.toInt()))
+        val fitScale = minOf(400f / zoomScene.width, 260f / zoomScene.height, 1f)
+        assertEquals(fitScale, zoomState.scale, 0.001f)
+        zoomState.onTransform(2f, Offset(0f, -1000f), Offset(200f, 130f))
+        assertTrue(zoomState.scale > fitScale)
+        assertTrue(zoomState.translationY < 0f)
+        zoomState.reset()
+        assertEquals(fitScale, zoomState.scale, 0.001f)
+        assertEquals(0f, zoomState.translationX)
+        assertEquals(0f, zoomState.translationY)
     }
 
     @Test

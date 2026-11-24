@@ -29,7 +29,7 @@ internal fun ActivitySelectionVisualizationCard(title: String = "Activity Select
         openButtonText = "Open activity selection visualizer",
         singleProgressIndicatorInDetails = true,
         overflowHeading = "Activity timeline detail",
-        initialScaleMode = VisualizerCanvasInitialScale.NATURAL,
+        initialScaleMode = VisualizerCanvasInitialScale.AUTO_FIT,
         resetViewportWithPlayback = true
     )
 }
