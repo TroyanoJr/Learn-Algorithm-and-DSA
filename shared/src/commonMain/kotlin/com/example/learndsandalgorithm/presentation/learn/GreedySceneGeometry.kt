@@ -9,6 +9,7 @@ internal data class GreedyRect(val left: Float, val top: Float, val width: Float
 }
 
 internal enum class GreedySceneTone { NEUTRAL, ACTIVE, SELECTED, REJECTED, ACCENT, MUTED }
+internal enum class GreedySceneShape { ROUNDED_RECT, CIRCLE }
 
 internal data class GreedySceneItem(
     val id: String,
@@ -21,7 +22,10 @@ internal data class GreedySceneItem(
     val fillFraction: Float? = null,
     val fractionGauge: Boolean = false,
     val textHorizontalPaddingDp: Float = 12f,
-    val textVerticalPaddingDp: Float = 8f
+    val textVerticalPaddingDp: Float = 8f,
+    val shape: GreedySceneShape = GreedySceneShape.ROUNDED_RECT,
+    val progressTrack: Boolean = false,
+    val wrapText: Boolean = false
 ) {
     /** Reserve the lower edge of a fractional item card for its dedicated fill gauge. */
     val textBounds: GreedyRect
@@ -32,7 +36,8 @@ internal data class GreedyScene(
     val width: Float,
     val height: Float,
     val items: List<GreedySceneItem>,
-    val secondaryDetails: List<String> = emptyList()
+    val secondaryDetails: List<String> = emptyList(),
+    val constrainedTextMeasurement: Boolean = false
 ) {
     val bounds = GreedyRect(0f, 0f, width, height)
 }
@@ -47,7 +52,8 @@ internal data class GreedyPresentationSnapshot<S>(
 
 internal data class GreedyTextMeasurement(
     val width: Float,
-    val height: Float
+    val height: Float,
+    val horizontalOverflow: Boolean = false
 )
 
 internal enum class GreedyTextMeasureMode { NATURAL_WIDTH, WRAPPED }
@@ -62,10 +68,15 @@ internal fun measureGreedySceneText(
     horizontalPaddingDp: Float = 12f,
     measure: (GreedySceneItem, GreedyTextMeasureMode, Float) -> GreedyTextMeasurement
 ): Map<String, GreedyTextMeasurement> = scene.items.filter { it.label.isNotEmpty() }.associate { item ->
-    val natural = measure(item, GreedyTextMeasureMode.NATURAL_WIDTH, Float.POSITIVE_INFINITY)
-    val wrappedWidth = (item.textBounds.width - minOf(horizontalPaddingDp, item.textHorizontalPaddingDp)).coerceAtLeast(1f)
-    val wrapped = measure(item, GreedyTextMeasureMode.WRAPPED, wrappedWidth)
-    item.id to GreedyTextMeasurement(width = natural.width, height = wrapped.height)
+    val availableWidth = (item.textBounds.width - if (scene.constrainedTextMeasurement) item.textHorizontalPaddingDp else minOf(horizontalPaddingDp, item.textHorizontalPaddingDp)).coerceAtLeast(1f)
+    if (scene.constrainedTextMeasurement) {
+        val mode = if (item.wrapText) GreedyTextMeasureMode.WRAPPED else GreedyTextMeasureMode.NATURAL_WIDTH
+        item.id to measure(item, mode, if (item.wrapText) availableWidth else Float.POSITIVE_INFINITY)
+    } else {
+        val natural = measure(item, GreedyTextMeasureMode.NATURAL_WIDTH, Float.POSITIVE_INFINITY)
+        val wrapped = measure(item, GreedyTextMeasureMode.WRAPPED, availableWidth)
+        item.id to GreedyTextMeasurement(width = natural.width, height = wrapped.height)
+    }
 }
 
 internal fun stableGreedyOverflowItems(items: List<GreedySceneItem>): List<GreedySceneItem> =
@@ -100,8 +111,9 @@ internal fun overflowingGreedySceneItems(
     verticalPaddingDp: Float = 8f
 ): List<GreedySceneItem> = scene.items.filter { item ->
     val measured = measuredTextDp[item.id] ?: GreedyTextMeasurement(0f, 0f)
-    measured.width > (item.textBounds.width - minOf(horizontalPaddingDp, item.textHorizontalPaddingDp)).coerceAtLeast(0f) ||
-        measured.height > (item.textBounds.height - minOf(verticalPaddingDp, item.textVerticalPaddingDp)).coerceAtLeast(0f)
+    measured.horizontalOverflow ||
+        measured.width > (item.textBounds.width - if (scene.constrainedTextMeasurement) item.textHorizontalPaddingDp else minOf(horizontalPaddingDp, item.textHorizontalPaddingDp)).coerceAtLeast(0f) ||
+        measured.height > (item.textBounds.height - if (scene.constrainedTextMeasurement) item.textVerticalPaddingDp else minOf(verticalPaddingDp, item.textVerticalPaddingDp)).coerceAtLeast(0f)
 }
 
 internal fun formatGreedyDecimal(value: Double): String {
@@ -138,6 +150,24 @@ internal fun formatGreedyPercent(fraction: Double): String {
     return formatGreedyDecimal(rounded) + "%"
 }
 
+/** Enlarge only the four compact Greedy scenes when the visual pane has more room. */
+private fun GreedyScene.useAvailableGreedyPane(viewportWidth: Float, viewportHeight: Float): GreedyScene {
+    val factor = minOf(viewportWidth / 360f, viewportHeight / 224f).coerceAtLeast(1f)
+    if (factor <= 1f) return this
+    return copy(
+        width = width * factor,
+        height = height * factor,
+        items = items.map { item ->
+            item.copy(
+                bounds = GreedyRect(item.bounds.left * factor, item.bounds.top * factor, item.bounds.width * factor, item.bounds.height * factor),
+                fontSize = kotlin.math.round(item.fontSize * factor).toInt().coerceAtLeast(item.fontSize),
+                textHorizontalPaddingDp = item.textHorizontalPaddingDp * factor,
+                textVerticalPaddingDp = item.textVerticalPaddingDp * factor
+            )
+        }
+    )
+}
+
 internal object GreedyFundamentalsSceneBuilder {
     fun build(
         step: GreedyFundamentalsStep,
@@ -145,59 +175,64 @@ internal object GreedyFundamentalsSceneBuilder {
         viewportHeight: Float = 400f,
         previouslyRejectedIndex: Int? = null
     ): GreedyScene {
-        val width = viewportWidth.coerceAtLeast(1f)
+        val width = viewportWidth.coerceAtMost(360f).coerceAtLeast(1f)
         val innerWidth = (width - 16f).coerceAtLeast(1f)
         val items = mutableListOf<GreedySceneItem>()
-        fun add(id: String, x: Float, y: Float, w: Float, h: Float, label: String, tone: GreedySceneTone = GreedySceneTone.NEUTRAL, size: Int = 12, filled: Boolean = true, fillFraction: Float? = null) {
-            items += GreedySceneItem(id, GreedyRect(x, y, w, h), label, tone, size, filled = filled, fillFraction = fillFraction?.coerceIn(0f, 1f))
+        fun add(id: String, x: Float, y: Float, w: Float, h: Float, label: String, tone: GreedySceneTone = GreedySceneTone.NEUTRAL, size: Int = 10, filled: Boolean = true, fillFraction: Float? = null, pad: Float = 4f, progressTrack: Boolean = false) {
+            items += GreedySceneItem(id, GreedyRect(x, y, w, h), label, tone, size, filled = filled, fillFraction = fillFraction?.coerceIn(0f, 1f), textHorizontalPaddingDp = pad, textVerticalPaddingDp = pad, progressTrack = progressTrack)
         }
-        add("budget-header", 8f, 6f, innerWidth, 32f, "DELIVERY ROBOT · BUDGET ${step.totalBudget} · REMAINING ${step.remainingBudget}", GreedySceneTone.ACCENT, 13)
-        add("budget-track", 12f, 43f, innerWidth - 8f, 20f, "USED ${step.totalBudget - step.remainingBudget} / ${step.totalBudget}", GreedySceneTone.MUTED, 11, fillFraction = if (step.totalBudget > 0) (step.totalBudget - step.remainingBudget).toFloat() / step.totalBudget else 0f)
+        add("budget-header", 8f, 4f, innerWidth * 0.65f, 24f, "DELIVERY ROBOT DISTANCE BUDGET", GreedySceneTone.ACCENT)
+        add("budget-remaining", 10f + innerWidth * 0.65f, 4f, innerWidth * 0.35f - 2f, 24f, "REMAINING ${step.remainingBudget} / ${step.totalBudget}", GreedySceneTone.ACCENT)
+        add("budget-track", 8f, 33f, innerWidth, 12f, "", GreedySceneTone.ACCENT, fillFraction = if (step.totalBudget > 0) step.remainingBudget.toFloat() / step.totalBudget else 0f, progressTrack = true)
+        add("budget-used", 8f, 49f, innerWidth, 18f, "USED ${step.totalBudget - step.remainingBudget} / ${step.totalBudget}", GreedySceneTone.MUTED)
+        add("candidate-heading", 8f, 69f, innerWidth, 20f, "CANDIDATE STOPS · SHORTEST FIRST", GreedySceneTone.ACCENT)
         val n = step.sortedDistances.size.coerceAtLeast(1)
         val gap = 5f
         val columns = minOf(n, ((innerWidth + gap) / 74f).toInt().coerceAtLeast(1))
         val cellWidth = (innerWidth - gap * (columns - 1)) / columns
-        val cardHeight = 50f
-        val rowGap = 4f
+        val cardHeight = 38f
+        val rowPitch = 59f
         step.sortedDistances.forEachIndexed { index, distance ->
             val row = index / columns
             val column = index % columns
             val x = 8f + column * (cellWidth + gap)
-            val y = 72f + row * (cardHeight + rowGap)
+            val y = 108f + row * rowPitch
             val current = step.currentCandidateIndex == index
             val rejected = (current && step.status == GreedyFundamentalsStatus.REJECTED) ||
                 (step.status == GreedyFundamentalsStatus.FINISHED && previouslyRejectedIndex == index)
             val chosen = step.chosenDistances.count { it == distance } > step.sortedDistances.take(index).count { it == distance }
             val state = when { rejected -> "REJECTED"; chosen -> "SELECTED"; current -> "EVALUATING"; else -> "PENDING" }
             val tone = when { rejected -> GreedySceneTone.REJECTED; chosen -> GreedySceneTone.SELECTED; current -> GreedySceneTone.ACTIVE; else -> GreedySceneTone.NEUTRAL }
-            add("candidate-$index", x, y, cellWidth, cardHeight, "STOP ${index + 1}\nDISTANCE $distance\n$state", tone, 11)
+            add("candidate-state-$index", x, y - 17f, cellWidth, 16f, state, tone, 9, pad = 2f)
+            add("candidate-card-$index", x, y, cellWidth, cardHeight, "", tone)
+            add("candidate-id-$index", x, y, cellWidth, 16f, "STOP ${index + 1}", tone, 9, filled = false)
+            add("candidate-$index", x, y + 17f, cellWidth, 20f, "DISTANCE $distance", tone, 11, filled = false)
         }
-        val candidatesBottom = 72f + ((n + columns - 1) / columns) * (cardHeight + rowGap) - rowGap
+        val candidatesBottom = 108f + (((n + columns - 1) / columns) - 1) * rowPitch + cardHeight
         val summaryY = candidatesBottom + 5f
-        add("selected-summary", 8f, summaryY, innerWidth, 30f, "SELECTED [${step.chosenDistances.joinToString()}] · COUNT ${step.chosenDistances.size}", GreedySceneTone.SELECTED, 11)
-        var sceneHeight = summaryY + 36f
-        if (viewportHeight >= sceneHeight + 27f) {
-            add("complexity", 8f, sceneHeight, innerWidth, 22f, "SORT O(N log N) + SCAN O(N)", GreedySceneTone.ACCENT, 11)
-            sceneHeight += 27f
-        }
-        return GreedyScene(width, sceneHeight, items)
+        add("selected-summary", 8f, summaryY, innerWidth * 0.72f, 29f, "SELECTED [${step.chosenDistances.joinToString()}] · USED ${step.totalBudget - step.remainingBudget}", GreedySceneTone.SELECTED)
+        add("selected-count", 10f + innerWidth * 0.72f, summaryY, innerWidth * 0.28f - 2f, 29f, "COUNT ${step.chosenDistances.size}", GreedySceneTone.SELECTED)
+        val complexityY = summaryY + 33f
+        add("complexity", 8f, complexityY, innerWidth, 20f, "SORT O(N log N) + SCAN O(N)", GreedySceneTone.ACCENT)
+        val sceneHeight = complexityY + 24f
+        return GreedyScene(width, sceneHeight, items, constrainedTextMeasurement = true).useAvailableGreedyPane(viewportWidth, viewportHeight)
     }
 }
 
 internal object GreedyCoinChangeSceneBuilder {
     fun build(step: GreedyCoinChangeStep, viewportWidth: Float = 560f, viewportHeight: Float = 400f): GreedyScene {
         val items = mutableListOf<GreedySceneItem>()
-        fun add(id: String, x: Float, y: Float, w: Float, h: Float, label: String, tone: GreedySceneTone = GreedySceneTone.NEUTRAL, size: Int = 12) {
-            items += GreedySceneItem(id, GreedyRect(x, y, w, h), label, tone, size)
+        fun add(id: String, x: Float, y: Float, w: Float, h: Float, label: String, tone: GreedySceneTone = GreedySceneTone.NEUTRAL, size: Int = 10, shape: GreedySceneShape = GreedySceneShape.ROUNDED_RECT, pad: Float = 4f) {
+            items += GreedySceneItem(id, GreedyRect(x, y, w, h), label, tone, size, textHorizontalPaddingDp = pad, textVerticalPaddingDp = pad, shape = shape)
         }
-        val width = viewportWidth.coerceAtLeast(1f)
+        val width = viewportWidth.coerceAtMost(360f).coerceAtLeast(1f)
         val innerWidth = (width - 16f).coerceAtLeast(1f)
-        add("amount-header", 8f, 6f, innerWidth, 30f, "TARGET ${step.targetAmount} · REMAINING ${step.remainingAmount} · LARGEST FIRST", GreedySceneTone.ACCENT, 12)
-        val gap = 5f
-        val maxColumns = if (viewportHeight < 250f) 4 else 3
-        val columns = minOf(step.denominations.size.coerceAtLeast(1), maxColumns, ((innerWidth + gap) / 80f).toInt().coerceAtLeast(1))
-        val cardWidth = (innerWidth - gap * (columns - 1)) / columns
-        val cardHeight = 52f
+        add("amount-header", 8f, 4f, innerWidth * 0.64f, 27f, "TARGET ${step.targetAmount} · LARGEST FIRST", GreedySceneTone.ACCENT)
+        add("remaining-amount", 10f + innerWidth * 0.64f, 4f, innerWidth * 0.36f - 2f, 27f, "REMAINING ${step.remainingAmount}", GreedySceneTone.ACTIVE)
+        add("denominations-heading", 8f, 36f, innerWidth, 21f, "DENOMINATIONS · LARGEST FIRST: [${step.denominations.joinToString()}]", GreedySceneTone.ACCENT)
+        val columns = minOf(step.denominations.size.coerceAtLeast(1), (innerWidth / 54f).toInt().coerceAtLeast(1))
+        val cellWidth = innerWidth / columns
+        val denominationRows = (step.denominations.size + columns - 1) / columns
         step.denominations.forEachIndexed { index, coin ->
             val isCurrent = step.currentCoinIndex == index
             val tone = when {
@@ -216,18 +251,32 @@ internal object GreedyCoinChangeSceneBuilder {
             }
             val row = index / columns
             val column = index % columns
-            add("denomination-$index", 8f + column * (cardWidth + gap), 44f + row * 56f, cardWidth, cardHeight, "COIN $coin\n$state", tone, 11)
+            val center = 8f + (column + 0.5f) * cellWidth
+            val top = 74f + row * 60f
+            add("denomination-state-$index", 9f + column * cellWidth, top - 17f, cellWidth - 2f, 16f, state, tone, 9, pad = 2f)
+            add("denomination-$index", center - 18f, top, 36f, 36f, coin.toString(), tone, 13, GreedySceneShape.CIRCLE)
         }
-        val rows = (step.denominations.size + columns - 1) / columns
+        val sequenceY = 74f + denominationRows * 60f - 19f
         val sequence = if (step.selectedCoins.isEmpty()) "No coins selected yet" else step.selectedCoins.joinToString(" + ")
-        val charsPerLine = ((innerWidth - 20f) / 7f).toInt().coerceAtLeast(12)
-        val sequenceLines = (sequence.length + charsPerLine - 1) / charsPerLine
-        val sequenceY = 44f + rows * 56f + 5f
-        val naturalSequenceHeight = 34f + sequenceLines * 15f
-        val availableSequenceHeight = (viewportHeight - sequenceY - 6f).coerceAtLeast(34f)
-        val sequenceHeight = minOf(naturalSequenceHeight, availableSequenceHeight)
-        add("coin-sequence", 8f, sequenceY, innerWidth, sequenceHeight, "SELECTED COINS (${step.selectedCoins.size})\n$sequence", GreedySceneTone.SELECTED, 11)
-        return GreedyScene(width, sequenceY + sequenceHeight + 6f, items)
+        add("coin-sequence", 8f, sequenceY, innerWidth, 30f, if (step.selectedCoins.isEmpty()) "SELECTED COINS · $sequence" else "SELECTED COINS · CHRONOLOGICAL ORDER", GreedySceneTone.SELECTED)
+        val coinSize = 34f
+        val selectedColumns = (innerWidth / 38f).toInt().coerceAtLeast(1)
+        val maxSelectionCount = if (step.targetAmount > 0 && step.denominations.any { it > 0 }) {
+            var amount = step.targetAmount
+            var count = 0
+            step.denominations.filter { it > 0 }.forEach { coin -> count += amount / coin; amount %= coin }
+            maxOf(count, step.selectedCoins.size)
+        } else step.selectedCoins.size
+        val selectedY = sequenceY + 34f
+        step.selectedCoins.forEachIndexed { index, coin ->
+            val col = index % selectedColumns
+            val row = index / selectedColumns
+            add("selected-coin-$index", 8f + col * 38f, selectedY + row * 38f, coinSize, coinSize, coin.toString(), GreedySceneTone.SELECTED, 12, GreedySceneShape.CIRCLE)
+        }
+        val selectedRows = (maxSelectionCount + selectedColumns - 1) / selectedColumns
+        val summaryY = selectedY + maxOf(1, selectedRows) * 38f
+        add("selected-coin-summary", 8f, summaryY, innerWidth, 19f, "${step.selectedCoins.size} COINS · AMOUNT ${step.targetAmount - step.remainingAmount} / ${step.targetAmount}", GreedySceneTone.SELECTED)
+        return GreedyScene(width, summaryY + 23f, items, constrainedTextMeasurement = true).useAvailableGreedyPane(viewportWidth, viewportHeight)
     }
 }
 
@@ -349,20 +398,20 @@ internal object ActivitySelectionSceneBuilder {
 internal object FractionalKnapsackSceneBuilder {
     fun build(step: FractionalKnapsackStep, viewportWidth: Float = 560f, viewportHeight: Float = 400f): GreedyScene {
         val items = mutableListOf<GreedySceneItem>()
-        fun add(id: String, x: Float, y: Float, w: Float, h: Float, label: String, tone: GreedySceneTone = GreedySceneTone.NEUTRAL, size: Int = 12, fillFraction: Float? = null, fractionGauge: Boolean = false) {
-            items += GreedySceneItem(id, GreedyRect(x, y, w, h), label, tone, size, fillFraction = fillFraction?.coerceIn(0f, 1f), fractionGauge = fractionGauge)
+        fun add(id: String, x: Float, y: Float, w: Float, h: Float, label: String, tone: GreedySceneTone = GreedySceneTone.NEUTRAL, size: Int = 10, fillFraction: Float? = null, pad: Float = 3f, progressTrack: Boolean = false, filled: Boolean = true, wrapText: Boolean = false) {
+            items += GreedySceneItem(id, GreedyRect(x, y, w, h), label, tone, size, filled = filled, fillFraction = fillFraction?.coerceIn(0f, 1f), textHorizontalPaddingDp = pad, textVerticalPaddingDp = pad, progressTrack = progressTrack, wrapText = wrapText)
         }
-        val width = viewportWidth.coerceAtLeast(1f)
+        val width = viewportWidth.coerceAtMost(360f).coerceAtLeast(1f)
         val innerWidth = (width - 16f).coerceAtLeast(1f)
-        add("capacity-header", 8f, 6f, innerWidth, 32f, "CAPACITY ${formatGreedyDecimal(step.capacity)} · REMAINING ${formatGreedyDecimal(step.remainingCapacity)} · VALUE ${formatGreedyDecimal(step.totalValue)}", GreedySceneTone.ACCENT, 12)
+        add("capacity-header", 8f, 4f, innerWidth, 24f, "KNAPSACK CAPACITY ${formatGreedyDecimal(step.capacity)} · REMAINING ${formatGreedyDecimal(step.remainingCapacity)}", GreedySceneTone.ACCENT)
         val selectedWeight = step.selections.sumOf { it.takenWeight }
-        add("capacity-track", 12f, 43f, innerWidth - 8f, 20f, "USED ${formatGreedyDecimal(selectedWeight)} / ${formatGreedyDecimal(step.capacity)}", GreedySceneTone.MUTED, 10, fillFraction = if (step.capacity > 0.0) (selectedWeight / step.capacity).toFloat() else 0f)
+        add("capacity-track", 8f, 31f, innerWidth, 10f, "", GreedySceneTone.ACCENT, fillFraction = if (step.capacity > 0.0) (selectedWeight / step.capacity).toFloat() else 0f, progressTrack = true)
+        add("capacity-values", 8f, 44f, innerWidth, 18f, "FILLED ${formatGreedyDecimal(selectedWeight)} / ${formatGreedyDecimal(step.capacity)} · REMAINING ${formatGreedyDecimal(step.remainingCapacity)}", GreedySceneTone.MUTED)
+        add("items-heading", 8f, 65f, innerWidth, 18f, "ITEMS SORTED BY VALUE / WEIGHT RATIO", GreedySceneTone.ACCENT)
         val itemGap = 5f
-        val maxColumns = if (viewportHeight < 260f) 4 else 3
-        val widthColumns = ((innerWidth + itemGap) / 68f).toInt().coerceAtLeast(1)
-        val columns = minOf(step.sortedItems.size.coerceAtLeast(1), maxColumns, widthColumns)
+        val columns = minOf(step.sortedItems.size.coerceAtLeast(1), ((innerWidth + itemGap) / 105f).toInt().coerceAtLeast(1))
         val cardWidth = (innerWidth - itemGap * (columns - 1)) / columns
-        val cardHeight = 108f
+        val rowPitch = 122f
         step.sortedItems.forEachIndexed { index, item ->
             val occurrence = step.sortedItems.take(index).count { it == item }
             val selection = step.selections.filter { it.item == item }.getOrNull(occurrence)
@@ -384,14 +433,21 @@ internal object FractionalKnapsackSceneBuilder {
             val itemValue = selection?.takenValue ?: 0.0
             val row = index / columns
             val column = index % columns
-            add("item-$index", 8f + column * (cardWidth + itemGap), 72f + row * 112f, cardWidth, cardHeight,
-                "ITEM ${item.name}\nW ${formatGreedyDecimal(item.weight)} · V ${formatGreedyDecimal(item.value)}\nRATIO ${formatGreedyDecimal(item.ratio)}\n$portion\nTAKEN ${formatGreedyDecimal(takenWeight)} / ${formatGreedyDecimal(item.weight)} · LEFT ${formatGreedyDecimal(remainingItemWeight)}\n+${formatGreedyDecimal(itemValue)} VALUE",
-                tone, 11, fillFraction = selection?.fraction?.toFloat() ?: 0f, fractionGauge = true)
+            val x = 8f + column * (cardWidth + itemGap)
+            val y = 85f + row * rowPitch
+            add("item-card-$index", x, y, cardWidth, 117f, "", tone)
+            add("item-name-$index", x, y, cardWidth, 18f, "ITEM ${item.name}", tone, 10, filled = false)
+            add("item-stats-$index", x, y + 19f, cardWidth, 26f, "W ${formatGreedyDecimal(item.weight)} · V ${formatGreedyDecimal(item.value)}\nRATIO ${formatGreedyDecimal(item.ratio)}", GreedySceneTone.NEUTRAL, 9, pad = 1f, filled = false, wrapText = true)
+            add("item-state-$index", x, y + 46f, cardWidth, 17f, portion, tone, 9, filled = false)
+            add("item-weight-$index", x, y + 64f, cardWidth, 26f, "TAKEN ${formatGreedyDecimal(takenWeight)} / ${formatGreedyDecimal(item.weight)}\nLEFT ${formatGreedyDecimal(remainingItemWeight)}", GreedySceneTone.NEUTRAL, 9, pad = 1f, filled = false, wrapText = true)
+            add("item-value-$index", x, y + 91f, cardWidth, 17f, "+${formatGreedyDecimal(itemValue)} VALUE", tone, 9, filled = false)
+            add("item-fraction-$index", x, y + 110f, cardWidth, 6f, "", tone, fillFraction = selection?.fraction?.toFloat() ?: 0f, progressTrack = true)
         }
         val rows = (step.sortedItems.size + columns - 1) / columns
-        val summaryY = 72f + rows * 112f + 4f
-        add("capacity-consumption", 8f, summaryY, innerWidth, 24f, "WEIGHT ${formatGreedyDecimal(selectedWeight)} / ${formatGreedyDecimal(step.capacity)} · VALUE ${formatGreedyDecimal(step.totalValue)}", GreedySceneTone.SELECTED, 10)
-        return GreedyScene(width, summaryY + 30f, items)
+        val summaryY = 85f + (rows - 1) * rowPitch + 118f
+        add("capacity-consumption", 8f, summaryY, (innerWidth - 4f) * 0.55f, 18f, "VALUE ${formatGreedyDecimal(step.totalValue)} · WEIGHT ${formatGreedyDecimal(selectedWeight)} / ${formatGreedyDecimal(step.capacity)}", GreedySceneTone.SELECTED, 9)
+        add("optimality", 12f + (innerWidth - 4f) * 0.55f, summaryY, (innerWidth - 4f) * 0.45f, 18f, if (step.isTerminal) "OPTIMAL FRACTIONAL RESULT" else "RATIO RULE: OPTIMAL FOR FRACTIONS", GreedySceneTone.SELECTED, 9)
+        return GreedyScene(width, summaryY + 21f, items, constrainedTextMeasurement = true).useAvailableGreedyPane(viewportWidth, viewportHeight)
     }
 }
 
@@ -400,32 +456,51 @@ internal object GreedyCounterexampleSceneBuilder {
 
     fun build(step: GreedyCounterexamplesStep, viewportWidth: Float = 560f, viewportHeight: Float = 400f): GreedyScene {
         val items = mutableListOf<GreedySceneItem>()
-        fun add(id: String, x: Float, y: Float, w: Float, h: Float, label: String, tone: GreedySceneTone = GreedySceneTone.NEUTRAL, size: Int = 12) {
-            items += GreedySceneItem(id, GreedyRect(x, y, w, h), label, tone, size)
+        fun add(id: String, x: Float, y: Float, w: Float, h: Float, label: String, tone: GreedySceneTone = GreedySceneTone.NEUTRAL, size: Int = 10, shape: GreedySceneShape = GreedySceneShape.ROUNDED_RECT) {
+            items += GreedySceneItem(id, GreedyRect(x, y, w, h), label, tone, size, textHorizontalPaddingDp = 4f, textVerticalPaddingDp = 4f, shape = shape)
         }
-        val width = viewportWidth.coerceAtLeast(1f)
+        val width = viewportWidth.coerceAtMost(360f).coerceAtLeast(1f)
         val innerWidth = (width - 16f).coerceAtLeast(1f)
         val comparisonVisible = step.status >= CounterexampleStatus.COMPARE_OPTIMAL
-        add("counterexample-header", 8f, 6f, innerWidth, 30f, "TARGET ${step.targetAmount} · COINS [${step.denominations.joinToString()}] · LARGEST FIRST", GreedySceneTone.ACCENT, 12)
-        val cardGap = 6f
-        val resultWidth = (innerWidth - cardGap) / 2f
-        add("greedy-result", 8f, 42f, resultWidth, 68f, "GREEDY\n${if (step.greedyCoins.isEmpty()) "No coins yet" else step.greedyCoins.joinToString(" + ")}\n${step.greedyCoins.size} COINS", GreedySceneTone.REJECTED, 12)
-        add("optimal-result", 8f + resultWidth + cardGap, 42f, resultWidth, 68f,
-            if (comparisonVisible) "OPTIMAL\n${step.optimalCoins.joinToString(" + ")}\n${step.optimalCoins.size} COINS" else "OPTIMAL\n?\nREVEALED AT COMPARISON",
-            if (comparisonVisible) GreedySceneTone.SELECTED else GreedySceneTone.MUTED, 12)
-        add("coin-count-comparison", 8f, 116f, innerWidth, 30f,
-            if (comparisonVisible) "${step.optimalCoins.size} OPTIMAL COINS < ${step.greedyCoins.size} GREEDY COINS" else "GREEDY PICKS SHOWN · OPTIMAL RESULT NOT YET REVEALED",
-            if (comparisonVisible) GreedySceneTone.SELECTED else GreedySceneTone.MUTED, 11)
-        if (comparisonVisible) add("why-greedy-fails", 8f, 152f, innerWidth, 24f, "WHY GREEDY FAILS HERE · FULL EXPLANATION IN DETAILS", GreedySceneTone.ACTIVE, 10)
-        else add("why-greedy-fails-pending", 8f, 152f, innerWidth, 24f, "OPTIMAL RESULT AND EXPLANATION REVEALED AT COMPARISON", GreedySceneTone.MUTED, 10)
-        add("counterexample-proof", 8f, 182f, innerWidth, 26f,
-            if (step.isTerminal) "THIS INPUT DISPROVES UNIVERSAL MINIMUM-COIN OPTIMALITY" else "A COUNTEREXAMPLE REFUTES A UNIVERSAL CLAIM",
-            if (step.isTerminal) GreedySceneTone.REJECTED else GreedySceneTone.ACCENT, 10)
+        add("counterexample-header", 8f, 4f, innerWidth, 26f, "TARGET ${step.targetAmount} · DENOMINATIONS [${step.denominations.joinToString()}] · LARGEST FIRST", GreedySceneTone.ACCENT, 9)
+        add("counterexample-status", 8f, 33f, innerWidth, 18f, if (comparisonVisible) "FAILED GREEDY · COMPARISON REVEALED" else "GREEDY CHOICES IN PROGRESS · OPTIMAL HIDDEN", if (comparisonVisible) GreedySceneTone.REJECTED else GreedySceneTone.ACTIVE, 9)
+        val gap = 6f
+        val resultWidth = (innerWidth - gap) / 2f
+        val right = 8f + resultWidth + gap
+        val greedyTone = if (comparisonVisible) GreedySceneTone.REJECTED else GreedySceneTone.ACTIVE
+        add("greedy-result", 8f, 54f, resultWidth, 20f, "GREEDY · LARGEST FIRST", greedyTone)
+        add("optimal-result", right, 54f, resultWidth, 20f,
+            "OPTIMAL · NON-GREEDY",
+            if (comparisonVisible) GreedySceneTone.SELECTED else GreedySceneTone.MUTED, 9)
+        if (step.greedyCoins.isEmpty()) add("greedy-empty", 8f, 77f, resultWidth, 30f, "NO COINS YET", GreedySceneTone.MUTED, 9)
+        step.greedyCoins.forEachIndexed { index, coin ->
+            add("greedy-coin-$index", 8f + (index + 0.5f) * resultWidth / maxOf(3, step.greedyCoins.size) - 15f,
+                77f, 30f, 30f, coin.toString(), greedyTone, 11, GreedySceneShape.CIRCLE)
+        }
+        if (comparisonVisible) step.optimalCoins.forEachIndexed { index, coin ->
+            add("optimal-coin-$index", right + (index + 0.5f) * resultWidth / maxOf(3, step.optimalCoins.size) - 15f,
+                77f, 30f, 30f, coin.toString(), GreedySceneTone.SELECTED, 11, GreedySceneShape.CIRCLE)
+        } else add("optimal-hidden", right, 77f, resultWidth, 30f, "? · HIDDEN UNTIL COMPARISON", GreedySceneTone.MUTED, 9)
+        add("greedy-count", 8f, 111f, resultWidth, 19f, "${step.greedyCoins.size} GREEDY COINS · REM ${step.greedyRemaining}", greedyTone, 9)
+        add("optimal-count", right, 111f, resultWidth, 19f,
+            if (comparisonVisible) "${step.optimalCoins.size} OPTIMAL COINS" else "COUNT HIDDEN",
+            if (comparisonVisible) GreedySceneTone.SELECTED else GreedySceneTone.MUTED, 9)
+        add("coin-count-comparison", 8f, 134f, innerWidth, 21f,
+            if (comparisonVisible) "${step.greedyCoins.size} GREEDY COINS > ${step.optimalCoins.size} OPTIMAL COINS" else "GREEDY PICKS SHOWN · OPTIMAL RESULT NOT YET REVEALED",
+            if (comparisonVisible) GreedySceneTone.REJECTED else GreedySceneTone.MUTED, 9)
+        items += GreedySceneItem("comparison-principle", GreedyRect(8f, 157f, innerWidth, 43f),
+            if (comparisonVisible) "4 LEAVES 2 → TWO 1s (3 COINS)\n3 LEAVES 3 → ONE MORE 3 (2 COINS)\nLOCAL BEST ≠ GLOBAL BEST" else "OPTIMAL RESULT AND EXPLANATION REVEALED AT COMPARISON",
+            if (comparisonVisible) GreedySceneTone.ACTIVE else GreedySceneTone.MUTED, 9,
+            textHorizontalPaddingDp = 4f, textVerticalPaddingDp = 4f, wrapText = true)
+        add("counterexample-proof", 8f, 203f, innerWidth, 18f,
+            if (comparisonVisible) "THIS INPUT DISPROVES UNIVERSAL MINIMUM-COIN OPTIMALITY" else "A COUNTEREXAMPLE REFUTES A UNIVERSAL CLAIM",
+            if (comparisonVisible) GreedySceneTone.REJECTED else GreedySceneTone.ACCENT, 9)
         return GreedyScene(
             width,
-            214f,
+            224f,
             items,
-            secondaryDetails = if (comparisonVisible) listOf("WHY GREEDY FAILS HERE: $WHY_GREEDY_FAILS") else emptyList()
-        )
+            secondaryDetails = if (comparisonVisible) listOf("WHY GREEDY FAILS HERE: $WHY_GREEDY_FAILS") else emptyList(),
+            constrainedTextMeasurement = true
+        ).useAvailableGreedyPane(viewportWidth, viewportHeight)
     }
 }

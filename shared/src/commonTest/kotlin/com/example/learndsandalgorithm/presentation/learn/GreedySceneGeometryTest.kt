@@ -32,7 +32,7 @@ class GreedySceneGeometryTest {
             }
             scene.items.forEachIndexed { index, item ->
                 scene.items.drop(index + 1).forEach { other ->
-                    if (!intentionalTimelineOverlay(item.id, other.id)) assertFalse(overlaps(item.bounds, other.bounds), "${item.id} overlaps ${other.id}")
+                    if (!intentionalTimelineOverlay(item.id, other.id) && !intentionalCardContainment(item, other)) assertFalse(overlaps(item.bounds, other.bounds), "${item.id} overlaps ${other.id}")
                 }
             }
         }
@@ -87,13 +87,82 @@ class GreedySceneGeometryTest {
         val budgetFractions = fundamentals.map { step ->
             GreedyFundamentalsSceneBuilder.build(step).items.single { it.id == "budget-track" }.fillFraction
         }
-        assertEquals(listOf(0f, 0f, 0f, 0.2f, 0.2f, 0.5f, 0.5f, 0.9f, 0.9f, 0.9f), budgetFractions.filterNotNull())
+        assertEquals(listOf(1f, 1f, 1f, 0.8f, 0.8f, 0.5f, 0.5f, 0.1f, 0.1f, 0.1f), budgetFractions.filterNotNull())
+        assertTrue(GreedyFundamentalsSceneBuilder.build(fundamentals.first()).items.single { it.id == "budget-track" }.progressTrack)
+        assertTrue(GreedyFundamentalsSceneBuilder.build(fundamentals.first()).items.single { it.id == "budget-track" }.label.isEmpty())
 
         val knapsack = FractionalKnapsackTrace.createTrace()
         val usedFractions = knapsack.map { step ->
             FractionalKnapsackSceneBuilder.build(step).items.single { it.id == "capacity-track" }.fillFraction
         }.filterNotNull()
         assertEquals(listOf(0f, 0f, 0f, 0.2f, 0.2f, 0.6f, 0.6f, 1f, 1f), usedFractions)
+        assertTrue(FractionalKnapsackSceneBuilder.build(knapsack.first()).items.single { it.id == "capacity-track" }.progressTrack)
+        assertEquals(0f, FractionalKnapsackSceneBuilder.build(knapsack.first()).items.single { it.id == "item-fraction-0" }.fillFraction)
+        assertEquals(1f, FractionalKnapsackSceneBuilder.build(knapsack.last()).items.single { it.id == "item-fraction-0" }.fillFraction)
+    }
+
+    @Test
+    fun targetScenesFitThreeLandscapePanesWithStableGeometryAndReadableLineAllowance() {
+        val builders = listOf(
+            GreedyFundamentalsTrace.createTrace().map { step -> { w: Float, h: Float -> GreedyFundamentalsSceneBuilder.build(step, w, h) } },
+            GreedyCoinChangeTrace.createTrace().map { step -> { w: Float, h: Float -> GreedyCoinChangeSceneBuilder.build(step, w, h) } },
+            FractionalKnapsackTrace.createTrace().map { step -> { w: Float, h: Float -> FractionalKnapsackSceneBuilder.build(step, w, h) } },
+            GreedyCounterexamplesTrace.createTrace().map { step -> { w: Float, h: Float -> GreedyCounterexampleSceneBuilder.build(step, w, h) } }
+        )
+        listOf(360f to 224f, 400f to 260f, 460f to 320f).forEach { (width, height) ->
+            builders.forEach { traceBuilders ->
+                val scenes = traceBuilders.map { it(width, height) }
+                assertTrue(minOf(1f, width / scenes.first().width, height / scenes.first().height) >= 0.9999f)
+                assertTrue(scenes.all { it.width == scenes.first().width && it.height == scenes.first().height })
+                scenes.forEach { scene ->
+                    assertSceneElementsContainedAndNonOverlapping(scene)
+                    scene.items.filter { it.label.isNotEmpty() }.forEach { item ->
+                        val required = item.label.lines().size * (item.fontSize + 3)
+                        assertTrue(item.textBounds.height - item.textVerticalPaddingDp >= required,
+                            "${item.id} lacks vertical text allowance at $width x $height")
+                    }
+                }
+            }
+        }
+    }
+
+    @Test
+    fun coinScenesKeepIndividualCircularOccurrencesAndTraceTiming() {
+        val trace = GreedyCoinChangeTrace.createTrace()
+        trace.forEach { step ->
+            val scene = GreedyCoinChangeSceneBuilder.build(step, 360f, 224f)
+            val denominations = scene.items.filter { it.id.matches(Regex("denomination-\\d+")) }
+            val selected = scene.items.filter { it.id.matches(Regex("selected-coin-\\d+")) }
+            assertEquals(step.denominations.map(Int::toString), denominations.map { it.label })
+            assertTrue(denominations.all { it.shape == GreedySceneShape.CIRCLE })
+            assertEquals(step.selectedCoins.map(Int::toString), selected.map { it.label })
+            assertEquals(step.selectedCoins.indices.map { "selected-coin-$it" }, selected.map { it.id })
+            assertTrue(selected.all { it.shape == GreedySceneShape.CIRCLE })
+            assertTrue(scene.items.single { it.id == "remaining-amount" }.label.contains(step.remainingAmount.toString()))
+            assertTrue(scene.items.single { it.id == "selected-coin-summary" }.label.contains("${step.selectedCoins.size} COINS"))
+        }
+        assertEquals(listOf("4", "4", "3"), GreedyCoinChangeSceneBuilder.build(trace.last()).items
+            .filter { it.id.matches(Regex("selected-coin-\\d+")) }.map { it.label })
+    }
+
+    @Test
+    fun counterexampleCoinsAndProofAppearOnlyAtComparison() {
+        GreedyCounterexamplesTrace.createTrace().forEach { step ->
+            val scene = GreedyCounterexampleSceneBuilder.build(step, 360f, 224f)
+            assertEquals(step.greedyCoins.map(Int::toString), scene.items.filter { it.id.startsWith("greedy-coin-") }.map { it.label })
+            assertTrue(scene.items.filter { it.id.startsWith("greedy-coin-") }.all { it.shape == GreedySceneShape.CIRCLE })
+            if (step.status < CounterexampleStatus.COMPARE_OPTIMAL) {
+                assertTrue(scene.items.none { it.id.startsWith("optimal-coin-") })
+                assertTrue(scene.items.none { it.label.contains("LOCAL BEST ≠ GLOBAL BEST") })
+                assertTrue(scene.items.none { it.label.contains("FAILED GREEDY") })
+                assertTrue(scene.secondaryDetails.isEmpty())
+            } else {
+                assertEquals(listOf("3", "3"), scene.items.filter { it.id.startsWith("optimal-coin-") }.map { it.label })
+                assertTrue(scene.items.filter { it.id.startsWith("optimal-coin-") }.all { it.shape == GreedySceneShape.CIRCLE })
+                assertTrue(scene.items.any { it.label.contains("LOCAL BEST ≠ GLOBAL BEST") })
+                assertEquals(1, scene.secondaryDetails.size)
+            }
+        }
     }
 
     @Test
@@ -106,7 +175,22 @@ class GreedySceneGeometryTest {
             previouslyRejectedIndex = rejectedIndex
         )
         assertEquals(GreedySceneTone.REJECTED, scene.items.single { it.id == "candidate-3" }.tone)
-        assertTrue(scene.items.single { it.id == "candidate-3" }.label.contains("REJECTED"))
+        assertTrue(scene.items.single { it.id == "candidate-state-3" }.label.contains("REJECTED"))
+        assertEquals("STOP 4", scene.items.single { it.id == "candidate-id-3" }.label)
+        assertEquals("DISTANCE 6", scene.items.single { it.id == "candidate-3" }.label)
+        assertTrue(scene.items.single { it.id == "candidate-3" }.fontSize > scene.items.single { it.id == "candidate-id-3" }.fontSize)
+        assertTrue(scene.items.single { it.id == "selected-summary" }.label.contains("[2, 3, 4]"))
+        assertEquals("COUNT 3", scene.items.single { it.id == "selected-count" }.label)
+    }
+
+    @Test
+    fun fractionalTerminalStatusReportsUnusedCapacityAccurately() {
+        val last = FractionalKnapsackTrace.createTrace(listOf(KnapsackItem("A", 2.0, 8.0)), capacity = 5.0).last()
+        assertEquals(3.0, last.remainingCapacity)
+        assertTrue(fractionalKnapsackStatusText(last).startsWith("SELECTION COMPLETE"))
+        val scene = FractionalKnapsackSceneBuilder.build(last, 360f, 224f)
+        assertTrue(scene.items.single { it.id == "optimality" }.label.contains("OPTIMAL FRACTIONAL RESULT"))
+        assertEquals(1, scene.items.count { it.id.startsWith("item-card-") })
     }
 
     @Test
@@ -346,15 +430,15 @@ class GreedySceneGeometryTest {
     }
 
     @Test
-    fun longCoinSequenceRemainsCompleteAndSceneFitsShortViewport() {
+    fun longCoinSequenceKeepsEverySeparateCoinAndStableBounds() {
         val finalStep = GreedyCoinChangeTrace.createTrace(target = 100, denominations = listOf(1)).last()
         val scene = GreedyCoinChangeSceneBuilder.build(finalStep, 360f, 224f)
         val sequence = scene.items.single { it.id == "coin-sequence" }
 
         assertEquals(100, finalStep.selectedCoins.size)
-        assertTrue(sequence.label.startsWith("SELECTED COINS (100)"))
-        assertEquals(100, sequence.label.substringAfter('\n').split(" + ").size)
-        assertTrue(scene.height <= 224f)
+        assertTrue(sequence.label.startsWith("SELECTED COINS"))
+        assertEquals(100, scene.items.count { it.id.startsWith("selected-coin-") && it.id != "selected-coin-summary" })
+        assertTrue(scene.height > 224f, "complete exceptional sequence needs additional inspectable geometry")
         assertTrue(scene.bounds.contains(sequence.bounds))
     }
 
@@ -366,15 +450,12 @@ class GreedySceneGeometryTest {
         assertTrue(sorted.items.any { it.label.contains("RATIO 5") })
         assertTrue(sorted.items.any { it.label.contains("RATIO 4") })
         val fractional = FractionalKnapsackSceneBuilder.build(steps.last())
-        val partial = fractional.items.single { it.id == "item-2" }
-        assertTrue(partial.label.contains("FRACTION · 66.67%"))
-        assertTrue(partial.label.contains("TAKEN 20 / 30 · LEFT 10"))
-        assertTrue(partial.label.contains("+80 VALUE"))
-        assertTrue(partial.fractionGauge)
-        assertEquals(2f / 3f, partial.fillFraction)
+        assertTrue(fractional.items.single { it.id == "item-state-2" }.label.contains("FRACTION · 66.67%"))
+        assertTrue(fractional.items.single { it.id == "item-weight-2" }.label.contains("TAKEN 20 / 30\nLEFT 10"))
+        assertEquals("+80 VALUE", fractional.items.single { it.id == "item-value-2" }.label)
+        assertEquals(2f / 3f, fractional.items.single { it.id == "item-fraction-2" }.fillFraction)
         assertTrue(fractional.items.any { it.id == "capacity-consumption" && it.label.contains("50 / 50") && it.label.contains("240") })
-        val initialCards = sorted.items.filter { it.id.startsWith("item-") }
-        assertTrue(initialCards.all { it.label.contains("+0 VALUE") })
+        assertEquals(listOf("+0 VALUE", "+0 VALUE", "+0 VALUE"), sorted.items.filter { it.id.startsWith("item-value-") }.map { it.label })
     }
 
     @Test
@@ -393,15 +474,13 @@ class GreedySceneGeometryTest {
         assertEquals(4.5, result.selections.last().takenValue)
 
         val scene = FractionalKnapsackSceneBuilder.build(result, 460f, 320f)
-        assertTrue(scene.items.single { it.id == "capacity-header" }.label.contains("CAPACITY 3 · REMAINING 0 · VALUE 9"))
-        val partial = scene.items.single { it.id == "item-1" }
-        assertTrue(partial.label.contains("W 2.25 · V 6.75"))
-        assertTrue(partial.label.contains("FRACTION · 66.67%"))
-        assertTrue(partial.label.contains("TAKEN 1.5 / 2.25 · LEFT 0.75"))
-        assertTrue(partial.label.contains("+4.5 VALUE"))
-        assertEquals(2f / 3f, partial.fillFraction)
-        assertTrue(partial.fractionGauge)
-        assertEquals(partial.bounds.height - 10f, partial.textBounds.height)
+        assertTrue(scene.items.single { it.id == "capacity-header" }.label.contains("CAPACITY 3 · REMAINING 0"))
+        assertTrue(scene.items.single { it.id == "capacity-consumption" }.label.contains("VALUE 9"))
+        assertTrue(scene.items.single { it.id == "item-stats-1" }.label.contains("W 2.25 · V 6.75"))
+        assertTrue(scene.items.single { it.id == "item-state-1" }.label.contains("FRACTION · 66.67%"))
+        assertTrue(scene.items.single { it.id == "item-weight-1" }.label.contains("TAKEN 1.5 / 2.25\nLEFT 0.75"))
+        assertEquals("+4.5 VALUE", scene.items.single { it.id == "item-value-1" }.label)
+        assertEquals(2f / 3f, scene.items.single { it.id == "item-fraction-1" }.fillFraction)
         assertEquals("0.3333333333333333", formatGreedyDecimal(1.0 / 3.0))
     }
 
@@ -414,27 +493,21 @@ class GreedySceneGeometryTest {
         )
         val result = FractionalKnapsackTrace.createTrace(items, capacity = 6.0).last()
         val scene = FractionalKnapsackSceneBuilder.build(result, 460f, 320f)
-        val cards = scene.items.filter { it.id.startsWith("item-") }
-
-        assertEquals(listOf("item-0", "item-1", "item-2"), cards.map { it.id })
-        assertTrue(cards[0].label.contains("W 2 · V 20") && cards[0].label.contains("FULL · 100%"))
-        assertTrue(cards[1].label.contains("W 3 · V 15") && cards[1].label.contains("FULL · 100%"))
-        assertTrue(cards[2].label.contains("W 4 · V 4") && cards[2].label.contains("FRACTION · 25%"))
-        assertEquals(listOf(1f, 1f, 0.25f), cards.map { it.fillFraction })
-        assertEquals(listOf("TAKEN 2 / 2 · LEFT 0", "TAKEN 3 / 3 · LEFT 0", "TAKEN 1 / 4 · LEFT 3"), cards.map { it.label.lines()[4] })
+        assertEquals(listOf("item-name-0", "item-name-1", "item-name-2"), scene.items.filter { it.id.startsWith("item-name-") }.map { it.id })
+        assertEquals(listOf("W 2 · V 20\nRATIO 10", "W 3 · V 15\nRATIO 5", "W 4 · V 4\nRATIO 1"), scene.items.filter { it.id.startsWith("item-stats-") }.map { it.label })
+        assertEquals(listOf("FULL · 100%", "FULL · 100%", "FRACTION · 25%"), scene.items.filter { it.id.startsWith("item-state-") }.map { it.label })
+        assertEquals(listOf(1f, 1f, 0.25f), scene.items.filter { it.id.startsWith("item-fraction-") }.map { it.fillFraction })
+        assertEquals(listOf("TAKEN 2 / 2\nLEFT 0", "TAKEN 3 / 3\nLEFT 0", "TAKEN 1 / 4\nLEFT 3"), scene.items.filter { it.id.startsWith("item-weight-") }.map { it.label })
     }
 
     @Test
     fun identicalKnapsackItemsKeepDistinctFractionGaugeIdentities() {
         val identical = KnapsackItem("Same", 2.0, 8.0)
         val result = FractionalKnapsackTrace.createTrace(listOf(identical, identical), capacity = 3.0).last()
-        val cards = FractionalKnapsackSceneBuilder.build(result, 460f, 320f).items
-            .filter { it.id.matches(Regex("item-\\d+")) }
-
-        assertEquals(listOf("item-0", "item-1"), cards.map { it.id })
-        assertEquals(listOf(1f, 0.5f), cards.map { it.fillFraction })
-        assertEquals(listOf("TAKEN 2 / 2 · LEFT 0", "TAKEN 1 / 2 · LEFT 1"), cards.map { it.label.lines()[4] })
-        assertTrue(cards.all { it.fractionGauge })
+        val scene = FractionalKnapsackSceneBuilder.build(result, 460f, 320f)
+        assertEquals(listOf("item-name-0", "item-name-1"), scene.items.filter { it.id.startsWith("item-name-") }.map { it.id })
+        assertEquals(listOf(1f, 0.5f), scene.items.filter { it.id.startsWith("item-fraction-") }.map { it.fillFraction })
+        assertEquals(listOf("TAKEN 2 / 2\nLEFT 0", "TAKEN 1 / 2\nLEFT 1"), scene.items.filter { it.id.startsWith("item-weight-") }.map { it.label })
     }
 
     @Test
@@ -462,16 +535,18 @@ class GreedySceneGeometryTest {
         beforeComparison.forEach { step ->
             val scene = GreedyCounterexampleSceneBuilder.build(step)
         assertFalse(scene.secondaryDetails.any { it.contains(GreedyCounterexampleSceneBuilder.WHY_GREEDY_FAILS) })
-        assertFalse(scene.items.any { it.id == "why-greedy-fails" })
-            assertTrue(scene.items.single { it.id == "optimal-result" }.label.contains("REVEALED AT COMPARISON"))
+            assertTrue(scene.items.none { it.id.startsWith("optimal-coin-") })
+            assertTrue(scene.items.single { it.id == "optimal-result" }.label.contains("NON-GREEDY"))
+            assertTrue(scene.items.single { it.id == "comparison-principle" }.label.contains("REVEALED AT COMPARISON"))
         }
 
         val comparison = GreedyCounterexampleSceneBuilder.build(steps[4])
         assertEquals(1, comparison.secondaryDetails.size)
         assertTrue(comparison.secondaryDetails.single().contains(GreedyCounterexampleSceneBuilder.WHY_GREEDY_FAILS))
-        assertTrue(comparison.items.single { it.id == "why-greedy-fails" }.label.contains("FULL EXPLANATION IN DETAILS"))
-        assertTrue(comparison.items.single { it.id == "optimal-result" }.label.contains("3 + 3"))
-        assertTrue(comparison.items.single { it.id == "coin-count-comparison" }.label.contains("2 OPTIMAL COINS < 3 GREEDY COINS"))
+        assertTrue(comparison.items.single { it.id == "comparison-principle" }.label.contains("4 LEAVES 2 → TWO 1s"))
+        assertTrue(comparison.items.single { it.id == "comparison-principle" }.label.contains("3 LEAVES 3 → ONE MORE 3"))
+        assertEquals(listOf("3", "3"), comparison.items.filter { it.id.startsWith("optimal-coin-") }.map { it.label })
+        assertTrue(comparison.items.single { it.id == "coin-count-comparison" }.label.contains("3 GREEDY COINS > 2 OPTIMAL COINS"))
         assertTrue(steps[4].explanation.contains("2 coins < 3 coins"))
         assertTrue(steps.last().explanation.contains("Greedy choice property fails here"))
     }
@@ -531,6 +606,35 @@ class GreedySceneGeometryTest {
     }
 
     @Test
+    fun targetTextMeasurementUsesRenderingConstraintsAndWrapPolicy() {
+        val wrapped = GreedySceneItem("wrapped", GreedyRect(0f, 0f, 100f, 60f), "Long label that wraps", textHorizontalPaddingDp = 20f, textVerticalPaddingDp = 10f, wrapText = true)
+        val tooTall = wrapped.copy(id = "too-tall", bounds = GreedyRect(0f, 61f, 100f, 28f))
+        val single = wrapped.copy(id = "single", bounds = GreedyRect(0f, 90f, 100f, 30f), wrapText = false)
+        val multiline = wrapped.copy(id = "multiline", bounds = GreedyRect(0f, 121f, 100f, 60f), label = "First line\nSecond line")
+        val scene = GreedyScene(100f, 182f, listOf(wrapped, tooTall, single, multiline), constrainedTextMeasurement = true)
+        val calls = mutableListOf<Triple<String, GreedyTextMeasureMode, Float>>()
+        val measured = measureGreedySceneText(scene) { item, mode, width ->
+            calls += Triple(item.id, mode, width)
+            when (item.id) {
+                "single" -> GreedyTextMeasurement(120f, 14f)
+                "too-tall" -> GreedyTextMeasurement(78f, 36f)
+                else -> GreedyTextMeasurement(78f, 36f)
+            }
+        }
+        assertEquals(Triple("wrapped", GreedyTextMeasureMode.WRAPPED, 80f), calls[0])
+        assertEquals(Triple("single", GreedyTextMeasureMode.NATURAL_WIDTH, Float.POSITIVE_INFINITY), calls[2])
+        assertEquals(GreedyTextMeasurement(78f, 36f), measured.getValue("multiline"))
+        assertEquals(listOf("too-tall", "single"), overflowingGreedySceneItems(scene, measured).map { it.id })
+        assertEquals(20f, wrapped.textHorizontalPaddingDp)
+        assertEquals(10f, wrapped.textVerticalPaddingDp)
+        val genuineHorizontal = scene.copy(items = listOf(wrapped))
+        assertEquals(listOf("wrapped"), overflowingGreedySceneItems(genuineHorizontal, mapOf("wrapped" to GreedyTextMeasurement(80f, 36f, horizontalOverflow = true))).map { it.id })
+        val activity = ActivitySelectionSceneBuilder.build(ActivitySelectionTrace.createTrace().first(), 360f, 224f)
+        assertFalse(activity.constrainedTextMeasurement)
+        assertEquals(215f, activity.height)
+    }
+
+    @Test
     fun textOverflowDetectsHorizontalAndVerticalBoundsIndependently() {
         val scene = GreedyScene(
             width = 240f,
@@ -571,13 +675,14 @@ class GreedySceneGeometryTest {
         val sections = greedyDetailsProjection(
             additionalExplanation = GreedyCounterexampleSceneBuilder.WHY_GREEDY_FAILS,
             overflowItems = listOf(first, second),
-            singleProgressIndicator = true
+            singleProgressIndicator = true,
+            stepsFirst = true
         )
 
         assertEquals(1, sections.count { it.showsStepProgress })
-        assertEquals("steps", sections.last().elementId)
-        assertEquals(listOf("activity-label-0", "activity-label-1"), sections.map { it.elementId }.drop(1).dropLast(1))
-        assertEquals(listOf("SAME LONG LABEL", "SAME LONG LABEL"), sections.map { it.explanation }.drop(1).dropLast(1))
+        assertEquals("steps", sections.first().elementId)
+        assertEquals(listOf("activity-label-0", "activity-label-1"), sections.map { it.elementId }.drop(2))
+        assertEquals(listOf("SAME LONG LABEL", "SAME LONG LABEL"), sections.map { it.explanation }.drop(2))
         assertTrue(sections.all { section -> !section.heading.contains("activity-label-") })
         assertTrue(sections.single { it.elementId == "counterexample-explanation" }.explanation.contains("Local best != Global best"))
 
@@ -621,18 +726,18 @@ class GreedySceneGeometryTest {
             customFundamentals.forEach { step ->
                 val scene = GreedyFundamentalsSceneBuilder.build(step, width, height)
                 assertSceneElementsContainedAndNonOverlapping(scene)
-                assertEquals(14, scene.items.count { it.id.startsWith("candidate-") })
+                assertEquals(14, scene.items.count { it.id.matches(Regex("candidate-\\d+")) })
             }
             customCoins.forEach { step ->
                 val scene = GreedyCoinChangeSceneBuilder.build(step, width, height)
                 assertSceneElementsContainedAndNonOverlapping(scene)
-                assertEquals(10, scene.items.count { it.id.startsWith("denomination-") })
-                assertTrue(scene.items.single { it.id == "coin-sequence" }.label.contains(step.selectedCoins.joinToString(" + ")))
+                assertEquals(10, scene.items.count { it.id.matches(Regex("denomination-\\d+")) })
+                assertEquals(step.selectedCoins.map(Int::toString), scene.items.filter { it.id.matches(Regex("selected-coin-\\d+")) }.map { it.label })
             }
             customKnapsack.forEach { step ->
                 val scene = FractionalKnapsackSceneBuilder.build(step, width, height)
                 assertSceneElementsContainedAndNonOverlapping(scene)
-                assertEquals(9, scene.items.count { it.id.startsWith("item-") })
+                assertEquals(9, scene.items.count { it.id.startsWith("item-name-") })
                 assertTrue(scene.items.single { it.id == "capacity-consumption" }.label.contains(formatGreedyDecimal(step.totalValue)))
             }
         }
@@ -773,6 +878,17 @@ class GreedySceneGeometryTest {
     private fun overlaps(a: GreedyRect, b: GreedyRect): Boolean =
         a.left < b.right && b.left < a.right && a.top < b.bottom && b.top < a.bottom
 
+    private fun intentionalCardContainment(a: GreedySceneItem, b: GreedySceneItem): Boolean {
+        val parent = listOf(a, b).firstOrNull { it.id.startsWith("item-card-") || it.id.startsWith("candidate-card-") } ?: return false
+        val child = if (parent === a) b else a
+        val prefix = if (parent.id.startsWith("item-card-")) "item-" else "candidate-"
+        val index = parent.id.removePrefix("item-card-").removePrefix("candidate-card-")
+        if (!child.id.startsWith(prefix) || !child.id.endsWith("-$index")) return false
+        if (prefix == "candidate-" && child.id.startsWith("candidate-state-")) return false
+        assertTrue(parent.bounds.contains(child.bounds), "${child.id} escapes ${parent.id}")
+        return true
+    }
+
     private fun intentionalTimelineOverlay(a: String, b: String): Boolean =
         listOf(a, b).any { it.startsWith("timeline-last-finish-marker") || it == "activity-start-boundary" || it == "activity-finish-boundary" } ||
             ((a.startsWith("activity-track-") || a.startsWith("activity-interval-text-")) &&
@@ -786,7 +902,7 @@ class GreedySceneGeometryTest {
         assertTrue(scene.items.all { scene.bounds.contains(it.bounds) })
         scene.items.forEachIndexed { index, item ->
             scene.items.drop(index + 1).forEach { other ->
-                assertFalse(overlaps(item.bounds, other.bounds), "${item.id} overlaps ${other.id}")
+                if (!intentionalCardContainment(item, other)) assertFalse(overlaps(item.bounds, other.bounds), "${item.id} overlaps ${other.id}")
             }
         }
     }

@@ -10,9 +10,9 @@ internal fun GreedyCounterexamplesVisualizationCard(title: String = "Greedy Coun
         GreedyCounterexamplesStep::explanation, GreedyCounterexamplesStep::badgeText)
     val step = presentation.snapshot
     val tone = when (step.status) {
-        CounterexampleStatus.FINISHED, CounterexampleStatus.GREEDY_STEP_3 -> GreedySceneTone.REJECTED
+        CounterexampleStatus.FINISHED -> GreedySceneTone.REJECTED
         CounterexampleStatus.COMPARE_OPTIMAL -> GreedySceneTone.SELECTED
-        CounterexampleStatus.GREEDY_STEP_1, CounterexampleStatus.GREEDY_STEP_2 -> GreedySceneTone.ACTIVE
+        CounterexampleStatus.GREEDY_STEP_1, CounterexampleStatus.GREEDY_STEP_2, CounterexampleStatus.GREEDY_STEP_3 -> GreedySceneTone.ACTIVE
         else -> GreedySceneTone.ACCENT
     }
     val status = greedyCounterexampleStatusText(step)
@@ -30,7 +30,8 @@ internal fun GreedyCounterexamplesVisualizationCard(title: String = "Greedy Coun
         additionalExplanation = if (step.status >= CounterexampleStatus.COMPARE_OPTIMAL) {
             GreedyCounterexampleSceneBuilder.WHY_GREEDY_FAILS
         } else null,
-        singleProgressIndicatorInDetails = true
+        singleProgressIndicatorInDetails = true,
+        stepsFirstInDetails = true
     )
 }
 

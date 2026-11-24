@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Text
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.tween
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -65,8 +66,16 @@ internal fun greedyDetailsProjection(
     additionalExplanation: String?,
     overflowItems: List<GreedySceneItem>,
     singleProgressIndicator: Boolean,
-    overflowHeading: String? = null
+    overflowHeading: String? = null,
+    stepsFirst: Boolean = false
 ): List<GreedyDetailsSection> = buildList {
+    val stepsSection = GreedyDetailsSection(
+        elementId = "steps",
+        heading = GreedyRendererText.STEPS_HEADING,
+        explanation = "",
+        showsStepProgress = true
+    )
+    if (stepsFirst) add(stepsSection)
     additionalExplanation?.let { explanation ->
         add(
             GreedyDetailsSection(
@@ -87,14 +96,7 @@ internal fun greedyDetailsProjection(
             )
         )
     }
-    add(
-        GreedyDetailsSection(
-            elementId = "steps",
-            heading = GreedyRendererText.STEPS_HEADING,
-            explanation = "",
-            showsStepProgress = true
-        )
-    )
+    if (!stepsFirst) add(stepsSection)
 }
 
 @Composable
@@ -109,7 +111,8 @@ internal fun GreedyDetailsAndStepsContent(
     overflowItems: List<GreedySceneItem>,
     stepCompleted: Boolean,
     singleProgressIndicator: Boolean = false,
-    overflowHeading: String? = null
+    overflowHeading: String? = null,
+    stepsFirst: Boolean = false
 ) {
     val badgeColor = when (badgeTone) {
         GreedySceneTone.SELECTED -> VisualizerGreenAccent
@@ -129,7 +132,7 @@ internal fun GreedyDetailsAndStepsContent(
             }
             Text(complexity, modifier = Modifier.padding(start = 4.dp), color = VisualizerGreenAccent, fontSize = 10.sp, fontWeight = FontWeight.Bold)
         }
-        greedyDetailsProjection(additionalExplanation, overflowItems, singleProgressIndicator, overflowHeading).forEach { section ->
+        greedyDetailsProjection(additionalExplanation, overflowItems, singleProgressIndicator, overflowHeading, stepsFirst).forEach { section ->
             key(section.elementId) {
                 val sectionText = if (section.elementId == "steps") explanation else section.explanation
                 if (section.showsStepProgress) {
@@ -169,6 +172,7 @@ internal fun GreedyVisualizationModal(
     additionalExplanation: String? = null,
     singleProgressIndicatorInDetails: Boolean = false,
     overflowHeading: String? = null,
+    stepsFirstInDetails: Boolean = false,
     initialScaleMode: VisualizerCanvasInitialScale = VisualizerCanvasInitialScale.AUTO_FIT,
     resetViewportWithPlayback: Boolean = false
 ) {
@@ -233,7 +237,8 @@ internal fun GreedyVisualizationModal(
                     overflowItems = visibleGreedyOverflowItems(overflowState, stepIndex),
                     stepCompleted = playback.isCompleted,
                     singleProgressIndicator = singleProgressIndicatorInDetails,
-                    overflowHeading = overflowHeading
+                    overflowHeading = overflowHeading,
+                    stepsFirst = stepsFirstInDetails
                 )
             }
         )
@@ -275,7 +280,10 @@ internal fun GreedySceneRenderer(
                 (item.id.startsWith("activity-bar-") && item.tone == GreedySceneTone.ACTIVE)) 1f else 0f
             val fraction by animateFloatAsState(targetProgress, tween(420))
             val animatedLeft by animateFloatAsState(item.bounds.left, tween(420))
-            GreedyAnimatedItem(item, fill, border, textColor, fraction,
+            val isSequenceCoin = item.shape == GreedySceneShape.CIRCLE && (item.id.startsWith("selected-coin-") || item.id.startsWith("greedy-coin-") || item.id.startsWith("optimal-coin-"))
+            val appearance = remember(item.id) { Animatable(if (isSequenceCoin) 0f else 1f) }
+            LaunchedEffect(item.id) { if (isSequenceCoin) appearance.animateTo(1f, tween(420)) }
+            GreedyAnimatedItem(item, fill, border, textColor, fraction, appearance.value,
                 if (item.id.startsWith("timeline-last-finish-marker")) animatedLeft else item.bounds.left)
         }
     }
@@ -295,7 +303,8 @@ internal fun GreedySceneRenderer(
             with(density) {
                 GreedyTextMeasurement(
                     width = layout.size.width.toDp().value,
-                    height = layout.size.height.toDp().value
+                    height = layout.size.height.toDp().value,
+                    horizontalOverflow = scene.constrainedTextMeasurement && mode == GreedyTextMeasureMode.WRAPPED && layout.hasVisualOverflow
                 )
             }
         }
@@ -311,38 +320,45 @@ internal fun GreedySceneRenderer(
                 val topLeft = Offset(animated.left.dp.toPx(), rect.top.dp.toPx())
                 val size = Size(rect.width.dp.toPx(), rect.height.dp.toPx())
                 if (item.filled) {
-                    drawRoundRect(animated.fill, topLeft, size, CornerRadius(8.dp.toPx()))
-                    if (item.fractionGauge) {
-                        val gaugeInset = 8.dp.toPx()
-                        val gaugeWidth = (size.width - gaugeInset * 2f).coerceAtLeast(1f)
-                        val gaugeHeight = 4.dp.toPx()
-                        val gaugeTopLeft = Offset(topLeft.x + gaugeInset, topLeft.y + size.height - 8.dp.toPx())
-                        val gaugeSize = Size(gaugeWidth, gaugeHeight)
-                        drawRoundRect(Color(0xFF343444), gaugeTopLeft, gaugeSize, CornerRadius(gaugeHeight / 2f))
-                        if (animated.progress > 0f) {
+                    if (item.shape == GreedySceneShape.CIRCLE) {
+                        val center = topLeft + Offset(size.width / 2f, size.height / 2f)
+                        drawCircle(animated.fill.copy(alpha = animated.appearance), radius = size.width / 2f, center = center)
+                        if (animated.progress > 0f) drawCircle(animated.border.copy(alpha = 0.35f * animated.progress * animated.appearance), radius = size.width / 2f, center = center)
+                        drawCircle(animated.border.copy(alpha = animated.appearance), radius = size.width / 2f, center = center, style = Stroke(1.5.dp.toPx()))
+                    } else {
+                        drawRoundRect(if (item.progressTrack) Color(0xFF242431) else animated.fill, topLeft, size, CornerRadius(8.dp.toPx()))
+                        if (item.fractionGauge) {
+                            val gaugeInset = 8.dp.toPx()
+                            val gaugeWidth = (size.width - gaugeInset * 2f).coerceAtLeast(1f)
+                            val gaugeHeight = 4.dp.toPx()
+                            val gaugeTopLeft = Offset(topLeft.x + gaugeInset, topLeft.y + size.height - 8.dp.toPx())
+                            val gaugeSize = Size(gaugeWidth, gaugeHeight)
+                            drawRoundRect(Color(0xFF343444), gaugeTopLeft, gaugeSize, CornerRadius(gaugeHeight / 2f))
+                            if (animated.progress > 0f) {
+                                drawRoundRect(
+                                    animated.border,
+                                    gaugeTopLeft,
+                                    Size(gaugeWidth * animated.progress.coerceIn(0f, 1f), gaugeHeight),
+                                    CornerRadius(gaugeHeight / 2f)
+                                )
+                            }
+                        } else if (animated.progress > 0f) {
                             drawRoundRect(
-                                animated.border,
-                                gaugeTopLeft,
-                                Size(gaugeWidth * animated.progress.coerceIn(0f, 1f), gaugeHeight),
-                                CornerRadius(gaugeHeight / 2f)
+                                animated.border.copy(alpha = if (item.progressTrack) 1f else 0.45f),
+                                topLeft,
+                                Size(size.width * animated.progress.coerceIn(0f, 1f), size.height),
+                                CornerRadius(8.dp.toPx())
                             )
                         }
-                    } else if (animated.progress > 0f) {
-                        drawRoundRect(
-                            animated.border.copy(alpha = 0.45f),
-                            topLeft,
-                            Size(size.width * animated.progress.coerceIn(0f, 1f), size.height),
-                            CornerRadius(8.dp.toPx())
-                        )
+                        drawRoundRect(animated.border, topLeft, size, CornerRadius(8.dp.toPx()), style = Stroke(1.5.dp.toPx()))
                     }
-                    drawRoundRect(animated.border, topLeft, size, CornerRadius(8.dp.toPx()), style = Stroke(1.5.dp.toPx()))
                 }
                 if (item.id in drawableIds) {
                     val textBounds = item.textBounds
                     val measured = textMeasurer.measure(
                         text = item.label,
-                        style = greedySceneTextStyle(item, animated.textColor),
-                        softWrap = true,
+                        style = greedySceneTextStyle(item, animated.textColor.copy(alpha = animated.appearance)),
+                        softWrap = if (scene.constrainedTextMeasurement) item.wrapText else true,
                         constraints = Constraints(
                             maxWidth = with(density) { (textBounds.width - item.textHorizontalPaddingDp).dp.roundToPx().coerceAtLeast(1) },
                             maxHeight = with(density) { (textBounds.height - item.textVerticalPaddingDp).dp.roundToPx().coerceAtLeast(1) }
@@ -376,5 +392,6 @@ private data class GreedyAnimatedItem(
     val border: Color,
     val textColor: Color,
     val progress: Float,
+    val appearance: Float,
     val left: Float
 )

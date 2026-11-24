@@ -26,7 +26,9 @@ internal fun GreedyCoinChangeVisualizationCard(title: String = "Greedy Coin Chan
         badge = presentation.badge,
         complexity = "Time: O(D + K)",
         viewportKey = "greedy-coin-change",
-        openButtonText = "Open coin change visualizer"
+        openButtonText = "Open coin change visualizer",
+        singleProgressIndicatorInDetails = true,
+        stepsFirstInDetails = true
     )
 }
 

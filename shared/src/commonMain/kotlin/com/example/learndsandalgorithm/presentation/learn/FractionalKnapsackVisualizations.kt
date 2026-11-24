@@ -26,7 +26,8 @@ internal fun FractionalKnapsackVisualizationCard(title: String = "Fractional Kna
         complexity = "Complexity: O(N log N)",
         viewportKey = "greedy-fractional-knapsack",
         openButtonText = "Open fractional knapsack visualizer",
-        singleProgressIndicatorInDetails = true
+        singleProgressIndicatorInDetails = true,
+        stepsFirstInDetails = true
     )
 }
 
@@ -37,5 +38,5 @@ internal fun fractionalKnapsackStatusText(step: FractionalKnapsackStep): String 
         FractionalKnapsackStatus.EVALUATING -> "EVALUATING ITEM " + step.currentItem?.name
         FractionalKnapsackStatus.TAKE_FULL -> "TAKEN 100% OF " + step.currentItem?.name
         FractionalKnapsackStatus.TAKE_FRACTION -> "TAKEN FRACTION OF " + step.currentItem?.name
-        FractionalKnapsackStatus.FINISHED -> "KNAPSACK FILLED · TOTAL VALUE " + formatGreedyDecimal(step.totalValue)
+        FractionalKnapsackStatus.FINISHED -> if (step.remainingCapacity <= 0.0) "KNAPSACK FILLED · TOTAL VALUE " + formatGreedyDecimal(step.totalValue) else "SELECTION COMPLETE · TOTAL VALUE " + formatGreedyDecimal(step.totalValue)
     }
