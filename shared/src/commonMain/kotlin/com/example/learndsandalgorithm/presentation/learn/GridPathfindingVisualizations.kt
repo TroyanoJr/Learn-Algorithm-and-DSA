@@ -15,6 +15,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -91,9 +92,8 @@ internal fun GridPathfindingVisualizationCard(
                 isExpanded = false
             },
             visualContent = {
-                FitToPane(modifier = Modifier.fillMaxSize()) {
-                    GridPathfindingVisualizationContent(step = step, scale = 1f)
-                }
+                val presentation = remember(steps) { GridPathfindingSceneBuilder.build(steps) }
+                GridPathfindingSceneRenderer(presentation, presentation.frames[stepIndex])
             },
             detailsContent = {
                 GridPathfindingDetailsAndStepsContent(
@@ -104,134 +104,6 @@ internal fun GridPathfindingVisualizationCard(
                 )
             }
         )
-    }
-}
-
-@Composable
-private fun GridPathfindingVisualizationContent(step: GridPathStep, scale: Float) {
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(8.dp * scale),
-        modifier = Modifier.padding(horizontal = 8.dp)
-    ) {
-        // Grid Map Render Card
-        Surface(
-            color = Color(0xFF13131C),
-            shape = RoundedCornerShape(10.dp),
-            border = BorderStroke(1.dp, CardBorderColor),
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Column(
-                modifier = Modifier.padding(10.dp * scale),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(4.dp * scale)
-            ) {
-                Text("${step.rows}x${step.cols} MATRIX GRID MAP:", color = OrangeAccent, fontSize = 10.sp, fontWeight = FontWeight.Bold)
-
-                step.grid.forEachIndexed { r, row ->
-                    Row(horizontalArrangement = Arrangement.spacedBy(4.dp * scale)) {
-                        row.forEachIndexed { c, cellVal ->
-                            val cell = GridCell(r, c)
-                            val isWall = cellVal == 0
-                            val isTarget = r == step.targetCell.r && c == step.targetCell.c
-                            val isCurrent = step.currentCell == cell
-                            val isInPath = step.currentPath.contains(cell)
-                            val isVisited = step.visitedCells.contains(cell)
-
-                            Surface(
-                                color = when {
-                                    isCurrent && step.action == GridPathAction.HIT_WALL -> Color(0xFF381215)
-                                    isCurrent -> Color(0xFF2A1C12)
-                                    isTarget && (isInPath || step.action == GridPathAction.TARGET_REACHED) -> Color(0xFF123820)
-                                    isInPath -> Color(0xFF123820)
-                                    isVisited -> Color(0xFF122C38)
-                                    isWall -> Color(0xFF22222E)
-                                    else -> Color(0xFF181824)
-                                },
-                                shape = RoundedCornerShape(6.dp),
-                                border = BorderStroke(
-                                    1.dp,
-                                    when {
-                                        isCurrent -> OrangeAccent
-                                        isInPath || isTarget -> GreenAccent
-                                        isVisited -> BlueAccent
-                                        isWall -> CardBorderColor
-                                        else -> CardBorderColor
-                                    }
-                                ),
-                                modifier = Modifier.size(46.dp * scale)
-                            ) {
-                                Box(contentAlignment = Alignment.Center) {
-                                    Text(
-                                        text = when {
-                                            isCurrent -> "📍"
-                                            isTarget -> "🎯"
-                                            isInPath -> "🟩"
-                                            isWall -> "⬛"
-                                            else -> "⬜"
-                                        },
-                                        fontSize = 16.sp
-                                    )
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        // Complexity Explanation Card
-        Surface(
-            color = Color(0xFF13131C),
-            shape = RoundedCornerShape(10.dp),
-            border = BorderStroke(1.dp, CardBorderColor),
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Column(
-                modifier = Modifier.padding(8.dp * scale),
-                verticalArrangement = Arrangement.spacedBy(2.dp * scale)
-            ) {
-                Text(
-                    text = "COMPLEXITY & BOUNDS EXPLANATION:",
-                    color = BlueAccent,
-                    fontSize = 9.sp,
-                    fontWeight = FontWeight.Bold
-                )
-                Text(
-                    text = "O(4^(R×C)) is a broad upper bound assuming 4 directions per step. Each cell is visited at most once per simple path, and actual exploration depends heavily on grid dimensions, walls, boundaries, and visited-cell restrictions.",
-                    color = TextPrimary,
-                    fontSize = 9.sp,
-                    lineHeight = 13.sp
-                )
-            }
-        }
-
-        // Path Sequence Summary Card
-        Surface(
-            color = Color(0xFF13131C),
-            shape = RoundedCornerShape(10.dp),
-            border = BorderStroke(1.dp, CardBorderColor),
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Row(
-                modifier = Modifier.padding(8.dp * scale).fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = "Active Path: ${step.currentPath.map { "(${it.r},${it.c})" }}",
-                    color = TextPrimary,
-                    fontSize = 11.sp,
-                    fontWeight = FontWeight.SemiBold
-                )
-                Text(
-                    text = "${step.currentPath.size} Steps",
-                    color = GreenAccent,
-                    fontSize = 11.sp,
-                    fontWeight = FontWeight.Bold
-                )
-            }
-        }
     }
 }
 

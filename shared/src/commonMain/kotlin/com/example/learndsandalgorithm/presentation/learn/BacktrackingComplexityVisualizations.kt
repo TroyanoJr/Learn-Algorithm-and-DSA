@@ -13,6 +13,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -87,9 +88,8 @@ internal fun BacktrackingComplexityVisualizationCard(
                 isExpanded = false
             },
             visualContent = {
-                FitToPane(modifier = Modifier.fillMaxSize()) {
-                    BacktrackingComplexityVisualizationContent(step = step, scale = 1f)
-                }
+                val presentation = remember(steps) { BacktrackingComplexitySceneBuilder.build(steps) }
+                BacktrackingComplexitySceneRenderer(presentation, presentation.frames[stepIndex])
             },
             detailsContent = {
                 BacktrackingComplexityDetailsAndStepsContent(
@@ -100,108 +100,6 @@ internal fun BacktrackingComplexityVisualizationCard(
                 )
             }
         )
-    }
-}
-
-@Composable
-private fun BacktrackingComplexityVisualizationContent(step: BacktrackingComplexityStep, scale: Float) {
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(8.dp * scale),
-        modifier = Modifier.padding(horizontal = 8.dp)
-    ) {
-        // Target Header Card
-        Surface(
-            color = Color(0xFF13131C),
-            shape = RoundedCornerShape(10.dp),
-            border = BorderStroke(1.dp, CardBorderColor),
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Row(
-                modifier = Modifier.padding(10.dp * scale).fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Column(verticalArrangement = Arrangement.spacedBy(2.dp * scale)) {
-                    Text("PRUNING EFFICIENCY TEST", color = OrangeAccent, fontSize = 10.sp, fontWeight = FontWeight.Bold)
-                    Text("Array: ${step.array} · Condition: x ≤ ${step.limit}", color = TextSecondary, fontSize = 10.sp)
-                }
-
-                Surface(
-                    color = Color(0xFF123820),
-                    shape = RoundedCornerShape(6.dp),
-                    border = BorderStroke(1.dp, GreenAccent)
-                ) {
-                    Text(
-                        text = "STACK SPACE O(H)",
-                        color = GreenAccent,
-                        fontSize = 9.sp,
-                        fontWeight = FontWeight.Bold,
-                        modifier = Modifier.padding(horizontal = 8.dp * scale, vertical = 4.dp * scale)
-                    )
-                }
-            }
-        }
-
-        // Side by Side Comparison
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(8.dp * scale)
-        ) {
-            // 1. Unpruned Strategy Column
-            Surface(
-                color = Color(0xFF13131C),
-                shape = RoundedCornerShape(10.dp),
-                border = BorderStroke(1.dp, CardBorderColor),
-                modifier = Modifier.weight(1f)
-            ) {
-                Column(
-                    modifier = Modifier.padding(10.dp * scale),
-                    verticalArrangement = Arrangement.spacedBy(6.dp * scale),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    Text("UNPRUNED (BRUTE FORCE)", color = OrangeAccent, fontSize = 10.sp, fontWeight = FontWeight.Bold)
-                    Text("${step.unprunedCalls} Calls", color = TextPrimary, fontSize = 16.sp, fontWeight = FontWeight.Bold)
-                    Text("Evaluates all 4 elements unconditionally", color = TextSecondary, fontSize = 9.sp)
-                }
-            }
-
-            // 2. Pruned Strategy Column
-            Surface(
-                color = Color(0xFF13131C),
-                shape = RoundedCornerShape(10.dp),
-                border = BorderStroke(1.dp, if (step.prunedCalls > 0) GreenAccent else CardBorderColor),
-                modifier = Modifier.weight(1f)
-            ) {
-                Column(
-                    modifier = Modifier.padding(10.dp * scale),
-                    verticalArrangement = Arrangement.spacedBy(6.dp * scale),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    Text("PRUNED (BACKTRACKING)", color = GreenAccent, fontSize = 10.sp, fontWeight = FontWeight.Bold)
-                    Text("${step.prunedCalls} Calls", color = GreenAccent, fontSize = 16.sp, fontWeight = FontWeight.Bold)
-                    Text("Halts recursion when val > ${step.limit}", color = TextSecondary, fontSize = 9.sp)
-                }
-            }
-        }
-
-        // Paradigm & Pruning Explanation Card
-        Surface(
-            color = Color(0xFF13131C),
-            shape = RoundedCornerShape(10.dp),
-            border = BorderStroke(1.dp, CardBorderColor),
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Column(
-                modifier = Modifier.padding(8.dp * scale),
-                verticalArrangement = Arrangement.spacedBy(4.dp * scale)
-            ) {
-                Text("PRUNING & WORST-CASE COMPLEXITY:", color = BlueAccent, fontSize = 10.sp, fontWeight = FontWeight.Bold)
-                Text("• This comparison illustrates pruning efficiency on this specific input instance, not a universal performance guarantee.", color = TextPrimary, fontSize = 9.sp)
-                Text("• Pruning reduces work when a valid condition safely eliminates branches early.", color = TextPrimary, fontSize = 9.sp)
-                Text("• In the worst case (when no branches are pruned), worst-case time complexity remains exponential (O(2^N) or O(N!)).", color = TextPrimary, fontSize = 9.sp)
-            }
-        }
     }
 }
 

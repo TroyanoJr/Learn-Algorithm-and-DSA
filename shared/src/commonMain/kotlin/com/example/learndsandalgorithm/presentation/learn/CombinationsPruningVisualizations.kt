@@ -16,6 +16,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -92,9 +93,8 @@ internal fun CombinationsPruningVisualizationCard(
                 isExpanded = false
             },
             visualContent = {
-                FitToPane(modifier = Modifier.fillMaxSize()) {
-                    CombinationsPruningVisualizationContent(step = step, scale = 1f)
-                }
+                val presentation = remember(steps) { CombinationsPruningSceneBuilder.build(steps) }
+                CombinationsPruningSceneRenderer(presentation, presentation.frames[stepIndex])
             },
             detailsContent = {
                 CombinationsPruningDetailsAndStepsContent(
@@ -105,138 +105,6 @@ internal fun CombinationsPruningVisualizationCard(
                 )
             }
         )
-    }
-}
-
-@Composable
-private fun CombinationsPruningVisualizationContent(step: CombinationStep, scale: Float) {
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(8.dp * scale),
-        modifier = Modifier.padding(horizontal = 8.dp)
-    ) {
-        // Target & Current Sum Header Card
-        Surface(
-            color = Color(0xFF13131C),
-            shape = RoundedCornerShape(10.dp),
-            border = BorderStroke(1.dp, CardBorderColor),
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Column(
-                modifier = Modifier.padding(10.dp * scale),
-                verticalArrangement = Arrangement.spacedBy(6.dp * scale)
-            ) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text("TARGET SUM: ${step.target}", color = OrangeAccent, fontSize = 11.sp, fontWeight = FontWeight.Bold)
-                    Text("Current Sum: ${step.currentSum}", color = if (step.currentSum > step.target) RedAccent else TextPrimary, fontSize = 11.sp, fontWeight = FontWeight.Bold)
-                }
-
-                val progress = (step.currentSum.toFloat() / step.target).coerceIn(0f, 1f)
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(10.dp * scale)
-                        .clip(RoundedCornerShape(5.dp))
-                        .background(Color(0xFF22222E))
-                ) {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth(progress)
-                            .height(10.dp * scale)
-                            .clip(RoundedCornerShape(5.dp))
-                            .background(
-                                when {
-                                    step.currentSum == step.target -> GreenAccent
-                                    step.currentSum > step.target -> RedAccent
-                                    else -> BlueAccent
-                                }
-                            )
-                    )
-                }
-            }
-        }
-
-        // Active Combination Stack Row
-        Surface(
-            color = Color(0xFF13131C),
-            shape = RoundedCornerShape(10.dp),
-            border = BorderStroke(1.dp, CardBorderColor),
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Column(
-                modifier = Modifier.padding(10.dp * scale),
-                verticalArrangement = Arrangement.spacedBy(6.dp * scale)
-            ) {
-                Text("CURRENT COMBINATION STACK:", color = BlueAccent, fontSize = 10.sp, fontWeight = FontWeight.Bold)
-
-                if (step.currentCombination.isEmpty()) {
-                    Text("[] (empty candidate stack)", color = TextSecondary, fontSize = 11.sp)
-                } else {
-                    Row(
-                        horizontalArrangement = Arrangement.spacedBy(6.dp * scale),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        step.currentCombination.forEach { elem ->
-                            Surface(
-                                color = when {
-                                    step.currentSum == step.target -> Color(0xFF123820)
-                                    step.currentSum > step.target -> Color(0xFF381215)
-                                    else -> Color(0xFF2A1C12)
-                                },
-                                shape = RoundedCornerShape(6.dp),
-                                border = BorderStroke(
-                                    1.dp,
-                                    when {
-                                        step.currentSum == step.target -> GreenAccent
-                                        step.currentSum > step.target -> RedAccent
-                                        else -> OrangeAccent
-                                    }
-                                )
-                            ) {
-                                Text(
-                                    "+$elem",
-                                    color = TextPrimary,
-                                    fontSize = 12.sp,
-                                    fontWeight = FontWeight.Bold,
-                                    modifier = Modifier.padding(horizontal = 8.dp * scale, vertical = 4.dp * scale)
-                                )
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        // Valid Combinations List Summary Card
-        Surface(
-            color = Color(0xFF13131C),
-            shape = RoundedCornerShape(10.dp),
-            border = BorderStroke(1.dp, CardBorderColor),
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Row(
-                modifier = Modifier.padding(8.dp * scale).fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = "Found Solutions: ${step.validCombinations.map { it.toString() }}",
-                    color = TextPrimary,
-                    fontSize = 11.sp,
-                    fontWeight = FontWeight.SemiBold
-                )
-                Text(
-                    text = "Count: ${step.validCombinations.size}",
-                    color = GreenAccent,
-                    fontSize = 11.sp,
-                    fontWeight = FontWeight.Bold
-                )
-            }
-        }
     }
 }
 

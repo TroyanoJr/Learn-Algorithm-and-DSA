@@ -15,6 +15,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -90,9 +91,8 @@ internal fun PermutationsVisualizationCard(
                 isExpanded = false
             },
             visualContent = {
-                FitToPane(modifier = Modifier.fillMaxSize()) {
-                    PermutationsVisualizationContent(step = step, scale = 1f)
-                }
+                val presentation = remember(steps) { PermutationsSceneBuilder.build(steps) }
+                PermutationsSceneRenderer(presentation, presentation.frames[stepIndex])
             },
             detailsContent = {
                 PermutationsDetailsAndStepsContent(
@@ -103,138 +103,6 @@ internal fun PermutationsVisualizationCard(
                 )
             }
         )
-    }
-}
-
-@Composable
-private fun PermutationsVisualizationContent(step: PermutationStep, scale: Float) {
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(8.dp * scale),
-        modifier = Modifier.padding(horizontal = 8.dp)
-    ) {
-        // Active Array State Card
-        Surface(
-            color = Color(0xFF13131C),
-            shape = RoundedCornerShape(10.dp),
-            border = BorderStroke(1.dp, CardBorderColor),
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Column(
-                modifier = Modifier.padding(10.dp * scale),
-                verticalArrangement = Arrangement.spacedBy(6.dp * scale)
-            ) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text("WORKING ARRAY STATE:", color = OrangeAccent, fontSize = 10.sp, fontWeight = FontWeight.Bold)
-                    Text("StartIndex: ${step.startIndex}", color = TextSecondary, fontSize = 10.sp)
-                }
-
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceEvenly
-                ) {
-                    step.currentPermutation.forEachIndexed { idx, valNum ->
-                        val isSwapI = step.swapI == idx
-                        val isSwapJ = step.swapJ == idx
-                        val isStart = step.startIndex == idx
-
-                        Column(
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                            verticalArrangement = Arrangement.spacedBy(2.dp * scale),
-                            modifier = Modifier.weight(1f).padding(horizontal = 2.dp * scale)
-                        ) {
-                            Text(
-                                text = when {
-                                    isSwapI && isSwapJ -> "FIX"
-                                    isSwapI || isSwapJ -> "SWAP"
-                                    isStart -> "START"
-                                    else -> "idx $idx"
-                                },
-                                color = when {
-                                    isSwapI || isSwapJ -> OrangeAccent
-                                    isStart -> BlueAccent
-                                    else -> TextSecondary
-                                },
-                                fontSize = 8.sp,
-                                fontWeight = FontWeight.Bold
-                            )
-
-                            Surface(
-                                color = when {
-                                    step.action == PermutationAction.SOLUTION_FOUND -> Color(0xFF123820)
-                                    isSwapI || isSwapJ -> Color(0xFF2A1C12)
-                                    else -> Color(0xFF181824)
-                                },
-                                shape = RoundedCornerShape(8.dp),
-                                border = BorderStroke(
-                                    1.dp,
-                                    when {
-                                        step.action == PermutationAction.SOLUTION_FOUND -> GreenAccent
-                                        isSwapI || isSwapJ -> OrangeAccent
-                                        else -> CardBorderColor
-                                    }
-                                ),
-                                modifier = Modifier.fillMaxWidth().height(44.dp * scale)
-                            ) {
-                                Box(contentAlignment = Alignment.Center) {
-                                    Text("$valNum", color = TextPrimary, fontSize = 16.sp, fontWeight = FontWeight.Bold)
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        // Completed Permutations Grid Card
-        Surface(
-            color = Color(0xFF13131C),
-            shape = RoundedCornerShape(10.dp),
-            border = BorderStroke(1.dp, CardBorderColor),
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Column(
-                modifier = Modifier.padding(10.dp * scale),
-                verticalArrangement = Arrangement.spacedBy(6.dp * scale)
-            ) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text("GENERATED PERMUTATIONS (TOTAL ${step.completedPermutations.size} / 6):", color = BlueAccent, fontSize = 10.sp, fontWeight = FontWeight.Bold)
-                }
-
-                if (step.completedPermutations.isEmpty()) {
-                    Text("No permutations generated yet.", color = TextSecondary, fontSize = 10.sp, modifier = Modifier.padding(vertical = 4.dp * scale))
-                } else {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(6.dp * scale)
-                    ) {
-                        step.completedPermutations.forEach { perm ->
-                            Surface(
-                                color = Color(0xFF123820),
-                                shape = RoundedCornerShape(6.dp),
-                                border = BorderStroke(1.dp, GreenAccent)
-                            ) {
-                                Text(
-                                    "[${perm.joinToString(",")}]",
-                                    color = GreenAccent,
-                                    fontSize = 10.sp,
-                                    fontWeight = FontWeight.Bold,
-                                    modifier = Modifier.padding(horizontal = 6.dp * scale, vertical = 4.dp * scale)
-                                )
-                            }
-                        }
-                    }
-                }
-            }
-        }
     }
 }
 

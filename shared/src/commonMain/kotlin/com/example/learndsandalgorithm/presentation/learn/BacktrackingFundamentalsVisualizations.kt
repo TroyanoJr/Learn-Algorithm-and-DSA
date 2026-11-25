@@ -15,6 +15,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -90,9 +91,8 @@ internal fun BacktrackingFundamentalsVisualizationCard(
                 isExpanded = false
             },
             visualContent = {
-                FitToPane(modifier = Modifier.fillMaxSize()) {
-                    BacktrackingFundamentalsVisualizationContent(step = step, scale = 1f)
-                }
+                val presentation = remember(steps) { BacktrackingFundamentalsSceneBuilder.build(steps) }
+                BacktrackingFundamentalsSceneRenderer(presentation, presentation.frames[stepIndex])
             },
             detailsContent = {
                 BacktrackingFundamentalsDetailsAndStepsContent(
@@ -103,175 +103,6 @@ internal fun BacktrackingFundamentalsVisualizationCard(
                 )
             }
         )
-    }
-}
-
-@Composable
-private fun BacktrackingFundamentalsVisualizationContent(step: BacktrackingFundamentalsStep, scale: Float) {
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(8.dp * scale),
-        modifier = Modifier.padding(horizontal = 8.dp)
-    ) {
-        // Active Partial Candidate Box
-        Surface(
-            color = Color(0xFF13131C),
-            shape = RoundedCornerShape(10.dp),
-            border = BorderStroke(1.dp, CardBorderColor),
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Row(
-                modifier = Modifier.padding(10.dp * scale).fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Column(verticalArrangement = Arrangement.spacedBy(2.dp * scale)) {
-                    Text("CURRENT CANDIDATE STATE", color = TextSecondary, fontSize = 9.sp, fontWeight = FontWeight.Bold)
-                    Text(
-                        text = if (step.currentString.isEmpty()) "(root: \"\")" else "\"${step.currentString}\"",
-                        color = OrangeAccent,
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.Bold
-                    )
-                }
-
-                Surface(
-                    color = when (step.action) {
-                        BacktrackingFundamentalsAction.SOLUTION_FOUND -> Color(0xFF123820)
-                        BacktrackingFundamentalsAction.BACKTRACK -> Color(0xFF381215)
-                        else -> Color(0xFF2A1C12)
-                    },
-                    shape = RoundedCornerShape(6.dp),
-                    border = BorderStroke(
-                        1.dp,
-                        when (step.action) {
-                            BacktrackingFundamentalsAction.SOLUTION_FOUND -> GreenAccent
-                            BacktrackingFundamentalsAction.BACKTRACK -> RedAccent
-                            else -> OrangeAccent
-                        }
-                    )
-                ) {
-                    Text(
-                        text = "Level ${step.decisionLevel} / ${step.targetLength}",
-                        color = TextPrimary,
-                        fontSize = 10.sp,
-                        fontWeight = FontWeight.Bold,
-                        modifier = Modifier.padding(horizontal = 8.dp * scale, vertical = 4.dp * scale)
-                    )
-                }
-            }
-        }
-
-        // State-Space Tree Visualization
-        Surface(
-            color = Color(0xFF13131C),
-            shape = RoundedCornerShape(10.dp),
-            border = BorderStroke(1.dp, CardBorderColor),
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Column(
-                modifier = Modifier.padding(10.dp * scale),
-                verticalArrangement = Arrangement.spacedBy(6.dp * scale)
-            ) {
-                Text("STATE-SPACE TREE (BINARY DECISION TREE):", color = BlueAccent, fontSize = 10.sp, fontWeight = FontWeight.Bold)
-
-                // Level 0 (Root)
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.Center
-                ) {
-                    val isRootActive = step.currentString == ""
-                    Surface(
-                        color = if (isRootActive) Color(0xFF2A1C12) else Color(0xFF181824),
-                        shape = RoundedCornerShape(6.dp),
-                        border = BorderStroke(1.dp, if (isRootActive) OrangeAccent else CardBorderColor)
-                    ) {
-                        Text("Root (\"\")", color = TextPrimary, fontSize = 10.sp, modifier = Modifier.padding(6.dp * scale))
-                    }
-                }
-
-                // Level 1 Nodes ("0", "1")
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceAround
-                ) {
-                    listOf("0", "1").forEach { node ->
-                        val isActive = step.currentString == node || step.currentString.startsWith(node)
-                        Surface(
-                            color = if (isActive) Color(0xFF2A1C12) else Color(0xFF181824),
-                            shape = RoundedCornerShape(6.dp),
-                            border = BorderStroke(1.dp, if (isActive) OrangeAccent else CardBorderColor)
-                        ) {
-                            Text("Choice '$node'", color = if (isActive) OrangeAccent else TextSecondary, fontSize = 10.sp, modifier = Modifier.padding(6.dp * scale))
-                        }
-                    }
-                }
-
-                // Level 2 Nodes ("00", "01", "10", "11")
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceEvenly
-                ) {
-                    listOf("00", "01", "10", "11").forEach { leaf ->
-                        val isMatched = step.generatedStrings.contains(leaf)
-                        val isCurrentLeaf = step.currentString == leaf
-
-                        Surface(
-                            color = when {
-                                isCurrentLeaf && step.action == BacktrackingFundamentalsAction.SOLUTION_FOUND -> Color(0xFF123820)
-                                isMatched -> Color(0xFF123820)
-                                isCurrentLeaf -> Color(0xFF2A1C12)
-                                else -> Color(0xFF181824)
-                            },
-                            shape = RoundedCornerShape(6.dp),
-                            border = BorderStroke(
-                                1.dp,
-                                when {
-                                    isMatched -> GreenAccent
-                                    isCurrentLeaf -> OrangeAccent
-                                    else -> CardBorderColor
-                                }
-                            )
-                        ) {
-                            Text(
-                                leaf,
-                                color = if (isMatched) GreenAccent else TextPrimary,
-                                fontSize = 11.sp,
-                                fontWeight = FontWeight.Bold,
-                                modifier = Modifier.padding(horizontal = 8.dp * scale, vertical = 4.dp * scale)
-                            )
-                        }
-                    }
-                }
-            }
-        }
-
-        // Generated Solutions Summary Card
-        Surface(
-            color = Color(0xFF13131C),
-            shape = RoundedCornerShape(10.dp),
-            border = BorderStroke(1.dp, CardBorderColor),
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Row(
-                modifier = Modifier.padding(8.dp * scale).fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = "Generated: [${step.generatedStrings.joinToString()}]",
-                    color = TextPrimary,
-                    fontSize = 11.sp,
-                    fontWeight = FontWeight.SemiBold
-                )
-                Text(
-                    text = "${step.generatedStrings.size} / 4 Solutions",
-                    color = GreenAccent,
-                    fontSize = 11.sp,
-                    fontWeight = FontWeight.Bold
-                )
-            }
-        }
     }
 }
 
