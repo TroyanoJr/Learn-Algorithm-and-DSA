@@ -4,6 +4,8 @@ internal data class CombinationRect(val x: Float, val y: Float, val width: Float
     val right get() = x + width
     val bottom get() = y + height
 }
+internal fun combinationProgress(sum: Int, target: Int): Float =
+    if (target == 0) { if (sum == 0) 1f else 0f } else (sum.toFloat() / target).coerceIn(0f, 1f)
 internal data class CombinationLayoutMetrics(
     val targetWidth: Float = 100f, val currentWidth: Float = 100f, val headerHeight: Float = 14f,
     val differenceWidth: Float = 100f, val differenceHeight: Float = 12f,
@@ -31,7 +33,7 @@ internal object CombinationsPruningSceneLayout {
     fun calculate(presentation: CombinationsPresentation, viewportWidth: Float, viewportHeight: Float,
                   m: CombinationLayoutMetrics = CombinationLayoutMetrics()): CombinationSceneLayoutResult {
         val itemWidth = maxOf(34f, m.itemWidth + 12f)
-        val itemHeight = maxOf(24f, m.itemHeight + 8f)
+        val itemHeight = maxOf(24f, m.itemHeight + 8f, m.candidateHeight, m.emptyHeight)
         val solutionWidth = maxOf(1f, m.solutionWidth + 12f)
         val solutionHeight = maxOf(1f, m.solutionHeight + 8f)
         val width = maxOf(viewportWidth, m.targetWidth + m.currentWidth + 48f, m.headingWidth + 36f,

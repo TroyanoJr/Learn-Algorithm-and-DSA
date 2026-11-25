@@ -46,7 +46,11 @@ internal object GridPathfindingSceneLayout {
         val lateralHeight = 16f + maxOf(regionHeight, explanationHeight + 6f + pathHeight)
         val lateral = minOf(viewportWidth / lateralWidth, viewportHeight / lateralHeight, 1f) >
             minOf(viewportWidth / verticalWidth, viewportHeight / verticalHeight, 1f)
-        val width = if (lateral) lateralWidth else verticalWidth
+        var width = if (lateral) lateralWidth else verticalWidth
+        // Avoid a Float rounding overshoot being interpreted as pannable overflow.
+        repeat(4) {
+            if (viewportWidth > 0f && width > viewportWidth && width * (viewportWidth / width) > viewportWidth) width += 1f
+        }
         val board = GridSceneRect(8f, 8f, if (lateral) regionWidth else width - 16f, regionHeight)
         val heading = GridSceneRect(board.x + 8f, board.y + 8f, board.width - 16f, m.headingHeight)
         val boardLeft = board.x + rowLabels + (board.width - rowLabels - boardWidth) / 2f

@@ -9,6 +9,24 @@ import kotlin.test.assertTrue
 
 class CombinationsPruningSceneTest {
     @Test
+    fun progressUsesBoundedTrackForExactExcessAndZeroTarget() {
+        assertEquals(.4f, combinationProgress(2, 5))
+        assertEquals(1f, combinationProgress(5, 5))
+        assertEquals(1f, combinationProgress(6, 5))
+        assertEquals(1f, combinationProgress(0, 0))
+        assertEquals(0f, combinationProgress(1, 0))
+    }
+    @Test
+    fun candidateAndEmptyTextHeightsAreReserved() {
+        val scene = CombinationsPruningSceneBuilder.build(CombinationsPruningTrace.createTrace())
+        val metrics = CombinationLayoutMetrics(candidateHeight = 55f, emptyHeight = 60f)
+        val layout = CombinationsPruningSceneLayout.calculate(scene, 360f, 224f, metrics)
+        assertTrue(layout.candidateHeading.height >= metrics.candidateHeight)
+        assertTrue(layout.empty.height >= metrics.emptyHeight)
+        assertTrue(layout.operation.y >= layout.candidates.maxOf { it.bottom })
+        assertTrue(layout.empty.bottom <= layout.stackRegion.bottom)
+    }
+    @Test
     fun everySnapshotPreservesStackPushPopAndSolutions() {
         val trace = CombinationsPruningTrace.createTrace()
         val scene = CombinationsPruningSceneBuilder.build(trace)
@@ -23,6 +41,7 @@ class CombinationsPruningSceneTest {
             if (frame.step.action == CombinationAction.TRY_CANDIDATE) {
                 val pushed = assertNotNull(frame.pushed)
                 assertEquals(frame.step.startIndex, pushed.candidateIndex)
+                assertEquals(scene.candidates[pushed.candidateIndex].value, pushed.value)
                 assertEquals(pushed, frame.stack.last())
             }
             if (frame.step.action == CombinationAction.BACKTRACK) {

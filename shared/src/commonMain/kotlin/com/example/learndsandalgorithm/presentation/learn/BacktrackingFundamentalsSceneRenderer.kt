@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
@@ -45,7 +46,8 @@ internal fun BacktrackingFundamentalsSceneRenderer(presentation: FundamentalsTre
             1 -> "Choice '$path'"
             else -> path
         }
-        val nodeExtents = presentation.nodes.map { extent(nodeLabel(it.path), if (it.path.length > 1) 11 else 10) }
+        val layout = remember(presentation, maxWidth, maxHeight, density.density, density.fontScale, measurer) {
+        val nodeExtents = presentation.nodes.map { extent(nodeLabel(it.path), if (it.path.length > 1) 11 else 10, bold = it.path.length > 1) }
         val summaries = presentation.frames.map { extent("Generated: [${it.step.generatedStrings.joinToString()}]", 11) }
         val counts = presentation.frames.map { extent("${it.step.generatedStrings.size} / ${1 shl it.step.targetLength.coerceIn(0, 20)} Solutions", 11) }
         val headers = extent("CURRENT CANDIDATE STATE", 9)
@@ -62,7 +64,8 @@ internal fun BacktrackingFundamentalsSceneRenderer(presentation: FundamentalsTre
             summaryWidth = summaries.maxOfOrNull { it.first } ?: 0f,
             countWidth = maxOf(counts.maxOfOrNull { it.first } ?: 0f, (levels.maxOfOrNull { it.first } ?: 0f) + 16f)
         )
-        val layout = BacktrackingFundamentalsSceneLayout.calculate(presentation, maxWidth.value, maxHeight.value, metrics)
+        BacktrackingFundamentalsSceneLayout.calculate(presentation, maxWidth.value, maxHeight.value, metrics)
+        }
         VisualizerCanvasViewport(modifier = Modifier.fillMaxSize(), mode = VisualizerCanvasMode.HYBRID,
             state = rememberVisualizerCanvasState(key = "backtracking-fundamentals", initialScaleMode = VisualizerCanvasInitialScale.AUTO_FIT)) {
             Canvas(Modifier.size(layout.width.dp, layout.height.dp)) {

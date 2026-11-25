@@ -38,6 +38,14 @@ internal data class PermutationsSceneLayoutResult(
     val resultColumns: Int
 )
 
+internal data class PermutationSwapArrow(val left: Float, val right: Float, val y: Float, val head: Float)
+internal fun permutationSwapArrow(layout: PermutationsSceneLayoutResult, swap: Pair<Int, Int>?): PermutationSwapArrow? {
+    if (swap == null || swap.first == swap.second || swap.first !in layout.cells.indices || swap.second !in layout.cells.indices) return null
+    return PermutationSwapArrow(layout.cells[minOf(swap.first, swap.second)].centerX,
+        layout.cells[maxOf(swap.first, swap.second)].centerX, layout.swapIndicator.y + layout.swapIndicator.height / 2f,
+        minOf(4f, layout.swapIndicator.height / 2f))
+}
+
 internal object PermutationsSceneLayout {
     fun calculate(presentation: PermutationsPresentation, viewportWidth: Float, viewportHeight: Float,
                   metrics: PermutationsLayoutMetrics = PermutationsLayoutMetrics()): PermutationsSceneLayoutResult {

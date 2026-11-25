@@ -11,6 +11,24 @@ import kotlin.test.assertTrue
 
 class NQueensSceneTest {
     @Test
+    fun vectorIconBoundsAreCenteredAndRemainInsideCells() {
+        listOf(24f, 42f, 80f).forEach { side ->
+            val icon = backtrackingIconBounds(5f, 7f, side, side)
+            assertTrue(icon.size > 0f)
+            assertTrue(icon.x > 5f && icon.y > 7f)
+            assertTrue(icon.x + icon.size < 5f + side && icon.y + icon.size < 7f + side)
+            assertEquals(5f + side / 2f, icon.x + icon.size / 2f, .001f)
+            assertEquals(7f + side / 2f, icon.y + icon.size / 2f, .001f)
+        }
+        val from = backtrackingIconBounds(0f, 0f, 42f, 42f)
+        listOf(backtrackingIconBounds(46f, 0f, 42f, 42f), backtrackingIconBounds(46f, 46f, 42f, 42f)).forEach { to ->
+            val line = backtrackingConnection(from, to)
+            fun inside(x: Float, y: Float, box: BacktrackingIconBounds) = x >= box.x && x <= box.x + box.size && y >= box.y && y <= box.y + box.size
+            assertFalse(inside(line.startX, line.startY, from))
+            assertFalse(inside(line.endX, line.endY, to))
+        }
+    }
+    @Test
     fun allTraceStatesDeriveActualConflictsAndRemovedQueens() {
         val trace = NQueensTrace.createTrace()
         val scene = NQueensSceneBuilder.build(trace)

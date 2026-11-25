@@ -1,6 +1,7 @@
 package com.example.learndsandalgorithm.presentation.learn
 
 internal enum class ComplexityElementState { PENDING, EVAL, VALID, HALT, SKIP }
+internal enum class ComplexityStrategy { UNPRUNED, PRUNED }
 internal data class ComplexityElement(val id: String, val index: Int, val value: Int)
 internal data class ComplexitySceneFrame(
     val step: BacktrackingComplexityStep,
@@ -9,7 +10,9 @@ internal data class ComplexitySceneFrame(
     val haltIndex: Int?,
     val sortedInput: Boolean,
     val savedCalls: Int?,
-    val savingsPercent: Double?
+    val savingsPercent: Double?,
+    val activeStrategy: ComplexityStrategy?,
+    val activeIndex: Int?
 )
 internal data class ComplexityPresentation(val elements: List<ComplexityElement>, val frames: List<ComplexitySceneFrame>)
 
@@ -35,8 +38,14 @@ internal object BacktrackingComplexitySceneBuilder {
             }
             val saved = if (step.action == ComplexityAction.FINISHED) step.unprunedCalls - step.prunedCalls else null
             val percentage = saved?.let { if (step.unprunedCalls == 0) 0.0 else it * 100.0 / step.unprunedCalls }
+            val activeStrategy = when (step.action) {
+                ComplexityAction.EVALUATE_UNPRUNED -> ComplexityStrategy.UNPRUNED
+                ComplexityAction.EVALUATE_PRUNED, ComplexityAction.PRUNED_HALT -> ComplexityStrategy.PRUNED
+                else -> null
+            }
             ComplexitySceneFrame(step, unpruned.toList(), pruned.toList(), halt,
-                step.array.zipWithNext().all { (a, b) -> a <= b }, saved, percentage)
+                step.array.zipWithNext().all { (a, b) -> a <= b }, saved, percentage,
+                activeStrategy, if (activeStrategy != null) index else null)
         }
         return ComplexityPresentation(elements, frames)
     }

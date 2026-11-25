@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
@@ -59,6 +60,7 @@ internal fun CombinationsPruningSceneRenderer(presentation: CombinationsPresenta
             val all = strings.map { measure(it, size, bold) }
             return (all.maxOfOrNull { it.first } ?: 1f) to (all.maxOfOrNull { it.second } ?: 1f)
         }
+        val layout = remember(presentation, maxWidth, maxHeight, density.density, density.fontScale, measurer) {
         val target = maximum(presentation.frames.map { "TARGET SUM: ${it.step.target}" }, 11)
         val current = maximum(presentation.frames.map { "Current Sum: ${it.step.currentSum}" }, 11)
         val difference = maximum(presentation.frames.map(::combinationDifference), 9)
@@ -76,7 +78,8 @@ internal fun CombinationsPruningSceneRenderer(presentation: CombinationsPresenta
             items.first, items.second, empty.first, empty.second, operations.first, operations.second,
             solutionHeading.first, counts.first, maxOf(solutionHeading.second, counts.second, solutions.second), solutions.first,
             conditions.first, conditions.second)
-        val layout = CombinationsPruningSceneLayout.calculate(presentation, maxWidth.value, maxHeight.value, metrics)
+        CombinationsPruningSceneLayout.calculate(presentation, maxWidth.value, maxHeight.value, metrics)
+        }
         VisualizerCanvasViewport(modifier = Modifier.fillMaxSize(), mode = VisualizerCanvasMode.HYBRID,
             state = rememberVisualizerCanvasState(key = "backtracking-combinations", initialScaleMode = VisualizerCanvasInitialScale.AUTO_FIT)) {
             Canvas(Modifier.size(layout.width.dp, layout.height.dp)) {
@@ -101,8 +104,7 @@ internal fun CombinationsPruningSceneRenderer(presentation: CombinationsPresenta
                 label(combinationDifference(frame), layout.difference, tone, 9)
                 val track = layout.progress
                 drawRoundRect(Color(0xFF22222E), Offset(track.x.dp.toPx(), track.y.dp.toPx()), Size(track.width.dp.toPx(), track.height.dp.toPx()), CornerRadius(5.dp.toPx()))
-                val fraction = if (frame.step.target == 0) { if (frame.step.currentSum == 0) 1f else 0f } else
-                    (frame.step.currentSum.toFloat() / frame.step.target).coerceIn(0f, 1f)
+                val fraction = combinationProgress(frame.step.currentSum, frame.step.target)
                 if (fraction > 0f) drawRoundRect(tone, Offset(track.x.dp.toPx(), track.y.dp.toPx()), Size((track.width * fraction).dp.toPx(), track.height.dp.toPx()), CornerRadius(5.dp.toPx()))
                 card(layout.stackRegion, CombinationRegion, CombinationBorder)
                 label("CURRENT COMBINATION STACK:", layout.stackHeading, CombinationBlue, 10)

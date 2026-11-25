@@ -10,6 +10,34 @@ import androidx.compose.ui.geometry.Offset
 
 class BacktrackingFundamentalsSceneTest {
     @Test
+    fun candidateAndMinimumLevelWidthRemainSeparatedWithSmallRawCountWidth() {
+        val scene = BacktrackingFundamentalsSceneBuilder.build(BacktrackingFundamentalsTrace.createTrace())
+        val metrics = FundamentalsLayoutMetrics(candidateWidth = 220f, countWidth = 10f)
+        val layout = BacktrackingFundamentalsSceneLayout.calculate(scene, 240f, 224f, metrics)
+        assertTrue(layout.candidateValue.width >= 220f)
+        assertTrue(layout.level.width >= 72f)
+        assertTrue(layout.candidateValue.right <= layout.level.x)
+        assertTrue(layout.level.right <= layout.candidateRegion.right)
+        listOf(80f, 160f, 320f).forEach { height ->
+            val allocation = backtrackingDetailsAllocation(height)
+            assertTrue(allocation.operationHeight > 0f && allocation.stepsHeight > 0f)
+            assertEquals(height, allocation.operationHeight + allocation.stepsHeight + allocation.gap, .001f)
+        }
+    }
+
+    @Test
+    fun detailsAllocationUsesNaturalOperationHeightAndReservesSteps() {
+        val short = backtrackingDetailsAllocation(240f, preferredOperation = 55f, minimumSteps = 50f)
+        assertEquals(55f, short.operationHeight)
+        assertTrue(short.stepsHeight >= 50f)
+        val long = backtrackingDetailsAllocation(160f, preferredOperation = 260f, minimumSteps = 65f)
+        assertTrue(long.stepsHeight >= 65f)
+        assertTrue(long.operationHeight > 0f)
+        assertEquals(160f, long.operationHeight + long.stepsHeight + long.gap, .001f)
+        val constrained = backtrackingDetailsAllocation(160f, preferredOperation = 260f, minimumSteps = 90f)
+        assertTrue(constrained.stepsHeight >= 90f)
+    }
+    @Test
     fun traceProducesBinaryTopologyAndPreservesAllSnapshots() {
         val trace = BacktrackingFundamentalsTrace.createTrace()
         val scene = BacktrackingFundamentalsSceneBuilder.build(trace)

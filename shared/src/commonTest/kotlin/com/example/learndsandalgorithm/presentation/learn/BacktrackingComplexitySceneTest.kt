@@ -26,6 +26,13 @@ class BacktrackingComplexitySceneTest {
                 assertEquals(ComplexityElementState.HALT, frame.pruned[haltIndex])
                 assertTrue(frame.pruned.drop(haltIndex + 1).all { it == ComplexityElementState.SKIP })
             }
+            val expected = when (frame.step.action) {
+                ComplexityAction.EVALUATE_UNPRUNED -> ComplexityStrategy.UNPRUNED
+                ComplexityAction.EVALUATE_PRUNED, ComplexityAction.PRUNED_HALT -> ComplexityStrategy.PRUNED
+                else -> null
+            }
+            assertEquals(expected, frame.activeStrategy)
+            assertEquals(if (expected == null) null else frame.step.currentIndex, frame.activeIndex)
         }
         scene.frames.take(8).forEach { assertNull(it.savedCalls); assertNull(it.savingsPercent) }
         val halt = scene.frames.single { it.step.action == ComplexityAction.PRUNED_HALT }

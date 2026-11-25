@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
@@ -43,15 +44,17 @@ internal fun NQueensSceneRenderer(presentation: NQueensPresentation, frame: NQue
             val values = texts.map { measure(it, size, bold) }
             return (values.maxOfOrNull { it.first } ?: 1f) to (values.maxOfOrNull { it.second } ?: 1f)
         }
+        val layout = remember(presentation, maxWidth, maxHeight, density.density, density.fontScale, measurer) {
         val heading = measure("${presentation.size}x${presentation.size} CHESSBOARD STATE:", 10)
         val indexes = maximum((0 until presentation.size).map(Int::toString), 9)
-        val symbols = maximum(listOf("👑", "🔍", "❌"), 16, false)
+        val symbols = 22f to 22f
         val solutionHeading = measure("Solutions:", 11)
         val counts = maximum(presentation.frames.map { "${it.step.solutions.size} Valid" }, 11)
         val solutions = maximum(presentation.frames.flatMap { it.step.solutions }.map { it.toString() } + listOf("[]"), 11)
         val metrics = QueensLayoutMetrics(heading.first, heading.second, indexes.first, indexes.second, symbols.first, symbols.second,
             solutionHeading.first, counts.first, maxOf(solutionHeading.second, counts.second), solutions.first, solutions.second)
-        val layout = NQueensSceneLayout.calculate(presentation, maxWidth.value, maxHeight.value, metrics)
+        NQueensSceneLayout.calculate(presentation, maxWidth.value, maxHeight.value, metrics)
+        }
         VisualizerCanvasViewport(modifier = Modifier.fillMaxSize(), mode = VisualizerCanvasMode.HYBRID,
             state = rememberVisualizerCanvasState(key = "backtracking-nqueens", initialScaleMode = VisualizerCanvasInitialScale.AUTO_FIT)) {
             Canvas(Modifier.size(layout.width.dp, layout.height.dp)) {
@@ -89,19 +92,25 @@ internal fun NQueensSceneRenderer(presentation: NQueensPresentation, frame: NQue
                     val from = layout.cells.getValue(conflict.from)
                     val to = layout.cells.getValue(conflict.to)
                     val color = if (conflict.kind == QueenConflictKind.COLUMN) QueenRed else QueenOrange
-                    drawLine(color, Offset(from.centerX.dp.toPx(), from.centerY.dp.toPx()),
-                        Offset(to.centerX.dp.toPx(), to.centerY.dp.toPx()), 2.dp.toPx(),
+                    val segment = backtrackingConnection(backtrackingIconBounds(from.x, from.y, from.width, from.height),
+                        backtrackingIconBounds(to.x, to.y, to.width, to.height))
+                    drawLine(color, Offset(segment.startX.dp.toPx(), segment.startY.dp.toPx()),
+                        Offset(segment.endX.dp.toPx(), segment.endY.dp.toPx()), 2.dp.toPx(),
                         pathEffect = if (conflict.kind == QueenConflictKind.DIAGONAL) PathEffect.dashPathEffect(floatArrayOf(5.dp.toPx(), 3.dp.toPx())) else null)
                 }
                 presentation.cells.forEach { cell ->
                     val symbol = when {
-                        cell in frame.placed -> "👑"
-                        cell == frame.removed -> "👑"
-                        cell == frame.testing && frame.step.action == NQueensAction.CONFLICT_PRUNE -> "❌"
-                        cell == frame.testing -> "🔍"
+                        cell in frame.placed -> BacktrackingIcon.QUEEN
+                        cell == frame.removed -> BacktrackingIcon.QUEEN
+                        cell == frame.testing && frame.step.action == NQueensAction.CONFLICT_PRUNE -> BacktrackingIcon.CROSS
+                        cell == frame.testing -> BacktrackingIcon.SEARCH
                         else -> null
                     }
-                    if (symbol != null) label(symbol, layout.cells.getValue(cell), if (cell == frame.removed) QueenSecondary.copy(alpha = .5f) else Color.White, 16, false, 1)
+                    if (symbol != null) {
+                        val rect = layout.cells.getValue(cell)
+                        drawBacktrackingIcon(symbol, backtrackingIconBounds(rect.x, rect.y, rect.width, rect.height),
+                            if (cell == frame.removed) QueenRed.copy(alpha = .65f) else Color.White)
+                    }
                 }
                 card(layout.solutionRegion, QueenRegion, QueenBorder)
                 label("Solutions:", layout.solutionHeading, Color.White, 11)

@@ -8,6 +8,23 @@ import kotlin.test.assertTrue
 
 class PermutationsSceneTest {
     @Test
+    fun everySwapAndUndoMovesExactOccurrenceIdentities() {
+        listOf(listOf(1, 2, 3), listOf(1, 1, 2)).forEach { input ->
+            val frames = PermutationsSceneBuilder.build(PermutationsTrace.createTrace(input)).frames
+            val expected = input.indices.map { "item-$it" }.toMutableList()
+            frames.forEach { frame ->
+                frame.swap?.let { (i, j) ->
+                    val previous = expected[i]
+                    expected[i] = expected[j]
+                    expected[j] = previous
+                }
+                assertEquals(expected, frame.working.map { it.id })
+                assertEquals(frame.step.currentPermutation, frame.working.map { it.value })
+            }
+            assertEquals(input.indices.map { "item-$it" }, expected)
+        }
+    }
+    @Test
     fun originalTraceSnapshotsAndOccurrenceIdentitiesRemainConsistent() {
         val trace = PermutationsTrace.createTrace()
         val scene = PermutationsSceneBuilder.build(trace)
@@ -49,6 +66,12 @@ class PermutationsSceneTest {
             assertTrue(layout.resultRegion.bottom <= layout.height)
             assertTrue(layout.emptyMessage.width > 0 && layout.emptyMessage.height > 0)
             assertTrue(layout.swapIndicator.bottom <= layout.labels.first().y)
+            assertEquals(null, permutationSwapArrow(layout, 0 to 0))
+            val arrow = permutationSwapArrow(layout, 0 to 2)!!
+            assertEquals(layout.cells[0].centerX, arrow.left)
+            assertEquals(layout.cells[2].centerX, arrow.right)
+            assertTrue(arrow.y - arrow.head >= layout.swapIndicator.y)
+            assertTrue(arrow.y + arrow.head <= layout.swapIndicator.bottom)
             layout.cells.forEachIndexed { i, cell ->
                 assertTrue(cell.x >= layout.workingRegion.x && cell.right <= layout.workingRegion.right)
                 assertTrue(cell.bottom <= layout.workingRegion.bottom)

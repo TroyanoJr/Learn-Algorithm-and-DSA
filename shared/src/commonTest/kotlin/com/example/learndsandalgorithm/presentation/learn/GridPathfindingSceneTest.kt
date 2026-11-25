@@ -31,6 +31,10 @@ class GridPathfindingSceneTest {
         val scene = GridPathfindingSceneBuilder.build(trace)
         assertTrue(scene.frames.last().path.isEmpty())
         assertTrue(scene.frames.any { it.rejection == GridRejection.REVISITED })
+        scene.frames.filter { it.rejection == GridRejection.REVISITED }.forEach { frame ->
+            assertTrue(frame.rejectedCell in frame.path)
+            assertEquals(frame.path.lastOrNull(), frame.rejectionOrigin)
+        }
         assertTrue(scene.frames.last().step.badgeText.contains("NO PATH"))
         scene.frames.forEachIndexed { index, frame ->
             if (frame.step.action == GridPathAction.BACKTRACK) {

@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
@@ -39,6 +40,9 @@ private fun gridOperationLabel(frame: GridSceneFrame): String = when {
     frame.rejection == GridRejection.OBSTACLE -> "REJECTED: OBSTACLE ${frame.rejectedCell?.let { "(${it.r},${it.c})" }}"
     frame.rejection == GridRejection.REVISITED -> "REJECTED: REVISITED ${frame.rejectedCell?.let { "(${it.r},${it.c})" }}"
     frame.removedCell != null -> "BACKTRACK FROM (${frame.removedCell.r},${frame.removedCell.c})"
+    frame.step.action == GridPathAction.TARGET_REACHED -> "TARGET REACHED"
+    frame.step.action == GridPathAction.FINISHED && frame.path.lastOrNull() == frame.step.targetCell -> "COMPLETE: PATH FOUND"
+    frame.step.action == GridPathAction.FINISHED -> "COMPLETE: NO PATH"
     else -> "PATH EXPLORATION"
 }
 
@@ -59,9 +63,10 @@ internal fun GridPathfindingSceneRenderer(presentation: GridPathPresentation, fr
             val all = texts.map { extent(it, size, bold, wrap, panelWidth = panelWidth) }
             return (all.maxOfOrNull { it.first } ?: 1f) to (all.maxOfOrNull { it.second } ?: 1f)
         }
+        val layout = remember(presentation, maxWidth, maxHeight, density.density, density.fontScale, measurer) {
         val heading = extent("${presentation.rows}x${presentation.cols} MATRIX GRID MAP:", 10)
         val indexes = maximum((0 until maxOf(presentation.rows, presentation.cols)).map(Int::toString), 9)
-        val symbols = maximum(listOf("📍", "🎯", "🟩", "⬛", "⬜", "❌"), 16, false)
+        val symbols = 22f to 22f
         val explanationHeading = extent("COMPLEXITY & BOUNDS EXPLANATION:", 9)
         // Measure the full paragraphs at several viable widths and compare the real
         // two-dimensional fit. The final panel is at least as wide as its measurement.
@@ -74,7 +79,8 @@ internal fun GridPathfindingSceneRenderer(presentation: GridPathPresentation, fr
             GridLayoutMetrics(heading.first, heading.second, indexes.first, indexes.second, symbols.first, symbols.second,
                 explanationHeading.second, explanation.second, paths.second, counters.second, operations.second, actualWidth)
         }
-        val layout = GridPathfindingSceneLayout.choose(presentation, maxWidth.value, maxHeight.value, choices)
+        GridPathfindingSceneLayout.choose(presentation, maxWidth.value, maxHeight.value, choices)
+        }
         VisualizerCanvasViewport(modifier = Modifier.fillMaxSize(), mode = VisualizerCanvasMode.HYBRID,
             state = rememberVisualizerCanvasState(key = "backtracking-grid", initialScaleMode = VisualizerCanvasInitialScale.AUTO_FIT)) {
             Canvas(Modifier.size(layout.width.dp, layout.height.dp)) {
@@ -92,9 +98,12 @@ internal fun GridPathfindingSceneRenderer(presentation: GridPathPresentation, fr
                     drawText(result, topLeft = Offset(x, rect.y.dp.toPx() + if (wrap) 0f else (rect.height.dp.toPx() - result.size.height) / 2f), color = color)
                 }
                 fun arrow(a: GridSceneRect, b: GridSceneRect, color: Color) {
-                    val from = Offset(a.centerX.dp.toPx(), a.centerY.dp.toPx()); val to = Offset(b.centerX.dp.toPx(), b.centerY.dp.toPx())
+                    val segment = backtrackingConnection(backtrackingIconBounds(a.x, a.y, a.width, a.height),
+                        backtrackingIconBounds(b.x, b.y, b.width, b.height))
+                    val from = Offset(segment.startX.dp.toPx(), segment.startY.dp.toPx()); val to = Offset(segment.endX.dp.toPx(), segment.endY.dp.toPx())
                     val delta = to - from; val length = sqrt(delta.x * delta.x + delta.y * delta.y).coerceAtLeast(1f)
-                    val unit = delta / length; val tip = to - unit * 10.dp.toPx(); val base = tip - unit * 5.dp.toPx(); val normal = Offset(-unit.y, unit.x) * 3.dp.toPx()
+                    val unit = delta / length
+                    val tip = to; val base = tip - unit * 5.dp.toPx(); val normal = Offset(-unit.y, unit.x) * 3.dp.toPx()
                     drawLine(color, from, tip, 2.dp.toPx()); drawLine(color, tip, base + normal, 2.dp.toPx()); drawLine(color, tip, base - normal, 2.dp.toPx())
                 }
                 card(layout.boardRegion, GridRegion, GridBorder)
@@ -102,9 +111,9 @@ internal fun GridPathfindingSceneRenderer(presentation: GridPathPresentation, fr
                 layout.rows.forEachIndexed { i, rect -> label(i.toString(), rect, GridSecondary, 9, centered = true) }
                 layout.columns.forEachIndexed { i, rect -> label(i.toString(), rect, GridSecondary, 9, centered = true) }
                 presentation.cells.forEach { cell ->
-                    val p = cell.position; val rejected = p == frame.rejectedCell; val current = p == frame.path.lastOrNull() && frame.rejection == null
+                    val p = cell.position; val rejected = p == frame.rejectedCell; val current = p == frame.path.lastOrNull()
                     val target = p == frame.step.targetCell; val inPath = p in frame.path
-                    val fill = when { rejected -> Color(0xFF381215); current && !target -> Color(0xFF2A1C12); inPath -> Color(0xFF123820); cell.wall -> Color(0xFF22222E); else -> Color(0xFF181824) }
+                    val fill = when { rejected && inPath -> Color(0xFF123820); rejected -> Color(0xFF381215); current && !target -> Color(0xFF2A1C12); inPath -> Color(0xFF123820); cell.wall -> Color(0xFF22222E); else -> Color(0xFF181824) }
                     val border = when { rejected || p == frame.removedCell -> GridRed; current && !target -> GridOrange; inPath || target -> GridGreen; else -> GridBorder }
                     card(layout.cells.getValue(p), fill, border, p == frame.removedCell)
                 }
@@ -117,19 +126,28 @@ internal fun GridPathfindingSceneRenderer(presentation: GridPathPresentation, fr
                     val from = layout.cells[frame.removedCell]; val to = layout.cells[frame.restoredCell]
                     if (from != null && to != null) arrow(from, to, GridRed)
                 }
-                frame.rejectedCell?.let { rejected -> layout.outside[rejected]?.let { card(it, GridRegion, GridRed, true); label("❌", it, GridRed, 16, false, true) } }
+                frame.rejectedCell?.let { rejected -> layout.outside[rejected]?.let {
+                    card(it, GridRegion, GridRed, true)
+                    drawBacktrackingIcon(BacktrackingIcon.CROSS, backtrackingIconBounds(it.x, it.y, it.width, it.height), GridRed)
+                } }
                 presentation.cells.forEach { cell ->
                     val p = cell.position
                     val symbol = when {
-                        p == frame.rejectedCell -> "❌"
-                        p == frame.removedCell -> "📍"
-                        p == frame.step.targetCell -> "🎯"
-                        p == frame.path.lastOrNull() || (frame.step.action == GridPathAction.INIT && p == frame.step.currentCell) -> "📍"
-                        p in frame.path -> "🟩"
-                        cell.wall -> "⬛"
-                        else -> "⬜"
+                        p == frame.rejectedCell && p !in frame.path -> BacktrackingIcon.CROSS
+                        p == frame.removedCell -> BacktrackingIcon.POSITION
+                        p == frame.step.targetCell -> BacktrackingIcon.TARGET
+                        p == frame.path.lastOrNull() || (frame.step.action == GridPathAction.INIT && p == frame.step.currentCell) -> BacktrackingIcon.POSITION
+                        p in frame.path -> BacktrackingIcon.PATH
+                        cell.wall -> BacktrackingIcon.OBSTACLE
+                        else -> BacktrackingIcon.FREE
                     }
-                    label(symbol, layout.cells.getValue(p), if (p == frame.removedCell) GridSecondary.copy(alpha = .5f) else Color.White, 16, false, true)
+                    val rect = layout.cells.getValue(p)
+                    drawBacktrackingIcon(symbol, backtrackingIconBounds(rect.x, rect.y, rect.width, rect.height),
+                        if (p == frame.removedCell) GridRed.copy(alpha = .65f) else Color.White)
+                    if (p == frame.rejectedCell && p in frame.path) {
+                        val badge = rect.width * .30f
+                        drawBacktrackingIcon(BacktrackingIcon.CROSS, backtrackingIconBounds(rect.right - badge, rect.y, badge, badge), GridRed)
+                    }
                 }
                 card(layout.explanationRegion, GridRegion, GridBorder)
                 label("COMPLEXITY & BOUNDS EXPLANATION:", layout.explanationHeading, GridBlue, 9)

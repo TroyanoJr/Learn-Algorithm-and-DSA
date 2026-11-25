@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
@@ -43,6 +44,7 @@ internal fun PermutationsSceneRenderer(presentation: PermutationsPresentation, f
             val all = texts.map { extent(it, size, bold) }
             return (all.maxOfOrNull { it.first } ?: 1f) to (all.maxOfOrNull { it.second } ?: 1f)
         }
+        val layout = remember(presentation, maxWidth, maxHeight, density.density, density.fontScale, measurer) {
         val heading = extent("WORKING ARRAY STATE:", 10, true)
         val starts = maxExtent(presentation.frames.map { "StartIndex: ${it.step.startIndex}" }, 10, false)
         val labels = maxExtent(listOf("FIX", "UNDO FIX", "SWAP", "UNDO", "START") + (0 until presentation.maximumArraySize).map { "idx $it" }, 9)
@@ -50,10 +52,11 @@ internal fun PermutationsSceneRenderer(presentation: PermutationsPresentation, f
         val headings = maxExtent(presentation.frames.map { "GENERATED PERMUTATIONS (TOTAL ${it.results.size} / ${presentation.maximumResultCount}):" }, 10)
         val results = maxExtent(presentation.frames.flatMap { it.results }.map { "[${it.values.joinToString(",")}]" }, 10)
         val empty = extent("No permutations generated yet.", 10, false)
-        val layout = PermutationsSceneLayout.calculate(presentation, maxWidth.value, maxHeight.value,
+        PermutationsSceneLayout.calculate(presentation, maxWidth.value, maxHeight.value,
             PermutationsLayoutMetrics(heading.first, starts.first, maxOf(heading.second, starts.second), labels.first,
                 labels.second, values.first, values.second, headings.first, headings.second, results.first, results.second,
                 empty.first, empty.second))
+        }
         VisualizerCanvasViewport(modifier = Modifier.fillMaxSize(), mode = VisualizerCanvasMode.HYBRID,
             state = rememberVisualizerCanvasState(key = "backtracking-permutations", initialScaleMode = VisualizerCanvasInitialScale.AUTO_FIT)) {
             Canvas(Modifier.size(layout.width.dp, layout.height.dp)) {
@@ -75,12 +78,13 @@ internal fun PermutationsSceneRenderer(presentation: PermutationsPresentation, f
                 label("WORKING ARRAY STATE:", layout.heading, PermOrange, 10)
                 label("StartIndex: ${frame.step.startIndex}", layout.startIndex, PermSecondary, 10, false, 2)
                 val swap = frame.swap
-                if (swap != null && swap.first != swap.second) {
-                    val left = layout.cells[minOf(swap.first, swap.second)].centerX.dp.toPx()
-                    val right = layout.cells[maxOf(swap.first, swap.second)].centerX.dp.toPx()
-                    val y = (layout.swapIndicator.y + 7f).dp.toPx()
+                val swapArrow = permutationSwapArrow(layout, swap)
+                if (swapArrow != null) {
+                    val left = swapArrow.left.dp.toPx()
+                    val right = swapArrow.right.dp.toPx()
+                    val y = swapArrow.y.dp.toPx()
                     val color = if (frame.undo) PermRed else PermOrange
-                    val arrow = 4.dp.toPx()
+                    val arrow = swapArrow.head.dp.toPx()
                     drawLine(color, Offset(left, y), Offset(right, y), 1.5.dp.toPx())
                     drawLine(color, Offset(left, y), Offset(left + arrow, y - arrow), 1.5.dp.toPx())
                     drawLine(color, Offset(left, y), Offset(left + arrow, y + arrow), 1.5.dp.toPx())

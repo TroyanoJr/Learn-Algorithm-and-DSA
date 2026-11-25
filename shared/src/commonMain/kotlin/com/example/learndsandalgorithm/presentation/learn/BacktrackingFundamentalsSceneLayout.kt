@@ -46,8 +46,9 @@ internal object BacktrackingFundamentalsSceneLayout {
         val maxNodes = (0..maxDepth).maxOf { depth -> presentation.nodes.count { it.path.length == depth } }
         val nodeWidth = metrics.nodeWidth.coerceAtLeast(1f)
         val nodeHeight = metrics.nodeHeight.coerceAtLeast(1f)
+        val levelWidth = maxOf(72f, metrics.countWidth)
         var width = maxOf(viewportWidth, 24f + maxNodes * (nodeWidth + 6f), metrics.summaryWidth + metrics.countWidth + 34f,
-            metrics.candidateWidth + metrics.countWidth + 40f, metrics.headingWidth + 32f)
+            metrics.candidateWidth + levelWidth + 40f, metrics.headingWidth + 32f)
         // The viewport compares the rounded fitted width with its bounds. Reserve a
         // pixel only when Float rounding would otherwise create a spurious pan range.
         repeat(4) {
@@ -64,7 +65,6 @@ internal object BacktrackingFundamentalsSceneLayout {
         val compact = compactScale > normalScale
         val gap = if (compact) 4f else 8f
         val candidateRegion = BacktrackingFundamentalsRect(inset, inset, inner, candidateHeight)
-        val levelWidth = maxOf(72f, metrics.countWidth)
         val candidateHeader = BacktrackingFundamentalsRect(inset + 8f, inset + 4f, inner - levelWidth - 20f, metrics.headerHeight)
         val candidateValue = BacktrackingFundamentalsRect(candidateHeader.x, candidateHeader.bottom + 2f, candidateHeader.width, metrics.candidateHeight)
         val level = BacktrackingFundamentalsRect(candidateRegion.right - levelWidth - 6f, inset + 6f, levelWidth, metrics.levelHeight + 8f)

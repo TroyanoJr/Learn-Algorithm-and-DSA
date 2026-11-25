@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
@@ -57,6 +58,7 @@ internal fun BacktrackingComplexitySceneRenderer(presentation: ComplexityPresent
             val all = texts.map { extent(it, size, bold, width) }
             return (all.maxOfOrNull { it.first } ?: 1f) to (all.maxOfOrNull { it.second } ?: 1f)
         }
+        val measured = remember(presentation, maxWidth, maxHeight, density.density, density.fontScale, measurer) {
         val title = extent("PRUNING EFFICIENCY TEST", 10)
         val badge = extent("STACK SPACE O(H)", 9)
         val inputs = maximum(presentation.frames.map { "Array: ${it.step.array} · Condition: x ≤ ${it.step.limit}" }, 10, false)
@@ -69,23 +71,27 @@ internal fun BacktrackingComplexitySceneRenderer(presentation: ComplexityPresent
             inputs.first, inputs.second, headings.first, headings.second, calls.second, 1f,
             maxOf(values.first, states.first) + 8f, values.second + states.second + 4f,
             explanationHeading.first, explanationHeading.second, listOf(1f, 1f, 1f, 1f), 1f)
-        val descriptions = listOf("Evaluates all ${presentation.elements.size} elements unconditionally",
-            "Halts recursion when val > ${frame.step.limit}")
+        val descriptions = listOf("Evaluates all ${presentation.elements.size} elements unconditionally") +
+            presentation.frames.map { "Stops evaluation when val > ${it.step.limit}" }
         // More horizontal space can put all evaluated elements on one row and reduce
         // paragraph wrapping; compare the complete measured scenes at each width.
         val candidates = listOf(1f, 1.1f, 1.2f, 1.3f, 1.4f, 1.5f).map { multiplier ->
             val candidateWidth = maxWidth.value * multiplier
-            val preliminary = BacktrackingComplexitySceneLayout.calculate(presentation, candidateWidth, maxHeight.value, initial)
+            val constrained = initial.copy(inputWidth = minOf(inputs.first, (candidateWidth - 36f).coerceAtLeast(1f)), inputHeight = 1f)
+            val preliminary = BacktrackingComplexitySceneLayout.calculate(presentation, candidateWidth, maxHeight.value, constrained)
             val cardTextWidth = preliminary.unprunedExplanation.width
             val paragraphWidth = preliminary.explanationHeading.width
             val descriptionHeight = maximum(descriptions, 9, false, cardTextWidth).second
             val paragraphHeights = ComplexityParagraphs.map { extent(it, 9, false, paragraphWidth).second } +
                 maximum(presentation.frames.map(::complexityContext), 9, false, paragraphWidth).second
             val savingsHeight = maximum(presentation.frames.map(::complexitySavings), 9, true, paragraphWidth).second
-            val metrics = initial.copy(strategyExplanationHeight = descriptionHeight, paragraphHeights = paragraphHeights, savingsHeight = savingsHeight)
+            val inputHeight = maximum(presentation.frames.map { "Array: ${it.step.array} · Condition: x ≤ ${it.step.limit}" }, 10, false, preliminary.input.width).second
+            val metrics = constrained.copy(inputHeight = inputHeight, strategyExplanationHeight = descriptionHeight, paragraphHeights = paragraphHeights, savingsHeight = savingsHeight)
             BacktrackingComplexitySceneLayout.calculate(presentation, candidateWidth, maxHeight.value, metrics)
         }
-        val layout = BacktrackingComplexitySceneLayout.choose(maxWidth.value, maxHeight.value, candidates)
+        Triple(BacktrackingComplexitySceneLayout.choose(maxWidth.value, maxHeight.value, candidates), values.second, states.second)
+        }
+        val layout = measured.first
         VisualizerCanvasViewport(modifier = Modifier.fillMaxSize(), mode = VisualizerCanvasMode.HYBRID,
             state = rememberVisualizerCanvasState(key = "backtracking-complexity", initialScaleMode = VisualizerCanvasInitialScale.AUTO_FIT)) {
             Canvas(Modifier.size(layout.width.dp, layout.height.dp)) {
@@ -105,7 +111,7 @@ internal fun BacktrackingComplexitySceneRenderer(presentation: ComplexityPresent
                 label("PRUNING EFFICIENCY TEST", layout.headerTitle, ComplexityOrange, 10)
                 card(layout.badge, Color(0xFF123820), ComplexityGreen)
                 label("STACK SPACE O(H)", layout.badge, ComplexityGreen, 9, centered = true)
-                label("Array: ${frame.step.array} · Condition: x ≤ ${frame.step.limit}", layout.input, ComplexitySecondary, 10, false)
+                label("Array: ${frame.step.array} · Condition: x ≤ ${frame.step.limit}", layout.input, ComplexitySecondary, 10, false, wrap = true)
                 card(layout.unprunedCard, ComplexityRegion, ComplexityBorder)
                 card(layout.prunedCard, ComplexityRegion, if (frame.step.prunedCalls > 0) ComplexityGreen else ComplexityBorder)
                 label("UNPRUNED (BRUTE FORCE)", layout.unprunedHeading, ComplexityOrange, 10, centered = true)
@@ -113,30 +119,31 @@ internal fun BacktrackingComplexitySceneRenderer(presentation: ComplexityPresent
                 label("${frame.step.unprunedCalls} Calls", layout.unprunedCalls, Color.White, 16, centered = true)
                 label("${frame.step.prunedCalls} Calls", layout.prunedCalls, ComplexityGreen, 16, centered = true)
                 label("Evaluates all ${presentation.elements.size} elements unconditionally", layout.unprunedExplanation, ComplexitySecondary, 9, false, wrap = true)
-                label("Halts recursion when val > ${frame.step.limit}", layout.prunedExplanation, ComplexitySecondary, 9, false, wrap = true)
-                fun element(index: Int, rect: ComplexityRect, state: ComplexityElementState) {
+                label("Stops evaluation when val > ${frame.step.limit}", layout.prunedExplanation, ComplexitySecondary, 9, false, wrap = true)
+                fun element(index: Int, rect: ComplexityRect, state: ComplexityElementState, strategy: ComplexityStrategy) {
                     val color = when (state) {
                         ComplexityElementState.EVAL -> ComplexityOrange
                         ComplexityElementState.VALID -> ComplexityGreen
                         ComplexityElementState.HALT -> ComplexityRed
                         ComplexityElementState.SKIP, ComplexityElementState.PENDING -> ComplexitySecondary
                     }
-                    card(rect, Color(0xFF181824), color)
-                    val valueRect = ComplexityRect(rect.x, rect.y + 1f, rect.width, values.second)
-                    val stateRect = ComplexityRect(rect.x, valueRect.bottom + 1f, rect.width, states.second)
+                    val active = frame.activeStrategy == strategy && frame.activeIndex == index
+                    card(rect, if (active) Color(0xFF2A1C12) else Color(0xFF181824), if (active) ComplexityBlue else color)
+                    val valueRect = ComplexityRect(rect.x, rect.y + 1f, rect.width, measured.second)
+                    val stateRect = ComplexityRect(rect.x, valueRect.bottom + 1f, rect.width, measured.third)
                     label(presentation.elements[index].value.toString(), valueRect, Color.White, 10, centered = true)
                     label(state.name, stateRect, color, 9, centered = true)
                 }
                 presentation.elements.indices.forEach { i ->
-                    element(i, layout.unprunedElements[i], frame.unpruned[i])
-                    element(i, layout.prunedElements[i], frame.pruned[i])
+                    element(i, layout.unprunedElements[i], frame.unpruned[i], ComplexityStrategy.UNPRUNED)
+                    element(i, layout.prunedElements[i], frame.pruned[i], ComplexityStrategy.PRUNED)
                 }
                 card(layout.explanationRegion, ComplexityRegion, ComplexityBorder)
                 label("PRUNING & WORST-CASE COMPLEXITY:", layout.explanationHeading, ComplexityBlue, 10)
                 (ComplexityParagraphs + complexityContext(frame)).forEachIndexed { i, paragraph ->
                     label(paragraph, layout.paragraphs[i], Color.White, 9, false, wrap = true)
                 }
-                label(complexitySavings(frame), layout.savings, ComplexityGreen, 9, wrap = true)
+                label(complexitySavings(frame), layout.savings, if (frame.savedCalls != null) ComplexityGreen else if (frame.step.action == ComplexityAction.PRUNED_HALT) ComplexityRed else ComplexityOrange, 9, wrap = true)
             }
         }
     }
