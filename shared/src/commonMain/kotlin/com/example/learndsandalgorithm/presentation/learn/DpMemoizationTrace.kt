@@ -14,6 +14,7 @@ internal data class DpMemoizationStep(
     val memoArray: List<Long?> = List(6) { null },
     val callStack: List<Int> = emptyList(),
     val cacheHit: Boolean = false,
+    val result: Long? = null,
     val action: MemoAction = MemoAction.INIT,
     val explanation: String,
     val badgeText: String,
@@ -23,6 +24,7 @@ internal data class DpMemoizationStep(
 internal object DpMemoizationTrace {
 
     fun createTrace(targetN: Int = 5): List<DpMemoizationStep> {
+        require(targetN >= 0) { "targetN must be nonnegative" }
         val steps = mutableListOf<DpMemoizationStep>()
         val memo = MutableList<Long?>(targetN + 1) { null }
         val stack = mutableListOf<Int>()
@@ -33,13 +35,15 @@ internal object DpMemoizationTrace {
             action: MemoAction,
             explanation: String,
             badgeText: String,
-            isTerminal: Boolean = false
+            isTerminal: Boolean = false,
+            result: Long? = null
         ) = DpMemoizationStep(
             targetN = targetN,
             currentN = n,
             memoArray = memo.toList(),
             callStack = stack.toList(),
             cacheHit = hit,
+            result = result,
             action = action,
             explanation = explanation,
             badgeText = badgeText,
@@ -128,9 +132,15 @@ internal object DpMemoizationTrace {
                 n = targetN,
                 hit = false,
                 action = MemoAction.FINISHED,
-                explanation = "Memoization complete! Fib($targetN) = $finalAns. Repeated subproblems (like Fib(2), Fib(3)) were reused from cache, reducing runtime from O(2^N) to O(N).",
+                explanation = "Memoization complete! Fib($targetN) = $finalAns. " +
+                    if (steps.any { it.action == MemoAction.CACHE_HIT }) {
+                        "Cached results were reused for ${steps.filter { it.action == MemoAction.CACHE_HIT }.mapNotNull { it.currentN }.distinct().joinToString { "Fib($it)" }}; memoization reduces asymptotic runtime from O(2^N) to O(N)."
+                    } else {
+                        "No cache hits occurred in this run. Memoization has O(N) time and O(N) space for this recurrence."
+                    },
                 badgeText = "COMPLETE: Fib($targetN) = $finalAns",
-                isTerminal = true
+                isTerminal = true,
+                result = finalAns
             )
         )
 

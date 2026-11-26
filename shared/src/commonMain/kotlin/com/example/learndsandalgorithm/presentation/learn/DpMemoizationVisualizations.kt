@@ -15,6 +15,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -36,7 +37,8 @@ private val TextSecondary = Color(0xFF9CA3AF)
 internal fun DpMemoizationVisualizationCard(
     title: String = "Dynamic Programming Fundamentals and Memoization"
 ) {
-    val steps = DpMemoizationTrace.createTrace()
+    val steps = remember { DpMemoizationTrace.createTrace() }
+    val scene = remember(steps) { DpMemoizationSceneBuilder.build(steps) }
     val autoExpand = LocalAutoExpandVisualizer.current
     var isExpanded by rememberSaveable { mutableStateOf(autoExpand) }
 
@@ -61,7 +63,7 @@ internal fun DpMemoizationVisualizationCard(
             MemoAction.CALL_SUBPROBLEM -> "CALL SUBPROBLEM FIB(${step.currentN})"
             MemoAction.CACHE_HIT -> "CACHE HIT! FIB(${step.currentN}) REUSED FROM MEMO TABLE"
             MemoAction.COMPUTE_AND_STORE -> "COMPUTE & STORE MEMO[${step.currentN}] = ${step.memoArray[step.currentN ?: 0]}"
-            MemoAction.FINISHED -> "MEMOIZATION COMPLETE · FIB(${step.targetN}) = ${step.memoArray[step.targetN]}"
+            MemoAction.FINISHED -> "MEMOIZATION COMPLETE · FIB(${step.targetN}) = ${step.result}"
         }
 
         val statusColor = when (step.action) {
@@ -79,6 +81,7 @@ internal fun DpMemoizationVisualizationCard(
             stepCount = steps.size,
             isPlaying = isPlaying,
             layoutMode = VisualizerLayoutMode.FULL_WIDTH,
+            detailsScrollable = false,
             statusColor = statusColor,
             onReset = { playback.reset() },
             onPrevious = { playback.previous() },
@@ -89,183 +92,12 @@ internal fun DpMemoizationVisualizationCard(
                 isExpanded = false
             },
             visualContent = {
-                FitToPane(modifier = Modifier.fillMaxSize()) {
-                    DpMemoizationVisualizationContent(step = step, scale = 1f)
-                }
+                DpMemoizationSceneRenderer(scene, scene.frames[stepIndex])
             },
             detailsContent = {
-                DpMemoizationDetailsAndStepsContent(
-                    step = step,
-                    stepIndex = stepIndex,
-                    totalSteps = steps.size,
-                    scale = 1f
-                )
+                DynamicProgrammingDetailsPanel("TOP-DOWN MEMOIZATION DECISION", step.badgeText, statusColor,
+                    "Complexity: O(N) Time, O(N) Space", step.explanation, stepIndex, steps.size, isCompleted)
             }
-        )
-    }
-}
-
-@Composable
-private fun DpMemoizationVisualizationContent(step: DpMemoizationStep, scale: Float) {
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(8.dp * scale),
-        modifier = Modifier.padding(horizontal = 8.dp)
-    ) {
-        // Memoization Table Array Render Card
-        Surface(
-            color = Color(0xFF13131C),
-            shape = RoundedCornerShape(10.dp),
-            border = BorderStroke(1.dp, CardBorderColor),
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Column(
-                modifier = Modifier.padding(10.dp * scale),
-                verticalArrangement = Arrangement.spacedBy(6.dp * scale)
-            ) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text("MEMOIZATION LOOKUP TABLE memo[]:", color = OrangeAccent, fontSize = 10.sp, fontWeight = FontWeight.Bold)
-                    if (step.cacheHit) {
-                        Surface(
-                            color = Color(0xFF123820),
-                            shape = RoundedCornerShape(4.dp),
-                            border = BorderStroke(1.dp, GreenAccent)
-                        ) {
-                            Text("CACHE HIT!", color = GreenAccent, fontSize = 9.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(horizontal = 6.dp * scale, vertical = 2.dp * scale))
-                        }
-                    }
-                }
-
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceEvenly
-                ) {
-                    step.memoArray.forEachIndexed { idx, value ->
-                        val isCurrent = step.currentN == idx
-                        val isHit = isCurrent && step.cacheHit
-                        val isCached = value != null
-
-                        Column(
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                            verticalArrangement = Arrangement.spacedBy(2.dp * scale),
-                            modifier = Modifier.weight(1f).padding(horizontal = 2.dp * scale)
-                        ) {
-                            Text(
-                                text = "[$idx]",
-                                color = if (isCurrent) OrangeAccent else TextSecondary,
-                                fontSize = 8.sp,
-                                fontWeight = FontWeight.Bold
-                            )
-
-                            Surface(
-                                color = when {
-                                    isHit -> Color(0xFF123820)
-                                    isCurrent -> Color(0xFF2A1C12)
-                                    isCached -> Color(0xFF122C38)
-                                    else -> Color(0xFF181824)
-                                },
-                                shape = RoundedCornerShape(6.dp),
-                                border = BorderStroke(
-                                    1.dp,
-                                    when {
-                                        isHit -> GreenAccent
-                                        isCurrent -> OrangeAccent
-                                        isCached -> BlueAccent
-                                        else -> CardBorderColor
-                                    }
-                                ),
-                                modifier = Modifier.fillMaxWidth().height(42.dp * scale)
-                            ) {
-                                Box(contentAlignment = Alignment.Center) {
-                                    Text(
-                                        text = value?.toString() ?: "null",
-                                        color = when {
-                                            isHit -> GreenAccent
-                                            isCached -> TextPrimary
-                                            else -> TextSecondary
-                                        },
-                                        fontSize = 11.sp,
-                                        fontWeight = FontWeight.Bold
-                                    )
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        // Call Stack Indicator Card
-        Surface(
-            color = Color(0xFF13131C),
-            shape = RoundedCornerShape(10.dp),
-            border = BorderStroke(1.dp, CardBorderColor),
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Row(
-                modifier = Modifier.padding(8.dp * scale).fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = "Recursive Call Stack: ${step.callStack.map { "Fib($it)" }}",
-                    color = TextPrimary,
-                    fontSize = 11.sp,
-                    fontWeight = FontWeight.SemiBold
-                )
-                Text(
-                    text = "Depth: ${step.callStack.size}",
-                    color = BlueAccent,
-                    fontSize = 11.sp,
-                    fontWeight = FontWeight.Bold
-                )
-            }
-        }
-    }
-}
-
-@Composable
-private fun DpMemoizationDetailsAndStepsContent(
-    step: DpMemoizationStep,
-    stepIndex: Int,
-    totalSteps: Int,
-    scale: Float
-) {
-    Column(
-        modifier = Modifier.fillMaxWidth(),
-        verticalArrangement = Arrangement.spacedBy(8.dp * scale)
-    ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                Text("TOP-DOWN MEMOIZATION DECISION", color = TextSecondary, fontSize = 9.sp, fontWeight = FontWeight.Bold)
-                Text(
-                    step.badgeText,
-                    color = when (step.action) {
-                        MemoAction.CACHE_HIT, MemoAction.FINISHED -> GreenAccent
-                        MemoAction.COMPUTE_AND_STORE -> OrangeAccent
-                        else -> BlueAccent
-                    },
-                    fontSize = 13.sp,
-                    fontWeight = FontWeight.Bold
-                )
-            }
-            Text("Complexity: O(N) Time, O(N) Space", color = GreenAccent, fontSize = 10.sp, fontWeight = FontWeight.Bold)
-        }
-
-        StepsCard(
-            label = "Steps",
-            explanation = step.explanation,
-            stepIndex = stepIndex,
-            totalSteps = totalSteps,
-            isCompleted = stepIndex == totalSteps - 1
         )
     }
 }

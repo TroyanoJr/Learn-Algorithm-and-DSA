@@ -7,6 +7,8 @@ internal enum class LcsAction {
     FINISHED
 }
 
+internal enum class LcsMovement { DIAGONAL, UP, LEFT }
+
 internal data class LcsDpStep(
     val text1: String = "abcde",
     val text2: String = "ace",
@@ -15,6 +17,10 @@ internal data class LcsDpStep(
     val dpMatrix: List<List<Int>> = List(6) { List(4) { 0 } },
     val isMatch: Boolean? = null,
     val lcsString: String = "",
+    val nextI: Int? = null,
+    val nextJ: Int? = null,
+    val movement: LcsMovement? = null,
+    val acceptedCharacter: Char? = null,
     val action: LcsAction = LcsAction.INIT,
     val explanation: String,
     val badgeText: String,
@@ -40,7 +46,11 @@ internal object LcsDpTrace {
             action: LcsAction,
             explanation: String,
             badgeText: String,
-            isTerminal: Boolean = false
+            isTerminal: Boolean = false,
+            nextI: Int? = null,
+            nextJ: Int? = null,
+            movement: LcsMovement? = null,
+            acceptedCharacter: Char? = null
         ) = LcsDpStep(
             text1 = text1,
             text2 = text2,
@@ -49,6 +59,10 @@ internal object LcsDpTrace {
             dpMatrix = dp.map { it.toList() },
             isMatch = match,
             lcsString = lcs,
+            nextI = nextI,
+            nextJ = nextJ,
+            movement = movement,
+            acceptedCharacter = acceptedCharacter,
             action = action,
             explanation = explanation,
             badgeText = badgeText,
@@ -113,29 +127,37 @@ internal object LcsDpTrace {
         var currI = m
         var currJ = n
         while (currI > 0 && currJ > 0) {
-            if (text1[currI - 1] == text2[currJ - 1]) {
-                lcsChars.add(text1[currI - 1])
+            val oldI = currI
+            val oldJ = currJ
+            val c1 = text1[currI - 1]
+            val c2 = text2[currJ - 1]
+            val movement: LcsMovement
+            val accepted: Char?
+            if (c1 == c2) {
+                accepted = c1
+                movement = LcsMovement.DIAGONAL
+                lcsChars.add(c1)
                 currI--
                 currJ--
             } else if (dp[currI - 1][currJ] >= dp[currI][currJ - 1]) {
+                accepted = null
+                movement = LcsMovement.UP
                 currI--
             } else {
+                accepted = null
+                movement = LcsMovement.LEFT
                 currJ--
             }
+            val partial = lcsChars.reversed().joinToString("")
+            steps.add(snapshot(
+                i = oldI, j = oldJ, match = accepted != null, lcs = partial,
+                action = LcsAction.RECONSTRUCT,
+                explanation = "Reconstructing LCS: compare '$c1' and '$c2' at ($oldI, $oldJ), move ${movement.name.lowercase()} to ($currI, $currJ).${if (accepted != null) " Accept '$accepted'; sequence so far '$partial'." else " No character accepted."}",
+                badgeText = "RECONSTRUCT: ($oldI,$oldJ) → ($currI,$currJ) · '$partial'",
+                nextI = currI, nextJ = currJ, movement = movement, acceptedCharacter = accepted
+            ))
         }
         val reconstructedLcs = lcsChars.reversed().joinToString("")
-
-        steps.add(
-            snapshot(
-                i = m,
-                j = n,
-                match = null,
-                lcs = reconstructedLcs,
-                action = LcsAction.RECONSTRUCT,
-                explanation = "Reconstructing LCS: Traced back from dp[$m][$n] = ${dp[m][n]} to recover sequence '$reconstructedLcs'.",
-                badgeText = "RECONSTRUCTED LCS: '$reconstructedLcs'"
-            )
-        )
 
         val finalAns = dp[m][n]
 
@@ -147,7 +169,7 @@ internal object LcsDpTrace {
                 match = null,
                 lcs = reconstructedLcs,
                 action = LcsAction.FINISHED,
-                explanation = "LCS DP complete! Longest Common Subsequence length = $finalAns ('$reconstructedLcs'). Time: O(M * N), Space: O(M * N).",
+                explanation = "Reconstructing LCS: Traced back from dp[$m][$n] = ${dp[m][n]} to recover sequence '$reconstructedLcs'. LCS DP complete! Longest Common Subsequence length = $finalAns ('$reconstructedLcs'). Time: O(M * N), Space: O(M * N).",
                 badgeText = "COMPLETE: LCS LENGTH = $finalAns ('$reconstructedLcs')",
                 isTerminal = true
             )

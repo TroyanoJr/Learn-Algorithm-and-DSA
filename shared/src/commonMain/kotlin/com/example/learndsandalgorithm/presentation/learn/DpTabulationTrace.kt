@@ -14,6 +14,7 @@ internal data class DpTabulationStep(
     val prev2: Long = 1,
     val prev1: Long = 2,
     val currentWays: Long? = null,
+    val rollingInitialized: Boolean = false,
     val action: TabulationAction = TabulationAction.INIT,
     val explanation: String,
     val badgeText: String,
@@ -23,6 +24,7 @@ internal data class DpTabulationStep(
 internal object DpTabulationTrace {
 
     fun createTrace(targetN: Int = 5): List<DpTabulationStep> {
+        require(targetN >= 0) { "targetN must be nonnegative" }
         val steps = mutableListOf<DpTabulationStep>()
         val dp = MutableList(targetN + 1) { 0L }
 
@@ -42,6 +44,7 @@ internal object DpTabulationTrace {
             prev2 = p2,
             prev1 = p1,
             currentWays = curr,
+            rollingInitialized = action != TabulationAction.INIT,
             action = action,
             explanation = explanation,
             badgeText = badgeText,
@@ -52,8 +55,8 @@ internal object DpTabulationTrace {
         steps.add(
             snapshot(
                 idx = null,
-                p2 = 1,
-                p1 = 2,
+                p2 = 0,
+                p1 = 0,
                 curr = null,
                 action = TabulationAction.INIT,
                 explanation = "Bottom-Up Tabulation: Computing ways to climb $targetN stairs. Solves subproblems iteratively starting from base cases up to target.",
@@ -62,20 +65,21 @@ internal object DpTabulationTrace {
         )
 
         // Step 1: Base cases
-        dp[1] = 1L
-        dp[2] = 2L
+        dp[0] = 1L
+        if (targetN >= 1) dp[1] = 1L
+        if (targetN >= 2) dp[2] = 2L
         var prev2 = 1L
-        var prev1 = 2L
+        var prev1 = if (targetN >= 2) 2L else 1L
 
         steps.add(
             snapshot(
-                idx = 2,
+                idx = minOf(2, targetN),
                 p2 = prev2,
                 p1 = prev1,
                 curr = null,
                 action = TabulationAction.SET_BASE_CASES,
-                explanation = "Base cases: dp[1] = 1 (1 step), dp[2] = 2 (1+1 or 2 steps). Initialized rolling variables prev2 = 1, prev1 = 2.",
-                badgeText = "BASE CASING: dp[1]=1, dp[2]=2"
+                explanation = if (targetN >= 2) "Base cases: dp[0] = 1, dp[1] = 1 (1 step), dp[2] = 2 (1+1 or 2 steps). Initialized rolling variables prev2 = 1, prev1 = 2." else "Base cases: dp[0] = 1${if (targetN >= 1) ", dp[1] = 1" else ""}.",
+                badgeText = if (targetN >= 2) "BASE CASES: dp[0]=1, dp[1]=1, dp[2]=2" else "BASE CASES INITIALIZED"
             )
         )
 
@@ -109,7 +113,7 @@ internal object DpTabulationTrace {
                 p1 = prev1,
                 curr = finalAns,
                 action = TabulationAction.FINISHED,
-                explanation = "Tabulation complete! Total ways to climb $targetN stairs = $finalAns. Space-optimized using rolling variables from O(N) down to O(1) auxiliary space.",
+                explanation = "Tabulation complete! Total ways to climb $targetN stairs = $finalAns. This educational trace retains the O(N) table and snapshots; a rolling-variable-only algorithm uses O(1) auxiliary space.",
                 badgeText = "COMPLETE: $finalAns WAYS TO CLIMB $targetN STAIRS",
                 isTerminal = true
             )

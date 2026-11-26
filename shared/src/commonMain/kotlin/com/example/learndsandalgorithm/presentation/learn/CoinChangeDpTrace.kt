@@ -12,7 +12,8 @@ internal data class CoinChangeDpStep(
     val coins: List<Int> = listOf(1, 2, 5),
     val currentAmount: Int? = null,
     val currentCoin: Int? = null,
-    val dpTable: List<Int> = List(7) { 999 },
+    val currentCoinIndex: Int? = null,
+    val dpTable: List<Int> = List(7) { Int.MAX_VALUE },
     val candidateVal: Int? = null,
     val action: CoinChangeDpAction = CoinChangeDpAction.INIT,
     val explanation: String,
@@ -22,12 +23,14 @@ internal data class CoinChangeDpStep(
 
 internal object CoinChangeDpTrace {
 
-    const val INF = 999
+    const val INF = Int.MAX_VALUE
 
     fun createTrace(
         targetAmount: Int = 6,
         coins: List<Int> = listOf(1, 2, 5)
     ): List<CoinChangeDpStep> {
+        require(targetAmount >= 0) { "target amount must be nonnegative" }
+        require(coins.all { it > 0 }) { "coin denominations must be positive" }
         val steps = mutableListOf<CoinChangeDpStep>()
         val dp = MutableList(targetAmount + 1) { INF }
         dp[0] = 0
@@ -39,12 +42,14 @@ internal object CoinChangeDpTrace {
             action: CoinChangeDpAction,
             explanation: String,
             badgeText: String,
-            isTerminal: Boolean = false
+            isTerminal: Boolean = false,
+            coinIndex: Int? = null
         ) = CoinChangeDpStep(
             targetAmount = targetAmount,
             coins = coins,
             currentAmount = w,
             currentCoin = c,
+            currentCoinIndex = coinIndex,
             dpTable = dp.toList(),
             candidateVal = cand,
             action = action,
@@ -66,7 +71,7 @@ internal object CoinChangeDpTrace {
         )
 
         for (w in 1..targetAmount) {
-            for (coin in coins) {
+            for ((coinIndex, coin) in coins.withIndex()) {
                 if (w >= coin) {
                     val prevDp = dp[w - coin]
                     val cand = if (prevDp != INF) 1 + prevDp else INF
@@ -78,7 +83,8 @@ internal object CoinChangeDpTrace {
                             cand = cand,
                             action = CoinChangeDpAction.CHECK_COIN,
                             explanation = "Amount $w: Try coin $coin. Candidate formula: 1 + dp[$w - $coin] = 1 + dp[${w - coin}] = ${if (cand == INF) "INF" else cand.toString()}.",
-                            badgeText = "TRY COIN $coin FOR AMOUNT $w"
+                            badgeText = "TRY COIN $coin FOR AMOUNT $w",
+                            coinIndex = coinIndex
                         )
                     )
 
@@ -91,7 +97,8 @@ internal object CoinChangeDpTrace {
                                 cand = cand,
                                 action = CoinChangeDpAction.UPDATE_DP,
                                 explanation = "UPDATE dp[$w] = $cand (improved using coin $coin).",
-                                badgeText = "UPDATE dp[$w] = $cand"
+                                badgeText = "UPDATE dp[$w] = $cand",
+                                coinIndex = coinIndex
                             )
                         )
                     }
@@ -108,8 +115,8 @@ internal object CoinChangeDpTrace {
                 c = null,
                 cand = finalAns,
                 action = CoinChangeDpAction.FINISHED,
-                explanation = "Coin change DP complete! Minimum coins for amount $targetAmount = $finalAns. Unbounded choice allows infinite reuse of each coin. Time: O(W * C), Space: O(W).",
-                badgeText = "COMPLETE: MIN COINS = $finalAns",
+                explanation = if (finalAns < 0) "Coin change DP complete! No solution exists for amount $targetAmount with coins $coins. Unbounded choice allows reuse of each coin. Time: O(W * C), Space: O(W)." else "Coin change DP complete! Minimum coins for amount $targetAmount = $finalAns. Unbounded choice allows infinite reuse of each coin. Time: O(W * C), Space: O(W).",
+                badgeText = if (finalAns < 0) "COMPLETE: NO SOLUTION" else "COMPLETE: MIN COINS = $finalAns",
                 isTerminal = true
             )
         )

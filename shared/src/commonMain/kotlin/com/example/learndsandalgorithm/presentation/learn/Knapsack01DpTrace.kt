@@ -41,6 +41,8 @@ internal object Knapsack01DpTrace {
         items: List<Knapsack01Item> = defaultItems,
         capacity: Int = 5
     ): List<Knapsack01DpStep> {
+        require(capacity >= 0) { "capacity must be nonnegative" }
+        require(items.all { it.weight >= 0 }) { "item weights must be nonnegative" }
         val steps = mutableListOf<Knapsack01DpStep>()
         val dp = MutableList(capacity + 1) { 0 }
 

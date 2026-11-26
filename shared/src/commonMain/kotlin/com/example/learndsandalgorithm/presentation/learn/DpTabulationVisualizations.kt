@@ -15,6 +15,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -36,7 +37,8 @@ private val TextSecondary = Color(0xFF9CA3AF)
 internal fun DpTabulationVisualizationCard(
     title: String = "Bottom-Up Tabulation and Space Optimization"
 ) {
-    val steps = DpTabulationTrace.createTrace()
+    val steps = remember { DpTabulationTrace.createTrace() }
+    val scene = remember(steps) { DpTabulationSceneBuilder.build(steps) }
     val autoExpand = LocalAutoExpandVisualizer.current
     var isExpanded by rememberSaveable { mutableStateOf(autoExpand) }
 
@@ -58,7 +60,7 @@ internal fun DpTabulationVisualizationCard(
     if (isExpanded) {
         val statusText = when (step.action) {
             TabulationAction.INIT -> "BOTTOM-UP TABULATION: TARGET ${step.targetN} STAIRS"
-            TabulationAction.SET_BASE_CASES -> "SET BASE CASING: dp[1]=1, dp[2]=2"
+            TabulationAction.SET_BASE_CASES -> "SET BASE CASES"
             TabulationAction.FILL_TABLE -> "COMPUTE dp[${step.currentIndex}] = dp[${(step.currentIndex ?: 0) - 1}] + dp[${(step.currentIndex ?: 0) - 2}] = ${step.currentWays}"
             TabulationAction.FINISHED -> "TABULATION COMPLETE · ${step.dpTable[step.targetN]} WAYS"
         }
@@ -77,6 +79,7 @@ internal fun DpTabulationVisualizationCard(
             stepCount = steps.size,
             isPlaying = isPlaying,
             layoutMode = VisualizerLayoutMode.FULL_WIDTH,
+            detailsScrollable = false,
             statusColor = statusColor,
             onReset = { playback.reset() },
             onPrevious = { playback.previous() },
@@ -87,171 +90,12 @@ internal fun DpTabulationVisualizationCard(
                 isExpanded = false
             },
             visualContent = {
-                FitToPane(modifier = Modifier.fillMaxSize()) {
-                    DpTabulationVisualizationContent(step = step, scale = 1f)
-                }
+                DpTabulationSceneRenderer(scene, scene.frames[stepIndex])
             },
             detailsContent = {
-                DpTabulationDetailsAndStepsContent(
-                    step = step,
-                    stepIndex = stepIndex,
-                    totalSteps = steps.size,
-                    scale = 1f
-                )
+                DynamicProgrammingDetailsPanel("TABULATION DECISION", step.badgeText, statusColor,
+                    "Time O(N) · table O(N) · rolling-only O(1)", step.explanation, stepIndex, steps.size, isCompleted)
             }
-        )
-    }
-}
-
-@Composable
-private fun DpTabulationVisualizationContent(step: DpTabulationStep, scale: Float) {
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(8.dp * scale),
-        modifier = Modifier.padding(horizontal = 8.dp)
-    ) {
-        // Tabulation Table Array Card
-        Surface(
-            color = Color(0xFF13131C),
-            shape = RoundedCornerShape(10.dp),
-            border = BorderStroke(1.dp, CardBorderColor),
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Column(
-                modifier = Modifier.padding(10.dp * scale),
-                verticalArrangement = Arrangement.spacedBy(6.dp * scale)
-            ) {
-                Text("DP TABULATION TABLE dp[]:", color = OrangeAccent, fontSize = 10.sp, fontWeight = FontWeight.Bold)
-
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceEvenly
-                ) {
-                    step.dpTable.forEachIndexed { idx, valWays ->
-                        if (idx == 0) return@forEachIndexed
-                        val isCurrent = step.currentIndex == idx
-                        val isFilled = valWays > 0
-
-                        Column(
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                            verticalArrangement = Arrangement.spacedBy(2.dp * scale),
-                            modifier = Modifier.weight(1f).padding(horizontal = 2.dp * scale)
-                        ) {
-                            Text(
-                                text = "dp[$idx]",
-                                color = if (isCurrent) OrangeAccent else TextSecondary,
-                                fontSize = 8.sp,
-                                fontWeight = FontWeight.Bold
-                            )
-
-                            Surface(
-                                color = when {
-                                    isCurrent -> Color(0xFF123820)
-                                    isFilled -> Color(0xFF122C38)
-                                    else -> Color(0xFF181824)
-                                },
-                                shape = RoundedCornerShape(6.dp),
-                                border = BorderStroke(
-                                    1.dp,
-                                    when {
-                                        isCurrent -> GreenAccent
-                                        isFilled -> BlueAccent
-                                        else -> CardBorderColor
-                                    }
-                                ),
-                                modifier = Modifier.fillMaxWidth().height(42.dp * scale)
-                            ) {
-                                Box(contentAlignment = Alignment.Center) {
-                                    Text(
-                                        text = "$valWays",
-                                        color = if (isFilled) TextPrimary else TextSecondary,
-                                        fontSize = 12.sp,
-                                        fontWeight = FontWeight.Bold
-                                    )
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        // Space Optimization Rolling Variables Card
-        Surface(
-            color = Color(0xFF13131C),
-            shape = RoundedCornerShape(10.dp),
-            border = BorderStroke(1.dp, CardBorderColor),
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Column(
-                modifier = Modifier.padding(10.dp * scale),
-                verticalArrangement = Arrangement.spacedBy(4.dp * scale)
-            ) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text("O(1) SPACE ROLLING VARIABLES:", color = BlueAccent, fontSize = 10.sp, fontWeight = FontWeight.Bold)
-                    Surface(
-                        color = Color(0xFF123820),
-                        shape = RoundedCornerShape(4.dp),
-                        border = BorderStroke(1.dp, GreenAccent)
-                    ) {
-                        Text("O(1) AUXILIARY SPACE", color = GreenAccent, fontSize = 8.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(horizontal = 6.dp * scale, vertical = 2.dp * scale))
-                    }
-                }
-
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceEvenly
-                ) {
-                    Text("prev2 = ${step.prev2}", color = TextSecondary, fontSize = 11.sp, fontWeight = FontWeight.SemiBold)
-                    Text("prev1 = ${step.prev1}", color = TextPrimary, fontSize = 11.sp, fontWeight = FontWeight.Bold)
-                    Text("current = ${step.currentWays ?: "-"}", color = GreenAccent, fontSize = 11.sp, fontWeight = FontWeight.Bold)
-                }
-            }
-        }
-    }
-}
-
-@Composable
-private fun DpTabulationDetailsAndStepsContent(
-    step: DpTabulationStep,
-    stepIndex: Int,
-    totalSteps: Int,
-    scale: Float
-) {
-    Column(
-        modifier = Modifier.fillMaxWidth(),
-        verticalArrangement = Arrangement.spacedBy(8.dp * scale)
-    ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                Text("TABULATION DECISION", color = TextSecondary, fontSize = 9.sp, fontWeight = FontWeight.Bold)
-                Text(
-                    step.badgeText,
-                    color = when (step.action) {
-                        TabulationAction.FILL_TABLE, TabulationAction.FINISHED -> GreenAccent
-                        else -> OrangeAccent
-                    },
-                    fontSize = 13.sp,
-                    fontWeight = FontWeight.Bold
-                )
-            }
-            Text("Complexity: O(N) Time, O(1) Space", color = GreenAccent, fontSize = 10.sp, fontWeight = FontWeight.Bold)
-        }
-
-        StepsCard(
-            label = "Steps",
-            explanation = step.explanation,
-            stepIndex = stepIndex,
-            totalSteps = totalSteps,
-            isCompleted = stepIndex == totalSteps - 1
         )
     }
 }

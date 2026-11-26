@@ -24,6 +24,7 @@ internal data class UniquePathsDpStep(
 internal object UniquePathsDpTrace {
 
     fun createTrace(rows: Int = 3, cols: Int = 3): List<UniquePathsDpStep> {
+        require(rows > 0 && cols > 0) { "grid dimensions must be positive" }
         val steps = mutableListOf<UniquePathsDpStep>()
         val grid = List(rows) { MutableList(cols) { 0L } }
 
@@ -110,7 +111,7 @@ internal object UniquePathsDpTrace {
                 top = null,
                 left = null,
                 action = UniquePathsDpAction.FINISHED,
-                explanation = "Grid DP complete! Total unique paths from (0,0) to (${rows - 1},${cols - 1}) = $finalAns. Time: O(R * C), Space optimized to O(C).",
+                explanation = "Grid DP complete! Total unique paths from (0,0) to (${rows - 1},${cols - 1}) = $finalAns. Time: O(R * C), grid space: O(R * C). A rolling-row alternative uses O(C) space.",
                 badgeText = "COMPLETE: $finalAns UNIQUE PATHS",
                 isTerminal = true
             )
