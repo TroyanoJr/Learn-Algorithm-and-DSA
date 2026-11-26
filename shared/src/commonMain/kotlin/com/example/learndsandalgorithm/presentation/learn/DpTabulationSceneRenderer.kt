@@ -49,10 +49,10 @@ internal fun DpTabulationSceneRenderer(scene: TabulationPresentation, frame: Tab
         val layout = remember(scene, maxWidth, maxHeight, density.density, density.fontScale, measurer) {
             val heading = measure("DP TABULATION TABLE dp[]:  →", 10)
             val indices = maximum((0 until scene.tableSize).map { "dp[$it]" }, 9)
-            val values = maximum(scene.frames.flatMap { it.step.dpTable }.map(Long::toString), 12)
+            val values = maximum(scene.frames.flatMap { it.step.dpTable }.map(Long::toString), 13)
             val rolling = measure("ROLLING VARIABLES (O(1) ALTERNATIVE):", 10)
             val variables = maximum(scene.frames.flatMap { listOf("prev2 = ${it.step.prev2}", "prev1 = ${it.step.prev1}", "current = ${it.step.currentWays ?: "–"}") } + listOf("prev2 = –", "prev1 = –"), 11)
-            val formula = maximum(scene.frames.map { tabFormula(it.step) }, 10)
+            val formula = maximum(scene.frames.map { tabFormula(it.step) } + "O(1) ROLLING-ONLY SPACE", 10)
             DpTabulationSceneLayout.calculate(scene, maxWidth.value, maxHeight.value,
                 TabMetrics(heading.first, heading.second, maxOf(indices.first, values.first), values.second, indices.second,
                     rolling.first, variables.first, variables.second, formula.first, formula.second))
@@ -73,21 +73,29 @@ internal fun DpTabulationSceneRenderer(scene: TabulationPresentation, frame: Tab
                 card(layout.table, Color(0xFF13131C), TabBorder)
                 text("DP TABULATION TABLE dp[]:  →", layout.heading, TabOrange, 10)
                 frame.dependencies.forEachIndexed { index, edge ->
-                    val start = layout.cells[edge.source].centerX.dp.toPx(); val end = layout.cells[edge.destination].centerX.dp.toPx()
-                    val y = (layout.arrowLane.y + 4f + index * 5f).dp.toPx(); val head = 3.dp.toPx()
-                    drawLine(TabBlue, Offset(start, y), Offset(end, y), 1.dp.toPx())
-                    drawLine(TabBlue, Offset(end, y), Offset(end - head, y - head), 1.dp.toPx())
-                    drawLine(TabBlue, Offset(end, y), Offset(end - head, y + head), 1.dp.toPx())
+                    val arrow = layout.dependencyArrow(edge, index)
+                    val start = arrow.startX.dp.toPx()
+                    val end = arrow.endX.dp.toPx()
+                    val y = arrow.laneY.dp.toPx(); val head = 3.dp.toPx()
+                    val bottom = arrow.destinationY.dp.toPx()
+                    drawLine(TabOrange, Offset(start, arrow.sourceY.dp.toPx()), Offset(start, y), 1.dp.toPx())
+                    drawLine(TabOrange, Offset(start, arrow.sourceY.dp.toPx()), Offset(layout.cells[edge.source].x.dp.toPx(), arrow.sourceY.dp.toPx()), 1.dp.toPx())
+                    drawLine(TabOrange, Offset(start, y), Offset(end, y), 1.dp.toPx())
+                    drawLine(TabOrange, Offset(end, y), Offset(end, bottom), 1.dp.toPx())
+                    val cellEdge = if (index == 0) layout.cells[edge.destination].x else layout.cells[edge.destination].right
+                    drawLine(TabOrange, Offset(end, bottom), Offset(cellEdge.dp.toPx(), bottom), 1.dp.toPx())
+                    drawLine(TabOrange, Offset(end, bottom), Offset(end - head, bottom - head), 1.dp.toPx())
+                    drawLine(TabOrange, Offset(end, bottom), Offset(end + head, bottom - head), 1.dp.toPx())
                 }
                 frame.step.dpTable.forEachIndexed { index, value ->
                     val dest = frame.step.action == TabulationAction.FILL_TABLE && frame.step.currentIndex == index
                     val source = frame.dependencies.any { it.source == index }
                     val final = frame.step.action == TabulationAction.FINISHED && index == frame.step.targetN
                     val computed = frame.step.action != TabulationAction.INIT && (index <= 2 || (frame.step.currentIndex ?: -1) >= index)
-                    val color = if (dest || final) TabGreen else if (source || computed) TabBlue else TabBorder
+                    val color = if (dest || final) TabGreen else if (source) TabOrange else if (computed) TabBlue else TabBorder
                     text("dp[$index]", layout.indices[index], if (dest) TabOrange else TabSecondary, 9, true)
-                    card(layout.cells[index], if (dest || final) Color(0xFF123820) else if (computed) Color(0xFF122C38) else Color(0xFF181824), color)
-                    text(value.toString(), layout.cells[index], if (computed) Color.White else TabSecondary, 12, true)
+                    card(layout.cells[index], if (dest || final) Color(0xFF123820) else if (source) Color(0xFF2A1C12) else if (computed) Color(0xFF122C38) else Color(0xFF181824), color)
+                    text(value.toString(), layout.cells[index], if (computed) Color.White else TabSecondary, 13, true)
                 }
                 card(layout.rolling, Color(0xFF13131C), TabBorder)
                 text("ROLLING VARIABLES (O(1) ALTERNATIVE):", layout.rollingHeading, TabBlue, 10)
@@ -95,6 +103,7 @@ internal fun DpTabulationSceneRenderer(scene: TabulationPresentation, frame: Tab
                     "prev1 = ${if (frame.step.rollingInitialized) frame.step.prev1 else "–"}", "current = ${frame.step.currentWays ?: "–"}")
                 values.forEachIndexed { i, value -> text(value, layout.variables[i], if (i == 2) TabGreen else Color.White, 11, true) }
                 text(tabFormula(frame.step), layout.formula, TabSecondary, 10)
+                text("O(1) ROLLING-ONLY SPACE", layout.spaceBadge, TabGreen, 10)
             }
         }
     }

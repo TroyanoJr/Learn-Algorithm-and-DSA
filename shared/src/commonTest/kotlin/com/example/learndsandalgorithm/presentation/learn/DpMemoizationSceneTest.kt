@@ -8,6 +8,54 @@ import kotlin.test.assertFalse
 
 class DpMemoizationSceneTest {
     @Test
+    fun cellStatesDistinguishBaseCasesStoresAndCacheHits() {
+        for (n in 0..1) {
+            val trace = DpMemoizationTrace.createTrace(n)
+            assertEquals(MemoCellState.EMPTY, memoCellState(trace.last(), n))
+            assertEquals(MemoCellState.ACTIVE, memoCellState(trace.first { it.action == MemoAction.CALL_SUBPROBLEM }, n))
+        }
+        val trace = DpMemoizationTrace.createTrace()
+        val store = trace.first { it.action == MemoAction.COMPUTE_AND_STORE }
+        val hit = trace.first { it.action == MemoAction.CACHE_HIT }
+        assertEquals(MemoCellState.SUCCESS, memoCellState(store, store.currentN!!))
+        assertEquals(MemoCellState.SUCCESS, memoCellState(hit, hit.currentN!!))
+        assertEquals(MemoCellState.SUCCESS, memoCellState(trace.last(), 5))
+        assertEquals(MemoCellState.CACHED, memoCellState(trace.last(), 2))
+    }
+    @Test
+    fun cacheStoresAndPersistentStackPrefixesReflectTrace() {
+        val trace = DpMemoizationTrace.createTrace()
+        val frames = DpMemoizationSceneBuilder.build(trace).frames
+        assertEquals(listOf(2, 3), trace.filter { it.action == MemoAction.CACHE_HIT }.map { it.currentN })
+        frames.zipWithNext().forEach { (before, after) ->
+            val common = before.calls.map { it.argument }.zip(after.calls.map { it.argument })
+                .takeWhile { (a, b) -> a == b }.size
+            assertEquals(before.calls.take(common).map { it.id }, after.calls.take(common).map { it.id })
+        }
+        trace.zipWithNext().forEach { (before, after) ->
+            val changed = before.memoArray.indices.filter { before.memoArray[it] != after.memoArray[it] }
+            if (after.action == MemoAction.COMPUTE_AND_STORE) {
+                val n = after.currentN!!
+                assertEquals(listOf(n), changed)
+                fun fibValue(i: Int): Long = if (i <= 1) i.toLong() else after.memoArray[i]!!
+                assertEquals(fibValue(n - 1) + fibValue(n - 2), after.memoArray[n])
+            } else assertTrue(changed.isEmpty())
+        }
+    }
+    @Test
+    fun enlargedMeasuredLabelsRemainInsideTheirRegions() {
+        val scene = DpMemoizationSceneBuilder.build(DpMemoizationTrace.createTrace())
+        val metrics = MemoLayoutMetrics(headingWidth = 240f, badgeWidth = 95f, valueWidth = 48f,
+            valueHeight = 20f, indexHeight = 18f, stackHeadingWidth = 230f, callWidth = 105f,
+            callHeight = 24f, emptyWidth = 120f)
+        val layout = DpMemoizationSceneLayout.calculate(scene, 240f, 224f, metrics)
+        assertTrue(layout.tableHeading.right <= layout.cacheBadge.x)
+        assertTrue(layout.cells.all { it.width >= metrics.valueWidth && it.height >= metrics.valueHeight })
+        assertTrue(layout.callSlots.all { it.width >= metrics.callWidth && it.height >= metrics.callHeight &&
+            it.x >= layout.stackRegion.x && it.right <= layout.stackRegion.right && it.bottom <= layout.stackRegion.bottom })
+        assertTrue(layout.empty.right <= layout.stackRegion.right)
+    }
+    @Test
     fun framesPreserveStackArgumentsAndCacheResults() {
         val trace = DpMemoizationTrace.createTrace()
         val scene = DpMemoizationSceneBuilder.build(trace)

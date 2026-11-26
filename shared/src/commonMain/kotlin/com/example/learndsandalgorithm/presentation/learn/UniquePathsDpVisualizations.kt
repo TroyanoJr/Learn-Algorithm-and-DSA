@@ -93,7 +93,7 @@ internal fun UniquePathsDpVisualizationCard(
                 UniquePathsDpSceneRenderer(scene, scene.frames[stepIndex])
             },
             detailsContent = {
-                DynamicProgrammingDetailsPanel("UNIQUE PATHS DECISION", step.badgeText, statusColor,
+                DynamicProgrammingDetailsPanel("2D GRID DP DECISION", step.badgeText, statusColor,
                     "Time O(R·C) · grid O(R·C) · rolling-row O(C)", step.explanation, stepIndex, steps.size, isCompleted)
             }
         )

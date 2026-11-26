@@ -12,18 +12,24 @@ internal data class KnapsackDpMetrics(val headerWidth: Float = 160f, val headerH
 internal data class KnapsackDpLayout(val width: Float, val height: Float, val itemRegion: KnapsackDpRect,
     val itemHeading: KnapsackDpRect, val items: List<KnapsackDpRect>, val tableRegion: KnapsackDpRect,
     val tableHeading: KnapsackDpRect, val arrowLane: KnapsackDpRect, val indices: List<KnapsackDpRect>,
-    val cells: List<KnapsackDpRect>, val decisionRegion: KnapsackDpRect, val summary: List<KnapsackDpRect>)
+    val cells: List<KnapsackDpRect>, val decisionRegion: KnapsackDpRect, val summary: List<KnapsackDpRect>) {
+    fun dependencyArrow(source: Int, destination: Int): KnapsackArrowGeometry =
+        KnapsackArrowGeometry(cells[source].x - 2f, cells[destination].x - 2f, arrowLane.y + 6f,
+            cells[source].y, cells[destination].y)
+}
+internal data class KnapsackArrowGeometry(val startX: Float, val endX: Float, val laneY: Float,
+    val sourceY: Float, val destinationY: Float)
 internal object Knapsack01DpSceneLayout {
     fun calculate(scene: KnapsackDpPresentation, viewportWidth: Float, viewportHeight: Float,
                   m: KnapsackDpMetrics = KnapsackDpMetrics()): KnapsackDpLayout {
-        val itemWidth = maxOf(1f, m.itemWidth + 12f)
-        val cellWidth = maxOf(34f, m.cellWidth + 8f)
+        val itemWidth = maxOf(1f, m.itemWidth + 16f)
+        val cellWidth = maxOf(38f, m.cellWidth + 10f)
         val width = maxOf(viewportWidth, m.headerWidth + 36f, m.tableHeadingWidth + 36f, m.summaryWidth + 36f,
             36f + scene.tableSize * cellWidth + (scene.tableSize - 1).coerceAtLeast(0) * 4f, itemWidth + 36f)
         val inner = width - 16f
         val columns = ((inner - 20f + 4f) / (itemWidth + 4f)).toInt().coerceAtLeast(1)
         val rows = ((scene.itemCount.coerceAtLeast(1) + columns - 1) / columns)
-        val itemHeight = m.itemHeight + 8f
+        val itemHeight = m.itemHeight + 10f
         val itemHeading = KnapsackDpRect(18f, 16f, inner - 20f, m.headerHeight)
         val itemTop = itemHeading.bottom + 4f
         val items = (0 until scene.itemCount).map { i -> KnapsackDpRect(18f + i % columns * (itemWidth + 4f), itemTop + i / columns * (itemHeight + 4f), itemWidth, itemHeight) }

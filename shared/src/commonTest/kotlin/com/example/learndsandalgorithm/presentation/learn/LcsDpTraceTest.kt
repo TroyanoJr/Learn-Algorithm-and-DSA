@@ -5,6 +5,30 @@ import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
 class LcsDpTraceTest {
+    @Test
+    fun computationsOnlyChangeTheCurrentCellInRowMajorOrder() {
+        val steps = LcsDpTrace.createTrace()
+        val computations = steps.filter { it.action == LcsAction.COMPUTE_CELL }
+        assertEquals((1..5).flatMap { i -> (1..3).map { j -> i to j } },
+            computations.map { it.currentI!! to it.currentJ!! })
+        steps.zipWithNext().filter { it.second.action == LcsAction.COMPUTE_CELL }.forEach { (before, after) ->
+            val i = after.currentI!!; val j = after.currentJ!!
+            for (r in after.dpMatrix.indices) for (c in after.dpMatrix[r].indices) {
+                if (r != i || c != j) assertEquals(before.dpMatrix[r][c], after.dpMatrix[r][c])
+            }
+            val expected = if (after.isMatch == true) 1 + after.dpMatrix[i - 1][j - 1]
+                else maxOf(after.dpMatrix[i - 1][j], after.dpMatrix[i][j - 1])
+            assertEquals(expected, after.dpMatrix[i][j])
+        }
+    }
+    @Test
+    fun reconstructionUsesLeftAndPrefersUpOnTies() {
+        val left = LcsDpTrace.createTrace("a", "ab").filter { it.action == LcsAction.RECONSTRUCT }
+        assertEquals(LcsMovement.LEFT, left.first().movement)
+        val tie = LcsDpTrace.createTrace("ab", "ba").filter { it.action == LcsAction.RECONSTRUCT }
+        assertEquals(LcsMovement.UP, tie.first().movement)
+        assertEquals("a", LcsDpTrace.createTrace("ab", "ba").last().lcsString)
+    }
 
     @Test
     fun reconstructionFollowsActualMovesAndKeepsMatrix() {

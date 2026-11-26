@@ -25,14 +25,30 @@ import kotlin.math.ceil
 private val KnOrange = Color(0xFFFA6E13)
 private val KnBlue = Color(0xFF38BDF8)
 private val KnGreen = Color(0xFF10B981)
+private val KnSource = Color(0xFFA78BFA)
 private val KnBorder = Color(0xFF262634)
 private val KnSecondary = Color(0xFF9CA3AF)
 
-private fun knSummary(frame: KnapsackDpFrame): List<String> = listOf(
-    "Exclude: ${frame.step.excludeVal ?: "–"} · Include: ${frame.step.includeVal ?: "–"}",
-    "Best candidate: ${frame.bestCandidate ?: "–"} · Stored at destination: ${frame.storedAtDestination ?: "–"}",
-    "Target dp[${frame.step.capacity}]: ${frame.step.dpTable[frame.step.capacity]} · Capacity iteration: high → low"
-)
+private fun knSummary(frame: KnapsackDpFrame): List<String> {
+    val step = frame.step
+    val item = step.currentItemIndex?.let { step.items.getOrNull(it) }
+    if (frame.destination == null || item == null) return listOf(
+        if (step.action == Knapsack01Action.FINISHED) "Complete · maximum value ${step.dpTable[step.capacity]}" else "Choose each item at most once",
+        "Target dp[${step.capacity}]: ${step.dpTable[step.capacity]}",
+        "Capacity iteration: high → low"
+    )
+    val source = if (frame.source == frame.destination) "previous dp[${frame.source}]" else "dp[${frame.source}]"
+    return listOf(
+        "Exclude ${step.excludeVal} · Include $source(${frame.sourceValueBeforeUpdate})+${item.value}=${step.includeVal}",
+        "Best ${frame.bestCandidate} · Stored ${frame.storedAtDestination} · ${when (frame.decision) {
+            KnapsackDecision.INCLUDE_WINS -> "include wins"
+            KnapsackDecision.KEEP_EXISTING -> "keep existing"
+            KnapsackDecision.UPDATED -> "update committed"
+            KnapsackDecision.NONE -> "no decision"
+        }}",
+        "Target dp[${step.capacity}]: ${step.dpTable[step.capacity]} · Capacity iteration: high → low"
+    )
+}
 
 @Composable
 internal fun Knapsack01DpSceneRenderer(scene: KnapsackDpPresentation, frame: KnapsackDpFrame) {
@@ -51,7 +67,7 @@ internal fun Knapsack01DpSceneRenderer(scene: KnapsackDpPresentation, frame: Kna
             val header = maximum(scene.frames.map { "0/1 KNAPSACK ITEMS · CAPACITY ${it.step.capacity}" }, 10)
             val items = maximum(scene.frames.flatMap { it.step.items }.map { "${it.name} (w:${it.weight}, v:${it.value})" }, 10)
             val heading = measure("1D BACKWARD DP TABLE dp[c] (MAX VALUE):", 10)
-            val cells = maximum(scene.frames.flatMap { it.step.dpTable }.map(Int::toString) + (0 until scene.tableSize).map { "c=$it" }, 10)
+            val cells = maximum(scene.frames.flatMap { it.step.dpTable }.map(Int::toString) + (0 until scene.tableSize).map { "c=$it" }, 11)
             val summary = maximum(scene.frames.flatMap(::knSummary), 10)
             Knapsack01DpSceneLayout.calculate(scene, maxWidth.value, maxHeight.value,
                 KnapsackDpMetrics(header.first, header.second, items.first, items.second, heading.first, heading.second,
@@ -81,22 +97,32 @@ internal fun Knapsack01DpSceneRenderer(scene: KnapsackDpPresentation, frame: Kna
                 text("1D BACKWARD DP TABLE dp[c] (MAX VALUE):", layout.tableHeading, KnBlue, 10)
                 val source = frame.source; val destination = frame.destination
                 if (source != null && destination != null) {
-                    val x1 = layout.cells[source].centerX.dp.toPx(); val x2 = layout.cells[destination].centerX.dp.toPx()
-                    val y = (layout.arrowLane.y + 6f).dp.toPx(); val h = 3.dp.toPx()
+                    val arrow = layout.dependencyArrow(source, destination)
+                    val x1 = arrow.startX.dp.toPx(); val x2 = arrow.endX.dp.toPx()
+                    val y = arrow.laneY.dp.toPx(); val h = 3.dp.toPx()
+                    val top = arrow.destinationY.dp.toPx()
                     if (source == destination) {
-                        drawCircle(KnBlue, h, Offset(x1, y), style = Stroke(1.dp.toPx()))
+                        drawLine(KnBlue, Offset(x1, top), Offset(x1, y), 1.dp.toPx())
+                        drawLine(KnBlue, Offset(x1, top), Offset(layout.cells[source].x.dp.toPx(), top), 1.dp.toPx())
+                        drawCircle(KnBlue, h, Offset(x1 + h, y), style = Stroke(1.dp.toPx()))
                     } else {
+                        drawLine(KnBlue, Offset(x1, arrow.sourceY.dp.toPx()), Offset(x1, y), 1.dp.toPx())
+                        drawLine(KnBlue, Offset(x1, arrow.sourceY.dp.toPx()), Offset(layout.cells[source].x.dp.toPx(), arrow.sourceY.dp.toPx()), 1.dp.toPx())
                         drawLine(KnBlue, Offset(x1, y), Offset(x2, y), 1.dp.toPx())
-                        drawLine(KnBlue, Offset(x2, y), Offset(x2 - h, y - h), 1.dp.toPx())
-                        drawLine(KnBlue, Offset(x2, y), Offset(x2 - h, y + h), 1.dp.toPx())
+                        drawLine(KnBlue, Offset(x2, y), Offset(x2, top), 1.dp.toPx())
+                        drawLine(KnBlue, Offset(x2, top), Offset(layout.cells[destination].x.dp.toPx(), top), 1.dp.toPx())
+                        drawLine(KnBlue, Offset(x2, top), Offset(x2 - h, top - h), 1.dp.toPx())
+                        drawLine(KnBlue, Offset(x2, top), Offset(x2 + h, top - h), 1.dp.toPx())
                     }
                 }
                 frame.step.dpTable.forEachIndexed { i, value ->
                     val dest = destination == i; val src = source == i
                     text("c=$i", layout.indices[i], if (dest) KnOrange else KnSecondary, 10, true)
-                    val border = if (dest && frame.decision == KnapsackDecision.UPDATED) KnGreen else if (dest) KnOrange else if (src || value > 0) KnBlue else KnBorder
+                    val final = frame.step.action == Knapsack01Action.FINISHED && i == frame.step.capacity
+                    val border = if (final || dest && frame.decision == KnapsackDecision.UPDATED) KnGreen
+                        else if (dest) KnOrange else if (src) KnSource else if (value > 0) KnBlue else KnBorder
                     card(layout.cells[i], Color(0xFF181824), border)
-                    text(value.toString(), layout.cells[i], Color.White, 10, true)
+                    text(value.toString(), layout.cells[i], Color.White, 11, true)
                 }
                 card(layout.decisionRegion, Color(0xFF13131C), KnBorder)
                 knSummary(frame).forEachIndexed { i, value -> text(value, layout.summary[i], if (i == 2) KnGreen else Color.White, 10) }

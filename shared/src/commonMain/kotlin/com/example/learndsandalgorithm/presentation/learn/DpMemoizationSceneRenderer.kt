@@ -28,6 +28,20 @@ private val MemoGreen = Color(0xFF10B981)
 private val MemoBorder = Color(0xFF262634)
 private val MemoSecondary = Color(0xFF9CA3AF)
 
+internal enum class MemoCellState { EMPTY, CACHED, ACTIVE, SUCCESS }
+
+internal fun memoCellState(step: DpMemoizationStep, index: Int): MemoCellState {
+    val value = step.memoArray[index]
+    val active = step.currentN == index && step.action != MemoAction.FINISHED
+    return when {
+        value != null && (active && (step.cacheHit || step.action == MemoAction.COMPUTE_AND_STORE) ||
+            step.action == MemoAction.FINISHED && index == step.targetN) -> MemoCellState.SUCCESS
+        active -> MemoCellState.ACTIVE
+        value != null -> MemoCellState.CACHED
+        else -> MemoCellState.EMPTY
+    }
+}
+
 @Composable
 internal fun DpMemoizationSceneRenderer(scene: MemoScenePresentation, frame: MemoSceneFrame) {
     BoxWithConstraints(Modifier.fillMaxSize()) {
@@ -44,10 +58,10 @@ internal fun DpMemoizationSceneRenderer(scene: MemoScenePresentation, frame: Mem
         val layout = remember(scene, maxWidth, maxHeight, density.density, density.fontScale, measurer) {
             val heading = measure("MEMOIZATION LOOKUP TABLE memo[]:", 10)
             val badge = measure("CACHE HIT!", 9)
-            val values = maximum(scene.frames.flatMap { it.step.memoArray }.map { it?.toString() ?: "null" }, 11)
+            val values = maximum(scene.frames.flatMap { it.step.memoArray }.map { it?.toString() ?: "null" }, 12)
             val indexes = maximum((0 until scene.tableSize).map { "[$it]" }, 9)
             val stackHeading = maximum(scene.frames.map { "Recursive Call Stack (top →): Depth: ${it.calls.size}" }, 10)
-            val calls = maximum(scene.frames.flatMap { it.calls }.map { "Fib(${it.argument})" }, 11)
+            val calls = maximum(scene.frames.flatMap { it.calls }.flatMap { listOf("Fib(${it.argument})", "TOP · Fib(${it.argument})") }, 12)
             val empty = measure("Empty call stack", 11)
             DpMemoizationSceneLayout.calculate(scene, maxWidth.value, maxHeight.value,
                 MemoLayoutMetrics(heading.first, heading.second, badge.first + 10f, maxOf(values.first, indexes.first), values.second,
@@ -74,12 +88,14 @@ internal fun DpMemoizationSceneRenderer(scene: MemoScenePresentation, frame: Mem
                 }
                 frame.step.memoArray.forEachIndexed { index, value ->
                     val active = frame.step.currentN == index && frame.step.action != MemoAction.FINISHED
-                    val hit = active && frame.step.cacheHit
-                    val complete = frame.step.action == MemoAction.FINISHED && index == frame.step.targetN
-                    val color = when { hit || complete -> MemoGreen; active -> MemoOrange; value != null -> MemoBlue; else -> MemoBorder }
+                    val state = memoCellState(frame.step, index)
+                    val color = when (state) { MemoCellState.SUCCESS -> MemoGreen; MemoCellState.ACTIVE -> MemoOrange
+                        MemoCellState.CACHED -> MemoBlue; MemoCellState.EMPTY -> MemoBorder }
                     text("[$index]", layout.indexes[index], if (active) MemoOrange else MemoSecondary, 9, true)
-                    card(layout.cells[index], if (hit || complete) Color(0xFF123820) else if (active) Color(0xFF2A1C12) else if (value != null) Color(0xFF122C38) else Color(0xFF181824), color)
-                    text(value?.toString() ?: "null", layout.cells[index], if (value == null) MemoSecondary else Color.White, 11, true)
+                    card(layout.cells[index], when (state) { MemoCellState.SUCCESS -> Color(0xFF123820)
+                        MemoCellState.ACTIVE -> Color(0xFF2A1C12); MemoCellState.CACHED -> Color(0xFF122C38)
+                        MemoCellState.EMPTY -> Color(0xFF181824) }, color)
+                    text(value?.toString() ?: "null", layout.cells[index], if (value == null) MemoSecondary else Color.White, 12, true)
                 }
                 card(layout.stackRegion, Color(0xFF13131C), MemoBorder)
                 text("Recursive Call Stack (top →): Depth: ${frame.calls.size}", layout.stackHeading, MemoBlue, 10)
@@ -87,7 +103,7 @@ internal fun DpMemoizationSceneRenderer(scene: MemoScenePresentation, frame: Mem
                 frame.calls.forEachIndexed { index, call ->
                     val active = index == frame.calls.lastIndex
                     card(layout.callSlots[index], if (active) Color(0xFF2A1C12) else Color(0xFF181824), if (active) MemoOrange else MemoBorder)
-                    text("Fib(${call.argument})", layout.callSlots[index], if (active) MemoOrange else Color.White, 11, true)
+                    text(if (active) "TOP · Fib(${call.argument})" else "Fib(${call.argument})", layout.callSlots[index], if (active) MemoOrange else Color.White, 12, true)
                 }
             }
         }

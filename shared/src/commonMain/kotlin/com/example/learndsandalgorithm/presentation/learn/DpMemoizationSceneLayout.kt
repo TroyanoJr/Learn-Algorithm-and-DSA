@@ -17,9 +17,9 @@ internal data class MemoSceneLayout(val width: Float, val height: Float, val tab
 internal object DpMemoizationSceneLayout {
     fun calculate(scene: MemoScenePresentation, viewportWidth: Float, viewportHeight: Float,
                   m: MemoLayoutMetrics = MemoLayoutMetrics()): MemoSceneLayout {
-        val cellWidth = maxOf(34f, m.valueWidth + 10f)
+        val cellWidth = maxOf(38f, m.valueWidth + 12f)
         val callWidth = maxOf(1f, m.callWidth + 10f)
-        val callHeight = maxOf(1f, m.callHeight + 8f)
+        val callHeight = maxOf(1f, m.callHeight + 10f)
         val width = maxOf(viewportWidth, 36f + scene.tableSize * cellWidth + (scene.tableSize - 1).coerceAtLeast(0) * 4f,
             m.headingWidth + m.badgeWidth + 44f, m.stackHeadingWidth + 36f, m.emptyWidth + 36f, callWidth + 36f)
         val inner = width - 16f
