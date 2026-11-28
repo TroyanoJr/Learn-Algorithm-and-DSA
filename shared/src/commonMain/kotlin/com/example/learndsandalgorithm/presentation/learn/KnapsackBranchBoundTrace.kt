@@ -1,42 +1,45 @@
 package com.example.learndsandalgorithm.presentation.learn
 
-internal data class BbKnapsackItem(
-    val name: String,
-    val weight: Int,
-    val value: Int
-) {
+/** Positive-weight, non-negative-value 0/1 item. Duplicate display names are supported. */
+internal data class BbKnapsackItem(val name: String, val weight: Int, val value: Int, val stableId: String = "") {
     val ratio: Double get() = value.toDouble() / weight.toDouble()
 }
+
+internal enum class KnapsackNodeState { PENDING, ACTIVE, FEASIBLE, INCUMBENT, PRUNED, INFEASIBLE, FINISHED }
+
+internal data class KnapsackFractionalContribution(
+    val itemName: String, val itemIndex: Int, val weight: Double, val value: Double, val fraction: Double
+)
 
 internal data class KnapsackBbNode(
     val id: String,
     val level: Int,
     val currentWeight: Int,
     val currentValue: Int,
-    val upperBound: Double,
-    val itemsTaken: List<String>
+    val upperBound: Double?,
+    val upperBoundFloor: Long? = null,
+    val itemsTaken: List<String>,
+    val itemIndices: List<Int> = emptyList(),
+    val state: KnapsackNodeState = KnapsackNodeState.PENDING,
+    val decision: String? = null,
+    /** Incumbent at the moment a prune was made; never recomputed later. */
+    val comparisonThreshold: Int? = null,
+    val fractionalContributions: List<KnapsackFractionalContribution> = emptyList()
 )
 
 internal enum class KnapsackBbAction {
-    INIT,
-    COMPUTE_UPPER_BOUND,
-    BRANCH_INCLUDE,
-    BRANCH_EXCLUDE,
-    UPDATE_INCUMBENT,
-    PRUNE_NODE,
-    FINISHED
+    INIT, COMPUTE_UPPER_BOUND, BRANCH_INCLUDE, BRANCH_EXCLUDE, REJECT_INFEASIBLE,
+    UPDATE_INCUMBENT, PRUNE_NODE, FINISHED
 }
 
 internal data class KnapsackBranchBoundStep(
     val capacity: Int = 10,
-    val items: List<BbKnapsackItem> = listOf(
-        BbKnapsackItem("Item 1", 4, 40),
-        BbKnapsackItem("Item 2", 7, 70),
-        BbKnapsackItem("Item 3", 5, 45)
-    ),
+    val items: List<BbKnapsackItem> = emptyList(),
     val incumbentValue: Int = 0,
     val incumbentItems: List<String> = emptyList(),
+    val incumbentItemIndices: List<Int> = emptyList(),
     val currentNode: KnapsackBbNode? = null,
+    /** DFS has no priority queue: this remains empty rather than faking one. */
     val activeQueue: List<KnapsackBbNode> = emptyList(),
     val action: KnapsackBbAction = KnapsackBbAction.INIT,
     val explanation: String,
@@ -45,149 +48,133 @@ internal data class KnapsackBranchBoundStep(
 )
 
 internal object KnapsackBranchBoundTrace {
+    val defaultItems = listOf(BbKnapsackItem("Item 1", 4, 40), BbKnapsackItem("Item 2", 7, 70), BbKnapsackItem("Item 3", 5, 45))
 
-    val defaultItems = listOf(
-        BbKnapsackItem("Item 1", 4, 40),
-        BbKnapsackItem("Item 2", 7, 70),
-        BbKnapsackItem("Item 3", 5, 45)
-    )
+    private fun validate(items: List<BbKnapsackItem>, capacity: Int) {
+        require(capacity >= 0) { "Capacity must be nonnegative." }
+        require(items.all { it.weight > 0 }) { "Item weights must be positive." }
+        require(items.all { it.value >= 0 }) { "Item values must be nonnegative." }
+        require(items.all { it.weight <= 1_000_000_000 && it.value <= 1_000_000_000 }) { "Weights and values must not exceed 1,000,000,000." }
+    }
 
-    fun computeUpperBound(
-        capacity: Int,
-        currentWeight: Int,
-        currentValue: Int,
-        items: List<BbKnapsackItem>,
-        startIndex: Int
-    ): Double {
-        var ub = currentValue.toDouble()
-        var remCap = (capacity - currentWeight).toDouble()
+    /** Uses the suffix of an already descending-ratio-sorted list. */
+    fun computeUpperBound(capacity: Int, currentWeight: Int, currentValue: Int, items: List<BbKnapsackItem>, startIndex: Int): Double {
+        require(startIndex in 0..items.size)
+        if (currentWeight > capacity) return Double.NEGATIVE_INFINITY
+        var bound = currentValue.toDouble()
+        var remaining = (capacity - currentWeight).toDouble()
+        for (index in startIndex until items.size) {
+            val item = items[index]
+            if (item.weight <= remaining) { remaining -= item.weight; bound += item.value }
+            else { bound += item.value * (remaining / item.weight); break }
+        }
+        return bound
+    }
 
-        for (i in startIndex until items.size) {
-            val item = items[i]
-            if (item.weight <= remCap) {
-                remCap -= item.weight
-                ub += item.value
+    /**
+     * Exact floor of the fractional relaxation. Since every feasible 0/1 completion has an
+     * integer value, floor(upperBound) <= incumbent is a conservative, safe prune predicate.
+     */
+    private fun fractionalUpperBoundFloor(capacity: Int, currentWeight: Int, currentValue: Int, items: List<BbKnapsackItem>, startIndex: Int): Long {
+        if (currentWeight > capacity) return Long.MIN_VALUE
+        var bound = currentValue.toLong()
+        var remaining = (capacity - currentWeight).toLong()
+        for (index in startIndex until items.size) {
+            val item = items[index]
+            if (item.weight.toLong() <= remaining) {
+                bound = checkedLongAdd(bound, item.value.toLong())
+                remaining -= item.weight.toLong()
             } else {
-                ub += item.value * (remCap / item.weight)
+                bound = checkedLongAdd(bound, remaining * item.value.toLong() / item.weight.toLong())
                 break
             }
         }
-        return ub
+        return bound
     }
 
-    fun createTrace(
-        items: List<BbKnapsackItem> = defaultItems,
-        capacity: Int = 10
-    ): List<KnapsackBranchBoundStep> {
+    fun createTrace(items: List<BbKnapsackItem> = defaultItems, capacity: Int = 10): List<KnapsackBranchBoundStep> {
+        validate(items, capacity)
+        // Stable tie break makes equal-ratio examples deterministic and keeps input order.
+        val ordered = items.withIndex().sortedWith { a, b ->
+            val comparison = b.value.value.toLong() * a.value.weight.toLong() - a.value.value.toLong() * b.value.weight.toLong()
+            if (comparison == 0L) a.index.compareTo(b.index) else if (comparison > 0L) 1 else -1
+        }.map { indexed -> indexed.value.copy(stableId = indexed.value.stableId.ifEmpty { "item-${indexed.index}" }) }
         val steps = mutableListOf<KnapsackBranchBoundStep>()
-        val sortedItems = items.sortedByDescending { it.ratio }
-        val queue = mutableListOf<KnapsackBbNode>()
-        var incumbentVal = 0
-        var incumbentList = emptyList<String>()
+        var incumbent = 0
+        var incumbentItems = emptyList<String>()
+        var incumbentIndices = emptyList<Int>()
+        fun names(indices: List<Int>) = indices.map { ordered[it].name }
+        fun contributions(weight: Int, next: Int): List<KnapsackFractionalContribution> {
+            var remaining = (capacity - weight).toDouble()
+            if (remaining < 0) return emptyList()
+            return buildList {
+                for (i in next until ordered.size) {
+                    if (remaining <= 0.0) break
+                    val item = ordered[i]; val fraction = minOf(1.0, remaining / item.weight)
+                    add(KnapsackFractionalContribution(item.name, i, item.weight * fraction, item.value * fraction, fraction))
+                    remaining -= item.weight * fraction
+                }
+            }
+        }
+        fun node(path: String, level: Int, weight: Int, value: Int, chosen: List<Int>, state: KnapsackNodeState, decision: String? = null, threshold: Int? = null): KnapsackBbNode {
+            val suffix = level.coerceIn(0, ordered.size)
+            val bound = if (weight <= capacity) computeUpperBound(capacity, weight, value, ordered, suffix) else null
+            val floor = if (weight <= capacity) fractionalUpperBoundFloor(capacity, weight, value, ordered, suffix) else null
+            return KnapsackBbNode(path, level, weight, value, bound, floor, names(chosen), chosen, state, decision, threshold, contributions(weight, suffix))
+        }
+        fun snapshot(current: KnapsackBbNode?, action: KnapsackBbAction, explanation: String, badge: String, terminal: Boolean = false) {
+            steps += KnapsackBranchBoundStep(capacity, ordered, incumbent, incumbentItems, incumbentIndices, current, emptyList(), action, explanation, badge, terminal)
+        }
 
-        fun snapshot(
-            node: KnapsackBbNode?,
-            action: KnapsackBbAction,
-            explanation: String,
-            badgeText: String,
-            isTerminal: Boolean = false
-        ) = KnapsackBranchBoundStep(
-            capacity = capacity,
-            items = sortedItems,
-            incumbentValue = incumbentVal,
-            incumbentItems = incumbentList,
-            currentNode = node,
-            activeQueue = queue.toList(),
-            action = action,
-            explanation = explanation,
-            badgeText = badgeText,
-            isTerminal = isTerminal
-        )
+        snapshot(null, KnapsackBbAction.INIT, "0/1 Knapsack Branch & Bound: capacity $capacity. Items are stably sorted by descending value-to-weight ratio before search.", "READY · CAPACITY $capacity")
+        val root = node("Root", 0, 0, 0, emptyList(), KnapsackNodeState.ACTIVE)
+        snapshot(root, KnapsackBbAction.COMPUTE_UPPER_BOUND, "Root fractional upper bound = ${root.upperBound}. It is optimistic, not an integer selection.", "ROOT UPPER BOUND = ${root.upperBound}")
 
-        // Step 0: INIT
-        steps.add(
-            snapshot(
-                node = null,
-                action = KnapsackBbAction.INIT,
-                explanation = "0/1 Knapsack Branch & Bound: Capacity $capacity. Items sorted by ratio: ${sortedItems.map { "${it.name}(w:${it.weight},v:${it.value},r:${it.ratio})" }}. Fractional relaxation provides upper bounds.",
-                badgeText = "READY · CAPACITY $capacity 0/1 KNAPSACK B&B"
-            )
-        )
-
-        // Root upper bound calculation
-        val rootUb = computeUpperBound(capacity, 0, 0, sortedItems, 0)
-        val rootNode = KnapsackBbNode("Root", 0, 0, 0, rootUb, emptyList())
-
-        steps.add(
-            snapshot(
-                node = rootNode,
-                action = KnapsackBbAction.COMPUTE_UPPER_BOUND,
-                explanation = "Root Node: Calculated fractional relaxation upper bound = $rootUb (Item 1 100% + Item 2 85.7%).",
-                badgeText = "ROOT UPPER BOUND = $rootUb"
-            )
-        )
-
-        // Branch 1: Include Item 1 (w:4, v:40) + Include Item 3 (w:5, v:45)
-        val nodeA = KnapsackBbNode("Node A (Inc Item 1)", 1, 4, 40, rootUb, listOf("Item 1"))
-        steps.add(
-            snapshot(
-                node = nodeA,
-                action = KnapsackBbAction.BRANCH_INCLUDE,
-                explanation = "Branch Include Item 1: Weight = 4, Value = 40. Upper bound = $rootUb.",
-                badgeText = "INCLUDE ITEM 1 (W:4, V:40)"
-            )
-        )
-
-        // Leaf Feasible: Item 1 + Item 3 (w:9, v:85)
-        val leaf1 = KnapsackBbNode("Leaf 1 (Item 1+3)", 3, 9, 85, 85.0, listOf("Item 1", "Item 3"))
-        incumbentVal = 85
-        incumbentList = listOf("Item 1", "Item 3")
-
-        steps.add(
-            snapshot(
-                node = leaf1,
-                action = KnapsackBbAction.UPDATE_INCUMBENT,
-                explanation = "Feasible 0/1 Integer Solution Found! Items 1 & 3: Total weight 9 <= 10, Total value = 85. Updated Incumbent threshold = 85!",
-                badgeText = "NEW INCUMBENT = 85 (ITEMS 1 & 3)"
-            )
-        )
-
-        // Branch 2: Exclude Item 1 from Root
-        val rootExUb = computeUpperBound(capacity, 0, 0, sortedItems, 1)
-        val nodeB = KnapsackBbNode("Node B (Exc Item 1)", 1, 0, 0, rootExUb, emptyList())
-
-        steps.add(
-            snapshot(
-                node = nodeB,
-                action = KnapsackBbAction.BRANCH_EXCLUDE,
-                explanation = "Branch Exclude Item 1: Fractional upper bound = $rootExUb (Item 2 100% + Item 3 60%).",
-                badgeText = "EXCLUDE ITEM 1 (BOUND $rootExUb)"
-            )
-        )
-
-        // Exclude Item 1 & Exclude Item 2 (Only Item 3: w:5, v:45)
-        val nodeC = KnapsackBbNode("Node C (Exc 1&2)", 2, 0, 0, 45.0, emptyList())
-
-        steps.add(
-            snapshot(
-                node = nodeC,
-                action = KnapsackBbAction.PRUNE_NODE,
-                explanation = "Inspect Node C (Exclude Items 1 & 2): Upper bound = 45.0 <= Incumbent (85). PRUNE NODE C!",
-                badgeText = "PRUNE NODE C (BOUND 45.0 ≤ INCUMBENT 85)"
-            )
-        )
-
-        // FINISHED
-        steps.add(
-            snapshot(
-                node = null,
-                action = KnapsackBbAction.FINISHED,
-                explanation = "0/1 Knapsack Branch & Bound complete! Optimal integer 0/1 value = $incumbentVal ($incumbentList). Fractional relaxations successfully pruned suboptimal subtrees.",
-                badgeText = "COMPLETE: OPTIMAL VALUE = $incumbentVal",
-                isTerminal = true
-            )
-        )
-
+        fun visit(level: Int, weight: Int, value: Int, chosen: List<Int>, path: String) {
+            if (level == ordered.size) {
+                if (value > incumbent) {
+                    incumbent = value; incumbentItems = names(chosen); incumbentIndices = chosen
+                    snapshot(node(path, level, weight, value, chosen, KnapsackNodeState.INCUMBENT, "Feasible integer solution"), KnapsackBbAction.UPDATE_INCUMBENT, "Feasible integer solution value $value improves the incumbent.", "NEW INCUMBENT = $value")
+                }
+                return
+            }
+            val item = ordered[level]
+            val includeWeight = safeAdd(weight, item.weight, "weight")
+            val includeValue = safeAdd(value, item.value, "value")
+            val includePath = "$path → include ${item.name}"
+            if (includeWeight > capacity) {
+                val rejected = KnapsackBbNode(includePath, level + 1, includeWeight, includeValue, null, null, names(chosen + level), chosen + level, KnapsackNodeState.INFEASIBLE, "Weight $includeWeight > capacity $capacity")
+                snapshot(rejected, KnapsackBbAction.REJECT_INFEASIBLE, "Reject ${item.name}: attempted weight $includeWeight exceeds capacity $capacity.", "INFEASIBLE · $includeWeight > $capacity")
+            } else {
+                val included = node(includePath, level + 1, includeWeight, includeValue, chosen + level, KnapsackNodeState.ACTIVE, "Include ${item.name}")
+                snapshot(included, KnapsackBbAction.BRANCH_INCLUDE, "Include ${item.name}: weight $includeWeight, integer value $includeValue, upper bound ${included.upperBound}.", "INCLUDE ${item.name}")
+                if (fractionalUpperBoundFloor(capacity, includeWeight, includeValue, ordered, level + 1) <= incumbent.toLong()) {
+                    val pruned = included.copy(state = KnapsackNodeState.PRUNED, comparisonThreshold = incumbent)
+                    snapshot(pruned, KnapsackBbAction.PRUNE_NODE, "floor(fractional upper bound ${pruned.upperBound}) = ${pruned.upperBoundFloor} ≤ incumbent $incumbent; prune this integer branch.", "PRUNE · FLOOR ${pruned.upperBoundFloor} ≤ $incumbent")
+                }
+                else visit(level + 1, includeWeight, includeValue, chosen + level, includePath)
+            }
+            val excluded = node("$path → exclude ${item.name}", level + 1, weight, value, chosen, KnapsackNodeState.ACTIVE, "Exclude ${item.name}")
+            snapshot(excluded, KnapsackBbAction.BRANCH_EXCLUDE, "Exclude ${item.name}: upper bound ${excluded.upperBound}.", "EXCLUDE ${item.name}")
+            if (fractionalUpperBoundFloor(capacity, weight, value, ordered, level + 1) <= incumbent.toLong()) {
+                val pruned = excluded.copy(state = KnapsackNodeState.PRUNED, comparisonThreshold = incumbent)
+                snapshot(pruned, KnapsackBbAction.PRUNE_NODE, "floor(fractional upper bound ${pruned.upperBound}) = ${pruned.upperBoundFloor} ≤ incumbent $incumbent; prune this integer branch.", "PRUNE · FLOOR ${pruned.upperBoundFloor} ≤ $incumbent")
+            }
+            else visit(level + 1, weight, value, chosen, "$path → exclude ${item.name}")
+        }
+        visit(0, 0, 0, emptyList(), "Root")
+        snapshot(null, KnapsackBbAction.FINISHED, "Search exhausted or safely pruned every branch. Optimal 0/1 value = $incumbent with ${incumbentItems.joinToString()}.", "COMPLETE: OPTIMAL VALUE = $incumbent", true)
         return steps
+    }
+
+    private fun safeAdd(left: Int, right: Int, label: String): Int {
+        val total = left.toLong() + right.toLong()
+        require(total <= Int.MAX_VALUE) { "$label accumulation exceeds supported Int range." }
+        return total.toInt()
+    }
+
+    private fun checkedLongAdd(left: Long, right: Long): Long {
+        require(right <= Long.MAX_VALUE - left) { "Fractional bound exceeds supported numeric range." }
+        return left + right
     }
 }

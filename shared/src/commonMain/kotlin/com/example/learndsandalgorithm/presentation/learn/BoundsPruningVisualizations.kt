@@ -15,6 +15,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -36,7 +37,7 @@ private val TextSecondary = Color(0xFF9CA3AF)
 internal fun BoundsPruningVisualizationCard(
     title: String = "Bounds, Incumbents, and Pruning"
 ) {
-    val steps = BoundsPruningTrace.createTrace()
+    val steps = remember { BoundsPruningTrace.createTrace() }
     val autoExpand = LocalAutoExpandVisualizer.current
     var isExpanded by rememberSaveable { mutableStateOf(autoExpand) }
 
@@ -48,6 +49,7 @@ internal fun BoundsPruningVisualizationCard(
     val isPlaying = playback.isPlaying
     val isCompleted = playback.isCompleted
     val step = steps[stepIndex]
+    val scenes = remember(steps) { BoundsPruningSceneBuilder.build(steps) }
 
     if (!autoExpand) {
         ArrayWindowButton(text = "Open bounds & pruning visualizer") {
@@ -88,17 +90,10 @@ internal fun BoundsPruningVisualizationCard(
                 isExpanded = false
             },
             visualContent = {
-                FitToPane(modifier = Modifier.fillMaxSize()) {
-                    BoundsPruningVisualizationContent(step = step, scale = 1f)
-                }
+                BoundsPruningSceneRenderer(scenes[stepIndex])
             },
             detailsContent = {
-                BoundsPruningDetailsAndStepsContent(
-                    step = step,
-                    stepIndex = stepIndex,
-                    totalSteps = steps.size,
-                    scale = 1f
-                )
+                BranchBoundResponsiveDetails("PRUNING RULE VERDICT", step.badgeText, "Optimistic Bounds", step.explanation, stepIndex, steps.size, isCompleted, when { step.action == BoundsPruningAction.UPDATE_INCUMBENT || step.action == BoundsPruningAction.FINISHED -> GreenAccent; step.isPruned == true -> RedAccent; else -> OrangeAccent })
             }
         )
     }

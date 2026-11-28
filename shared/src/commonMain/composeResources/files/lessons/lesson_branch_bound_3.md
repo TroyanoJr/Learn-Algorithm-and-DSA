@@ -4,14 +4,14 @@ While basic backtracking typically explores state-space trees using Depth-First 
 
 ## Best-First Node Selection
 
-Instead of blindly following a rigid DFS or BFS order, Best-First Search always expands the live node with the most promising bound (e.g., the minimum lower bound for minimization tasks):
+Instead of blindly following a rigid DFS or BFS order, Best-First Search first **selects** the live node with the most promising bound (e.g., the minimum lower bound for minimization tasks), then processes it and expands it only if it is not pruned:
 - **Priority Queue**: Stores active nodes ordered by their bound values.
 - **Immediate Promise**: By expanding the most promising node first, the algorithm often discovers high-quality feasible solutions early, lowering the incumbent cost and enabling more aggressive pruning of remaining branches.
 
 ## Search Strategy vs. Correctness
 
 - **Strategy**: Queue ordering and node selection order affect search efficiency and speed in finding the optimal solution.
-- **Correctness**: Correctness depends entirely on the validity and tightness of the bounding function, ensuring true optimal solutions are never mistakenly pruned.
+- **Correctness**: Correctness requires valid bounds, feasible incumbents, and correct selection, processing, expansion, and pruning logic. Bound tightness affects efficiency, not the mathematical validity of a correct search.
 
 ### Code Example: Priority Queue Node Selection
 
@@ -32,6 +32,7 @@ print("Priority queue selector ready")
 #include <iostream>
 #include <queue>
 #include <vector>
+#include <functional>
 
 struct StateNode {
     int id;
@@ -47,6 +48,7 @@ int main() {
     pq.push({2, 8});
     
     StateNode nextNode = pq.top();
+    pq.pop();
     std::cout << "Next node ID: " << nextNode.id << " with bound: " << nextNode.bound << '\n';
 }
 ```
@@ -65,7 +67,7 @@ class BestFirstSearchExample {
         pq.offer(new StateNode(1, 12));
         pq.offer(new StateNode(2, 8));
         
-        StateNode nextNode = pq.peek();
+        StateNode nextNode = pq.poll();
         System.out.println("Next node ID: " + nextNode.id + " with bound: " + nextNode.bound);
     }
 }
@@ -83,9 +85,9 @@ print(f"Next node ID: {best_node} with bound: {best_bound}")
 
 ## Remember
 
-- **Best-First Search** uses a priority queue to always expand the most promising node first.
+- **Best-First Search** uses a priority queue to select the most promising live node first and expands it only when appropriate.
 - Discovering good feasible solutions early helps establish tighter incumbents.
-- Queue order optimizes search efficiency, while bounding functions guarantee mathematical correctness.
+- Queue order affects efficiency. Correctness requires valid bounds, feasible incumbents, and correct search and pruning logic.
 
 ## Summary
 

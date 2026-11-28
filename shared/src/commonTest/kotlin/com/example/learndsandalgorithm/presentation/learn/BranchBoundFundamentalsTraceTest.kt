@@ -10,6 +10,8 @@ class BranchBoundFundamentalsTraceTest {
     fun createTraceFindsOptimalMinimizationCostAndPrunesHighBoundNode() {
         val steps = BranchBoundFundamentalsTrace.createTrace()
         assertTrue(steps.isNotEmpty())
+        assertEquals(7, steps.size)
+        assertEquals(8, steps.first().currentNodeBound)
 
         val lastStep = steps.last()
         assertTrue(lastStep.isTerminal)
@@ -18,5 +20,14 @@ class BranchBoundFundamentalsTraceTest {
 
         // Verify Node B was pruned due to lower bound 18 >= incumbent 15
         assertTrue(lastStep.prunedNodeIds.contains("Node B"))
+        assertEquals("Leaf C (Cost 8)", lastStep.incumbentSolution)
+
+        val nodeB = steps.first { it.currentNodeId == "Node B" }
+        assertEquals(15, nodeB.comparisonThreshold)
+        assertEquals(15, steps.first { it.currentNodeId == "Node C" }.comparisonThreshold)
+        assertEquals(null, steps.first { it.currentNodeId == "Leaf C" }.comparisonThreshold)
+
+        val frames = BranchBoundFundamentalsSceneBuilder.build(steps)
+        assertEquals(15, frames.last().nodes.first { it.id == "Node B" }.comparisonThreshold)
     }
 }

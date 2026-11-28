@@ -120,8 +120,8 @@ internal object BestFirstSearchTrace {
             snapshot(
                 extracted = null,
                 action = BestFirstAction.FINISHED,
-                explanation = "Best-First Search complete! Optimal cost = 7 found in just 1 node expansion. Priority Queue ordering enabled immediate pruning of all other candidate branches.",
-                badgeText = "COMPLETE: OPTIMAL COST = 7 IN 1 EXPANSION",
+                explanation = "Best-First Search complete! Optimal cost = 7 found after processing 1 node. Priority Queue ordering enabled immediate pruning of all other candidate branches.",
+                badgeText = "COMPLETE: OPTIMAL COST = 7 · 1 NODE PROCESSED",
                 isTerminal = true
             )
         )

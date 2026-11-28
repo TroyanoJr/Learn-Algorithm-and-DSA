@@ -15,6 +15,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -36,7 +37,7 @@ private val TextSecondary = Color(0xFF9CA3AF)
 internal fun KnapsackBranchBoundVisualizationCard(
     title: String = "0/1 Knapsack with Branch and Bound"
 ) {
-    val steps = KnapsackBranchBoundTrace.createTrace()
+    val steps = remember { KnapsackBranchBoundTrace.createTrace() }
     val autoExpand = LocalAutoExpandVisualizer.current
     var isExpanded by rememberSaveable { mutableStateOf(autoExpand) }
 
@@ -48,6 +49,7 @@ internal fun KnapsackBranchBoundVisualizationCard(
     val isPlaying = playback.isPlaying
     val isCompleted = playback.isCompleted
     val step = steps[stepIndex]
+    val scenes = remember(steps) { KnapsackBranchBoundSceneBuilder.build(steps) }
 
     if (!autoExpand) {
         ArrayWindowButton(text = "Open knapsack B&B visualizer") {
@@ -61,14 +63,16 @@ internal fun KnapsackBranchBoundVisualizationCard(
             KnapsackBbAction.COMPUTE_UPPER_BOUND -> "COMPUTE FRACTIONAL UPPER BOUND = ${step.currentNode?.upperBound}"
             KnapsackBbAction.BRANCH_INCLUDE -> "BRANCH INCLUDE: ${step.currentNode?.id}"
             KnapsackBbAction.BRANCH_EXCLUDE -> "BRANCH EXCLUDE: ${step.currentNode?.id}"
+            KnapsackBbAction.REJECT_INFEASIBLE -> "INFEASIBLE: ${step.currentNode?.currentWeight} > CAPACITY ${step.capacity}"
             KnapsackBbAction.UPDATE_INCUMBENT -> "UPDATED 0/1 INCUMBENT VALUE = ${step.incumbentValue}"
-            KnapsackBbAction.PRUNE_NODE -> "PRUNED NODE: BOUND ${step.currentNode?.upperBound} <= INCUMBENT ${step.incumbentValue}"
+            KnapsackBbAction.PRUNE_NODE -> "PRUNED NODE: FLOOR ${step.currentNode?.upperBoundFloor} ≤ INCUMBENT ${step.currentNode?.comparisonThreshold}"
             KnapsackBbAction.FINISHED -> "KNAPSACK B&B COMPLETE · OPTIMAL VALUE = ${step.incumbentValue}"
         }
 
         val statusColor = when (step.action) {
             KnapsackBbAction.UPDATE_INCUMBENT, KnapsackBbAction.FINISHED -> GreenAccent
             KnapsackBbAction.PRUNE_NODE -> RedAccent
+            KnapsackBbAction.REJECT_INFEASIBLE -> RedAccent
             KnapsackBbAction.BRANCH_INCLUDE, KnapsackBbAction.BRANCH_EXCLUDE, KnapsackBbAction.COMPUTE_UPPER_BOUND -> OrangeAccent
             else -> BlueAccent
         }
@@ -91,17 +95,10 @@ internal fun KnapsackBranchBoundVisualizationCard(
                 isExpanded = false
             },
             visualContent = {
-                FitToPane(modifier = Modifier.fillMaxSize()) {
-                    KnapsackBranchBoundVisualizationContent(step = step, scale = 1f)
-                }
+                KnapsackBranchBoundSceneRenderer(scenes[stepIndex])
             },
             detailsContent = {
-                KnapsackBranchBoundDetailsAndStepsContent(
-                    step = step,
-                    stepIndex = stepIndex,
-                    totalSteps = steps.size,
-                    scale = 1f
-                )
+                BranchBoundResponsiveDetails("KNAPSACK B&B DECISION", step.badgeText, "Fractional Relaxation Bound", step.explanation, stepIndex, steps.size, isCompleted, when (step.action) { KnapsackBbAction.UPDATE_INCUMBENT, KnapsackBbAction.FINISHED -> GreenAccent; KnapsackBbAction.PRUNE_NODE, KnapsackBbAction.REJECT_INFEASIBLE -> RedAccent; else -> OrangeAccent })
             }
         )
     }
@@ -244,6 +241,7 @@ private fun KnapsackBranchBoundDetailsAndStepsContent(
                     color = when (step.action) {
                         KnapsackBbAction.UPDATE_INCUMBENT, KnapsackBbAction.FINISHED -> GreenAccent
                         KnapsackBbAction.PRUNE_NODE -> RedAccent
+                        KnapsackBbAction.REJECT_INFEASIBLE -> RedAccent
                         else -> OrangeAccent
                     },
                     fontSize = 13.sp,

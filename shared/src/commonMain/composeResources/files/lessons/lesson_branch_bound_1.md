@@ -12,7 +12,7 @@ Like backtracking, Branch and Bound models the solution space as an implicit **s
 
 Branch and Bound introduces two critical mechanisms to prune the state-space tree:
 1. **Incumbent Solution**: Stores the best valid solution found so far during the search. Its objective cost serves as a threshold.
-2. **Bounding Function**: Computes an optimistic cost estimate (lower bound for minimization, upper bound for maximization) for any partial node state. If a node's optimistic bound is worse than the current incumbent's cost, that entire subtree is pruned immediately.
+2. **Bounding Function**: Computes an optimistic cost estimate (lower bound for minimization, upper bound for maximization) for any partial node state. For minimization, prune when `lowerBound >= incumbentCost`; for maximization, prune when `upperBound <= incumbentValue`. Equality is safe when finding one optimum or its objective value, but not when enumerating every equally optimal solution.
 
 ### Code Example: Exploring State-Space Nodes
 

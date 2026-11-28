@@ -13,6 +13,8 @@ internal data class BranchBoundFundamentalsStep(
     val incumbentSolution: String? = null,
     val currentNodeId: String? = null,
     val currentNodeBound: Int? = null,
+    /** Incumbent used for this step's bound comparison, before any update. */
+    val comparisonThreshold: Int? = null,
     val exploredNodeIds: List<String> = emptyList(),
     val prunedNodeIds: List<String> = emptyList(),
     val action: BbFundamentalsAction = BbFundamentalsAction.INIT,
@@ -42,6 +44,11 @@ internal object BranchBoundFundamentalsTrace {
             incumbentSolution = incumbentSol,
             currentNodeId = nodeId,
             currentNodeBound = bound,
+            comparisonThreshold = when (action) {
+                BbFundamentalsAction.EXPLORE_BRANCH,
+                BbFundamentalsAction.PRUNE_BRANCH -> incumbent
+                else -> null
+            },
             exploredNodeIds = explored.toList(),
             prunedNodeIds = pruned.toList(),
             action = action,
@@ -54,7 +61,8 @@ internal object BranchBoundFundamentalsTrace {
         steps.add(
             snapshot(
                 nodeId = "Root",
-                bound = 10,
+                // A valid minimization lower bound cannot exceed the optimum below Root.
+                bound = 8,
                 action = BbFundamentalsAction.INIT,
                 explanation = "Branch and Bound Fundamentals: Minimization problem on state-space tree. Goal: find minimum cost solution. Incumbent cost = INF.",
                 badgeText = "READY · MINIMIZATION SEARCH"

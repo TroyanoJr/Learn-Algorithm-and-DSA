@@ -20,6 +20,7 @@ internal data class BoundsPruningStep(
     val evaluatedNodeId: String? = null,
     val evaluatedBound: Int? = null,
     val isPruned: Boolean? = null,
+    val comparisonThreshold: Int? = null,
     val action: BoundsPruningAction = BoundsPruningAction.INIT,
     val explanation: String,
     val badgeText: String,
@@ -27,6 +28,12 @@ internal data class BoundsPruningStep(
 )
 
 internal object BoundsPruningTrace {
+
+    internal fun isPruned(problemType: ProblemType, bound: Int, incumbent: Int): Boolean =
+        when (problemType) {
+            ProblemType.MINIMIZATION -> bound >= incumbent
+            ProblemType.MAXIMIZATION -> bound <= incumbent
+        }
 
     fun createTrace(): List<BoundsPruningStep> {
         val steps = mutableListOf<BoundsPruningStep>()
@@ -41,6 +48,7 @@ internal object BoundsPruningTrace {
             action: BoundsPruningAction,
             explanation: String,
             badgeText: String,
+            comparisonThreshold: Int? = null,
             isTerminal: Boolean = false
         ) = BoundsPruningStep(
             problemType = type,
@@ -49,6 +57,11 @@ internal object BoundsPruningTrace {
             evaluatedNodeId = nodeId,
             evaluatedBound = bound,
             isPruned = pruned,
+            comparisonThreshold = comparisonThreshold ?: when (action) {
+                BoundsPruningAction.EVALUATE_MINIMIZATION -> minInc
+                BoundsPruningAction.EVALUATE_MAXIMIZATION -> maxInc
+                else -> null
+            },
             action = action,
             explanation = explanation,
             badgeText = badgeText,
@@ -74,7 +87,7 @@ internal object BoundsPruningTrace {
                 type = ProblemType.MINIMIZATION,
                 nodeId = "Node A",
                 bound = 8,
-                pruned = false,
+                pruned = isPruned(ProblemType.MINIMIZATION, 8, minInc),
                 action = BoundsPruningAction.EVALUATE_MINIMIZATION,
                 explanation = "Minimization - Node A (Lower Bound 8): 8 < Min Incumbent (10). KEEP & EXPLORE subtree A.",
                 badgeText = "MIN: NODE A (BOUND 8 < 10) -> KEEP"
@@ -87,7 +100,7 @@ internal object BoundsPruningTrace {
                 type = ProblemType.MINIMIZATION,
                 nodeId = "Node B",
                 bound = 12,
-                pruned = true,
+                pruned = isPruned(ProblemType.MINIMIZATION, 12, minInc),
                 action = BoundsPruningAction.EVALUATE_MINIMIZATION,
                 explanation = "Minimization - Node B (Lower Bound 12): 12 ≥ Min Incumbent (10). PRUNE SUBTREE B!",
                 badgeText = "MIN: NODE B (BOUND 12 ≥ 10) -> PRUNE"
@@ -100,7 +113,7 @@ internal object BoundsPruningTrace {
                 type = ProblemType.MAXIMIZATION,
                 nodeId = "Node X",
                 bound = 50,
-                pruned = false,
+                pruned = isPruned(ProblemType.MAXIMIZATION, 50, maxInc),
                 action = BoundsPruningAction.EVALUATE_MAXIMIZATION,
                 explanation = "Maximization - Node X (Upper Bound 50): 50 > Max Incumbent (40). KEEP & EXPLORE subtree X.",
                 badgeText = "MAX: NODE X (BOUND 50 > 40) -> KEEP"
@@ -113,7 +126,7 @@ internal object BoundsPruningTrace {
                 type = ProblemType.MAXIMIZATION,
                 nodeId = "Node Y",
                 bound = 35,
-                pruned = true,
+                pruned = isPruned(ProblemType.MAXIMIZATION, 35, maxInc),
                 action = BoundsPruningAction.EVALUATE_MAXIMIZATION,
                 explanation = "Maximization - Node Y (Upper Bound 35): 35 ≤ Max Incumbent (40). PRUNE SUBTREE Y!",
                 badgeText = "MAX: NODE Y (BOUND 35 ≤ 40) -> PRUNE"
@@ -121,6 +134,7 @@ internal object BoundsPruningTrace {
         )
 
         // Update Max Incumbent
+        val maxIncBeforeLeaf = maxInc
         maxInc = 48
         steps.add(
             snapshot(
@@ -130,7 +144,8 @@ internal object BoundsPruningTrace {
                 pruned = false,
                 action = BoundsPruningAction.UPDATE_INCUMBENT,
                 explanation = "Feasible Leaf X reached! Solution value = 48 > Max Incumbent (40). Update Max Incumbent threshold = 48!",
-                badgeText = "UPDATE MAX INCUMBENT = 48"
+                badgeText = "UPDATE MAX INCUMBENT = 48",
+                comparisonThreshold = maxIncBeforeLeaf
             )
         )
 

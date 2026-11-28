@@ -6,23 +6,24 @@ The **0/1 Knapsack Problem** is a classic optimization task: given items with we
 
 To estimate the maximum possible value achievable down any subtree in a maximization problem:
 - **Fractional Relaxation**: Allow items to be divided into fractions. This can be solved greedily in `O(N log N)` time by sorting items by value-to-weight ratio.
-- **Optimistic Bound**: The fractional knapsack value serves as an upper bound for the 0/1 integer knapsack problem. If the relaxed upper bound is less than or equal to the current incumbent value, the subtree is pruned.
+- **Optimistic Bound**: The fractional knapsack value serves as an upper bound for the 0/1 integer knapsack problem. For integer-valued values, prune when its exact integer floor is less than or equal to the feasible incumbent; do not compare a rounded display value to the incumbent.
+- **Preconditions and arithmetic**: Every item weight must be positive, and the fractional calculation must use real-number division. For example, with 3 units of capacity and an item of weight 5 and value 18, the relaxation contributes `18 * (3.0 / 5.0) = 10.8`, not integer-divided `10`.
 
 ### Code Example: 0/1 Knapsack Branch and Bound Upper Bound
 
 The following code calculates the fractional knapsack upper bound for remaining items given current weight and value.
 
 ```pseudocode
-function fractionalUpperBound(capacity, weight, value, currentIndex)
+function fractionalUpperBound(capacity, currentWeight, currentValue, sortedItems, currentIndex)
     upperBound = currentValue
     remainingCapacity = capacity - currentWeight
     
-    for i from currentIndex to length(items) - 1 do
-        if items[i].weight <= remainingCapacity then
-            remainingCapacity = remainingCapacity - items[i].weight
-            upperBound = upperBound + items[i].value
+    for i from currentIndex to length(sortedItems) - 1 do
+        if sortedItems[i].weight <= remainingCapacity then
+            remainingCapacity = remainingCapacity - sortedItems[i].weight
+            upperBound = upperBound + sortedItems[i].value
         else
-            upperBound = upperBound + items[i].value * (remainingCapacity / items[i].weight)
+            upperBound = upperBound + sortedItems[i].value * (remainingCapacity / sortedItems[i].weight)
             break
         end if
     end for
@@ -60,6 +61,7 @@ double computeUpperBound(double capacity, double currentWeight, double currentVa
 
 int main() {
     std::vector<Item> items = {{2.0, 40.0}, {3.0, 50.0}, {5.0, 100.0}};
+    std::stable_sort(items.begin(), items.end(), [](const Item& a, const Item& b) { return a.value / a.weight > b.value / b.weight; });
     std::cout << "Upper bound: " << computeUpperBound(10.0, 0.0, 0.0, items, 0) << '\n';
 }
 ```
@@ -89,6 +91,7 @@ class KnapsackBranchBound {
 
     public static void main(String[] args) {
         Item[] items = {new Item(2.0, 40.0), new Item(3.0, 50.0), new Item(5.0, 100.0)};
+        java.util.Arrays.sort(items, (a, b) -> Double.compare(b.value / b.weight, a.value / a.weight));
         System.out.println("Upper bound: " + computeUpperBound(10.0, 0.0, 0.0, items, 0));
     }
 }
@@ -108,13 +111,15 @@ def compute_upper_bound(capacity, current_weight, current_value, items, start_in
     return upper_bound
 
 items = [{"weight": 2.0, "value": 40.0}, {"weight": 3.0, "value": 50.0}, {"weight": 5.0, "value": 100.0}]
+items.sort(key=lambda item: item["value"] / item["weight"], reverse=True)
 print("Upper bound:", compute_upper_bound(10.0, 0.0, 0.0, items, 0))
 ```
 
 ## Complexity Analysis
 
-- **Time Complexity**: Fractional relaxations take `O(N log N)` sorting time, reducing overall search space exploration time significantly.
-- **Space Complexity**: `O(N)` auxiliary call stack and priority queue space.
+- **Initial sorting**: `O(N log N)` once; every fractional bound over the remaining sorted suffix is `O(N)`.
+- **Worst case**: the search has `O(2^N)` nodes and `O(N * 2^N)` total time with linear bound calculations.
+- **Memory**: DFS recursion depth is `O(N)`, while recorded snapshots, copied selections, or a best-first frontier can require substantially more (up to `O(2^N)` frontier nodes).
 
 ## Summary
 

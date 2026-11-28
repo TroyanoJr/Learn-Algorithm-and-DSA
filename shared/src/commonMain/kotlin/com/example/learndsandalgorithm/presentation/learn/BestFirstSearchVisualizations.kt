@@ -15,6 +15,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -36,7 +37,7 @@ private val TextSecondary = Color(0xFF9CA3AF)
 internal fun BestFirstSearchVisualizationCard(
     title: String = "Best-First Search and Priority Queues"
 ) {
-    val steps = BestFirstSearchTrace.createTrace()
+    val steps = remember { BestFirstSearchTrace.createTrace() }
     val autoExpand = LocalAutoExpandVisualizer.current
     var isExpanded by rememberSaveable { mutableStateOf(autoExpand) }
 
@@ -48,6 +49,7 @@ internal fun BestFirstSearchVisualizationCard(
     val isPlaying = playback.isPlaying
     val isCompleted = playback.isCompleted
     val step = steps[stepIndex]
+    val scenes = remember(steps) { BestFirstSearchSceneBuilder.build(steps) }
 
     if (!autoExpand) {
         ArrayWindowButton(text = "Open best-first search visualizer") {
@@ -90,17 +92,10 @@ internal fun BestFirstSearchVisualizationCard(
                 isExpanded = false
             },
             visualContent = {
-                FitToPane(modifier = Modifier.fillMaxSize()) {
-                    BestFirstSearchVisualizationContent(step = step, scale = 1f)
-                }
+                BestFirstSearchSceneRenderer(scenes[stepIndex])
             },
             detailsContent = {
-                BestFirstSearchDetailsAndStepsContent(
-                    step = step,
-                    stepIndex = stepIndex,
-                    totalSteps = steps.size,
-                    scale = 1f
-                )
+                BranchBoundResponsiveDetails("PRIORITY QUEUE DECISION", step.badgeText, "Min-bound first", step.explanation, stepIndex, steps.size, isCompleted, when (step.action) { BestFirstAction.FOUND_FEASIBLE, BestFirstAction.FINISHED -> GreenAccent; BestFirstAction.PRUNE_REMAINING_PQ -> RedAccent; else -> OrangeAccent })
             }
         )
     }
